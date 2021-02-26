@@ -1,7 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db';
-import bodyParser from 'body-parser';
 import productRouter from './routes/product';
 
 dotenv.config({ path: 'config.env' });
@@ -9,7 +8,7 @@ connectDB();
 
 const app = express();
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.use('/api/v1/products', productRouter);
 
