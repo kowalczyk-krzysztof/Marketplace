@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import {
   getProducts,
   getProduct,
@@ -7,7 +7,7 @@ import {
   updateProduct,
 } from '../controllers/product';
 
-const productRouter = express.Router();
+const productRouter: Router = express.Router();
 
 productRouter.route('/').get(getProducts).post(createProduct);
 
