@@ -8,13 +8,11 @@ export const getProducts: RequestHandler = async (req, res, next) => {
   try {
     const products = await ProductSchema.find();
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        numberOfProducts: products.length,
-        data: products,
-      });
+    res.status(200).json({
+      success: true,
+      numberOfProducts: products.length,
+      data: products,
+    });
   } catch (err) {
     res.status(400).json({ success: false });
   }
@@ -34,7 +32,8 @@ export const getProduct: RequestHandler = async (req, res, next) => {
     res.status(200).json({ sucess: true, data: product });
   } catch (err) {
     // If ID is in invalid format
-    res.status(400).json({ success: false, msg: 'Invalid ID' });
+    // res.status(400).json({ success: false, msg: 'Invalid ID' });
+    next(err);
   }
 };
 // @desc    Create product

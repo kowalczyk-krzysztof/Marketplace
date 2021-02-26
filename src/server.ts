@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db';
 import productRouter from './routes/product';
+import errorHandler from './middleware/error';
 
 dotenv.config({ path: 'config.env' });
 connectDB();
@@ -11,6 +12,7 @@ const app = express();
 app.use(express.json());
 
 app.use('/api/v1/products', productRouter);
+app.use(errorHandler); // has to be after routers
 
 const PORT = process.env.PORT || 3000;
 
