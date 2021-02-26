@@ -9,7 +9,7 @@ const ProductSchema: Schema = new mongoose.Schema({
   },
   quantity: {
     type: Number,
-    required: true,
+    required: [true, 'Quantity must be higher than 0'],
     min: [1, 'Quantity must be higher than 0'],
   },
   description: {
@@ -18,7 +18,11 @@ const ProductSchema: Schema = new mongoose.Schema({
     maxlength: [500, 'Description can not be more than 500 characters'],
   },
   addedAt: { type: Date, default: Date.now },
-  addedBy: { type: String, required: true, maxlenght: 50 },
+  addedBy: {
+    type: String,
+    required: [true, 'Author is required'],
+    maxlenght: [50, 'Author name can not be more than 50 characters'],
+  },
 });
 
 export default mongoose.model('Product', ProductSchema);
