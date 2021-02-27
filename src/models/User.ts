@@ -12,7 +12,7 @@ interface User extends mongoose.Document {
   createdAt: Date;
   getSignedJwtToken(): any;
   matchPassword(enteredPassword: string): any;
-  // If you want to have methods you gotta put them in interface
+  // If you want to export methods you gotta put them in interface
 }
 
 const UserSchema = new mongoose.Schema({
@@ -62,14 +62,11 @@ UserSchema.methods.getSignedJwtToken = function () {
   });
 };
 
-// Match user entered password to hashed paswword in database
-
+// Match user entered password to hashed password in database
 UserSchema.methods.matchPassword = async function (enteredPassword: string) {
   let user = this as User;
-  // weird workaround I don't fully understand
-
   return await bcryptjs.compare(enteredPassword, user.password);
 };
+// Exporting the schema with an interface applied
 const User = mongoose.model<User>('User', UserSchema);
 export default User;
-// Exporting the schema with an interface applied

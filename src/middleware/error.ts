@@ -4,6 +4,7 @@ import { ErrorResponse } from '../utils/ErrorResponse';
 const errorHandler: ErrorRequestHandler = (err, req, res, next): void => {
   let error = { ...err };
   error.message = err._message;
+  error.next = err.message; // Uses the message passed to next() in the controller, for example `Product not found with id of ${req.params.id}`
 
   // Log to console for dev
   console.log(err);
@@ -23,9 +24,14 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next): void => {
     error = new ErrorResponse(message, 400);
   }
 
+  if (err.name === 'SyntaxError') {
+    const message = `Syntax Error`;
+    error = new ErrorResponse(message, 400);
+  }
+
   res.status(error.statusCode || 500).json({
     success: false,
-    error: error.message || 'Server Error',
+    error: error.message || error.next || 'Server error',
   });
 };
 
