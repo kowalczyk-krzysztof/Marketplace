@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import ProductSchema from '../models/Product';
+import Product from '../models/Product';
 import { ErrorResponse } from '../utils/errorResponse';
 import asyncHandler from 'express-async-handler';
 
@@ -7,7 +7,7 @@ import asyncHandler from 'express-async-handler';
 // @route   GET /api/v1/products
 // @access  Public
 export const getProducts: RequestHandler = asyncHandler(async (req, res) => {
-  const products = await ProductSchema.find();
+  const products = await Product.find();
 
   res.status(200).json({
     success: true,
@@ -20,7 +20,7 @@ export const getProducts: RequestHandler = asyncHandler(async (req, res) => {
 // @access  Public
 export const getProduct: RequestHandler = asyncHandler(
   async (req, res, next) => {
-    const product = await ProductSchema.findById(req.params.id);
+    const product = await Product.findById(req.params.id);
 
     // If ID format is valid but it doesn't exist
     if (!product) {
@@ -36,7 +36,7 @@ export const getProduct: RequestHandler = asyncHandler(
 // @route   PUT /api/v1/products/
 // @access  Private
 export const createProduct: RequestHandler = asyncHandler(async (req, res) => {
-  const product = await ProductSchema.create(req.body);
+  const product = await Product.create(req.body);
   res.status(201).json({ success: true, data: product });
 });
 
@@ -45,14 +45,10 @@ export const createProduct: RequestHandler = asyncHandler(async (req, res) => {
 // @access  Private
 export const updateProduct: RequestHandler = asyncHandler(
   async (req, res, next) => {
-    const product = await ProductSchema.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
     if (!product) {
       return next(
         new ErrorResponse(`Product not found with id of ${req.params.id}`, 404)
@@ -67,7 +63,7 @@ export const updateProduct: RequestHandler = asyncHandler(
 // @route   DELETE /api/v1/products/:id
 // @access  Private
 export const deleteProduct = asyncHandler(async (req, res, next) => {
-  const product = await ProductSchema.findByIdAndDelete(req.params.id);
+  const product = await Product.findByIdAndDelete(req.params.id);
   if (!product) {
     return next(
       new ErrorResponse(`Product not found with id of ${req.params.id}`, 404)

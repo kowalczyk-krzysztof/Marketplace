@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 import slugify from 'slugify';
 
 // Had to create an interface for slugify to work
@@ -7,7 +7,7 @@ interface Product extends mongoose.Document {
   slug: string;
 }
 
-const ProductSchema: Schema = new mongoose.Schema({
+const ProductSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Product name is required'],
@@ -39,5 +39,5 @@ ProductSchema.pre<Product>('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
-
-export default mongoose.model('Product', ProductSchema);
+const Product = mongoose.model('Product', ProductSchema);
+export default Product;
