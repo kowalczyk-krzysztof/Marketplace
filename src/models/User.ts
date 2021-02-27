@@ -50,7 +50,7 @@ const UserSchema = new mongoose.Schema({
 
 // Encrypt password using bcrypt
 UserSchema.pre<User>('save', async function (next) {
-  const salt = await bcryptjs.genSalt(10);
+  const salt: string = await bcryptjs.genSalt(10);
   this.password = await bcryptjs.hash(this.password, salt);
   next();
 });
@@ -65,7 +65,7 @@ UserSchema.methods.getSignedJwtToken = function () {
 // Match user entered password to hashed paswword in database
 
 UserSchema.methods.matchPassword = async function (enteredPassword: string) {
-  let user = <User>this;
+  let user = this as User;
   // weird workaround I don't fully understand
 
   return await bcryptjs.compare(enteredPassword, user.password);

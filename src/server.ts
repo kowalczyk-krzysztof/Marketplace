@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db';
+import cookieParser from 'cookie-parser';
 import productRouter from './routes/product';
 import errorHandler from './middleware/error';
 import userRouter from './routes/auth';
@@ -11,6 +12,7 @@ connectDB();
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/auth', userRouter);
