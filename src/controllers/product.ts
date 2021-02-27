@@ -22,7 +22,7 @@ export const getProduct: RequestHandler = asyncHandler(
   async (req, res, next) => {
     const product = await Product.findById(req.params.id);
 
-    // If ID format is valid but it doesn't exist
+    // If ID format is valid but product doesn't exist
     if (!product) {
       return next(
         new ErrorResponse(`Product not found with id of ${req.params.id}`, 404)
