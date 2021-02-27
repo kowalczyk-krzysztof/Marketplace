@@ -1,12 +1,12 @@
-import { RequestHandler } from 'express';
+import { RequestHandler, Response } from 'express';
 import User from '../models/User';
 import asyncHandler from 'express-async-handler';
-import { ErrorResponse } from '../utils/errorResponse';
+import { ErrorResponse } from '../utils/ErrorResponse';
 
 // @desc    Register user
 // @route   POST /api/v1/auth/register
 // @access  Public
-export const register: RequestHandler = asyncHandler(async (req, res, next) => {
+export const register: RequestHandler = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
 
   // Create user
@@ -17,9 +17,10 @@ export const register: RequestHandler = asyncHandler(async (req, res, next) => {
     role,
   });
 
-  // Create token
-  const token = user.getSignedJwtToken();
-  res.status(200).json({ sucess: true, token });
+  // // Create token
+  // const token = user.getSignedJwtToken();
+  // res.status(200).json({ sucess: true, token });
+  sendTokenResponse(user, 200, res);
 });
 
 // @desc    Login user
@@ -47,7 +48,28 @@ export const login: RequestHandler = asyncHandler(async (req, res, next) => {
   if (!isMatch) {
     return next(new ErrorResponse('Invalid credentials', 401));
   }
-  // Create token
-  const token = user.getSignedJwtToken();
-  res.status(200).json({ sucess: true, token });
+  // // Create token
+  // const token = user.getSignedJwtToken();
+  // res.status(200).json({ sucess: true, token });
+  sendTokenResponse(user, 200, res);
 });
+
+// Get token from model, create cookie and send response
+const sendTokenResponse = (user: User, statusCode: number, res: Response) => {
+  const token: string = user.getSignedJwtToken();
+  const expireTime = (process.env.JWT_COOKIE_EXPIRE as unknown) as number;
+
+  const options = {
+    expires: new Date(Date.now() + expireTime * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: false,
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    options.secure = true;
+  }
+  res.status(statusCode).cookie('token', token, options).json({
+    succcess: true,
+    token,
+  });
+};

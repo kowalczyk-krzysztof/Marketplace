@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
 import Product from '../models/Product';
-import { ErrorResponse } from '../utils/errorResponse';
+import { ErrorResponse } from '../utils/ErrorResponse';
 import asyncHandler from 'express-async-handler';
 
 // @desc    Get all products

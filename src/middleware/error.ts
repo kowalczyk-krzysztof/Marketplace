@@ -1,9 +1,10 @@
 import { ErrorRequestHandler } from 'express';
-import { ErrorResponse } from '../utils/errorResponse';
+import { ErrorResponse } from '../utils/ErrorResponse';
 
-const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+const errorHandler: ErrorRequestHandler = (err, req, res, next): void => {
   let error = { ...err };
-  error.message = err.message;
+  error.message = err._message;
+
   // Log to console for dev
   console.log(err);
   // Mongoose bad ObjectId
@@ -18,13 +19,7 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   }
   // Mongoose validation error
   if (err.name === 'ValidationError') {
-    const message = Object.values(err.errors)
-      .map((val: any) => val.message)
-      .toString()
-      .split(',')
-      .join(' | ');
-    // TODO1: Figure out the type here
-    // TODO2: Find a better way of handling this. Currently it is done like that because errorResponse has to return a string
+    const message = Object.values(err.errors).toString();
     error = new ErrorResponse(message, 400);
   }
 
