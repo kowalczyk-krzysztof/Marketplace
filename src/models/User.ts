@@ -11,6 +11,7 @@ interface User extends mongoose.Document {
   resetPasswordExpire: string;
   createdAt: Date;
   getSignedJwtToken(): any;
+  matchPassword(enteredPassword: string): any;
   // If you want to have methods you gotta put them in interface
 }
 
@@ -61,5 +62,14 @@ UserSchema.methods.getSignedJwtToken = function () {
   });
 };
 
-export default mongoose.model<User>('User', UserSchema);
+// Match user entered password to hashed paswword in database
+
+UserSchema.methods.matchPassword = async function (enteredPassword: string) {
+  let user = <User>this;
+  // weird workaround I don't fully understand
+
+  return await bcryptjs.compare(enteredPassword, user.password);
+};
+const User = mongoose.model<User>('User', UserSchema);
+export default User;
 // Exporting the schema with an interface applied
