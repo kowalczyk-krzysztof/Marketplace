@@ -84,7 +84,7 @@ export const getMe = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/v1/auth/users/:id
 // @access  Admin
 export const deleteUser = asyncHandler(async (req, res, next) => {
-  // if (checkIdFormat(req.params.id) === false) {
+  // if (mongoose.isValidObjectId(req.params.id) === false) {
   //   return next(new ErrorResponse(`Invalid id format`, 401));
   // }
   // Above check is not needed if you are using any of the findById methods - they will return a CastError which is handled by error handler
