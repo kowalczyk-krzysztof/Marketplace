@@ -71,7 +71,7 @@ export const login: RequestHandler = asyncHandler(async (req, res, next) => {
 // @desc    Get current logged in user
 // @route   POST /api/v1/auth/me
 // @access  Private
-export const getMe: RequestHandler = asyncHandler(async (req, res, next) => {
+export const getMe: RequestHandler = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id);
 
   res.status(200).json({
@@ -141,6 +141,29 @@ export const getUser: RequestHandler = asyncHandler(async (req, res, next) => {
       new ErrorResponse(`user not found with id of ${req.params.id}`, 404)
     );
   }
+
+  res.status(200).json({ sucess: true, data: user });
+});
+// @desc    Edit user (self)
+// @route   PUT /api/v1/auth/me
+// @access  Private
+export const updateMe: RequestHandler = asyncHandler(async (req, res, next) => {
+  const user = await User.findByIdAndUpdate(req.user.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(200).json({ sucess: true, data: user });
+});
+
+// @desc    Edit user
+// @route   PUT /api/v1/users/:id
+// @access  Admin
+export const updateUser: RequestHandler = asyncHandler(async (req, res) => {
+  const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
 
   res.status(200).json({ sucess: true, data: user });
 });

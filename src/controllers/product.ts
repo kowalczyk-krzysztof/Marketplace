@@ -34,7 +34,7 @@ export const getProduct: RequestHandler = asyncHandler(
   }
 );
 // @desc    Create product
-// @route   PUT /api/v1/products/
+// @route   POST /api/v1/products/
 // @access  Private
 export const createProduct: RequestHandler = asyncHandler(
   async (req, res, next) => {
