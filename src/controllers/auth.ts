@@ -2,26 +2,7 @@ import { RequestHandler, Response } from 'express';
 import User from '../models/User';
 import asyncHandler from 'express-async-handler';
 import { ErrorResponse } from '../utils/ErrorResponse';
-
-// Get token from model, create cookie and send response
-const sendTokenResponse = (user: User, statusCode: number, res: Response) => {
-  const token: string = user.getSignedJwtToken(); // jsonwebtoken
-  const expireTime = (process.env.JWT_COOKIE_EXPIRE as unknown) as number;
-  // Cookie options
-  const options = {
-    expires: new Date(Date.now() + expireTime * 24 * 60 * 60 * 1000),
-    httpOnly: true,
-    secure: false,
-  };
-
-  if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
-  }
-  res.status(statusCode).cookie('token', token, options).json({
-    succcess: true,
-    token,
-  });
-};
+import { sendEmail } from '../utils/sendEmail';
 
 // @desc    Register user
 // @route   POST /api/v1/auth/register
@@ -153,3 +134,75 @@ export const updateUser: RequestHandler = asyncHandler(async (req, res) => {
 
   res.status(200).json({ sucess: true, data: user });
 });
+
+// @desc    Forgot password
+// @route   POST /api/v1/auth/forgotpassword
+// @access  Public
+export const forgotPassword: RequestHandler = asyncHandler(
+  async (req, res, next) => {
+    const user = await User.findOne({ email: req.body.email });
+
+    // Check is user exists
+    if (!user) {
+      return next(new ErrorResponse('There is no user with that email', 404));
+    }
+    // Get reset token
+    let resetToken = user.getResetPasswordToken();
+
+    await user.save({ validateBeforeSave: false });
+
+    // Create reset url
+    const resetUrl = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/auth/resetpassword/${resetToken}`;
+
+    // Create message to pass, in actual frontend you want to put an actual link inside
+
+    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+    // Sending email
+    try {
+      // Passing options
+      await sendEmail({
+        email: user.email,
+        subject: 'Password reset token',
+        message,
+      });
+
+      res.status(200).json({ success: true, data: 'Email sent' });
+    } catch (err) {
+      console.log(err);
+      // If something goes wrong then delete the token and expire from dataabase
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+
+      await user.save({ validateBeforeSave: false });
+
+      return next(new ErrorResponse('Email could not be sent', 500));
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  }
+);
+
+// Get token from model, create cookie and send response
+const sendTokenResponse = (user: User, statusCode: number, res: Response) => {
+  const token: string = user.getSignedJwtToken(); // jsonwebtoken
+  const expireTime = (process.env.JWT_COOKIE_EXPIRE as unknown) as number;
+  // Cookie options
+  const options = {
+    expires: new Date(Date.now() + expireTime * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: false,
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    options.secure = true;
+  }
+  res.status(statusCode).cookie('token', token, options).json({
+    succcess: true,
+    token,
+  });
+};
