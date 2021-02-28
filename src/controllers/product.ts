@@ -2,7 +2,6 @@ import { RequestHandler } from 'express';
 import Product from '../models/Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import asyncHandler from 'express-async-handler';
-import { nextTick } from 'process';
 
 // @desc    Get all products
 // @route   GET /api/v1/products
@@ -40,15 +39,17 @@ export const createProduct: RequestHandler = asyncHandler(
   async (req, res, next) => {
     // Adding addedBy to req.body as user.name (from our auth middleware)
     req.body.addedBy = req.user.name;
+    // Addding addedById to req.body as user._id (from our auth middleware)
+    req.body.addedById = req.user._id;
 
-    // Limiting the number of products a seller can add
+    // Limiting the number of products a merchant can add
     const maxProducts: number = 5;
     const totalAddedProducts = await Product.find({ addedBy: req.user.name });
 
     if (totalAddedProducts.length >= maxProducts && req.user.role !== 'admin') {
       return next(
         new ErrorResponse(
-          `Maximum number of products a seller can add is ${maxProducts}`,
+          `Maximum number of products a merchant can add is ${maxProducts}`,
           400
         )
       );
@@ -90,4 +91,19 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json({ sucess: true, data: {} });
+});
+
+// @desc    Get product by merchant
+// @route   GET /api/v1/products/merchant/:id
+// @access  Private
+
+export const getProductsByMerchant = asyncHandler(async (req, res, next) => {
+  const products = await Product.find({ addedById: req.params.id });
+
+  // If there is not even one product then return error
+  if (!products[0]) {
+    return next(new ErrorResponse(`No products by ${req.params.id}`, 401));
+  }
+
+  res.status(200).json({ success: true, products: products });
 });
