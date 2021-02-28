@@ -95,12 +95,16 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
 
 // @desc    Get product by merchant
 // @route   GET /api/v1/products/merchant/:id
-// @access  Private
+// @access  Public
 
 export const getProductsByMerchant = asyncHandler(async (req, res, next) => {
   const products = await Product.find({ addedById: req.params.id });
 
-  // If there is not even one product then return error
+  // Check if the id is valid format
+  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+    return next(new ErrorResponse(`Invalid ID format`, 401));
+  }
+  // Check if merchant has any products
   if (!products[0]) {
     return next(new ErrorResponse(`No products by ${req.params.id}`, 401));
   }
