@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import Product from '../models/Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import asyncHandler from 'express-async-handler';
+import { nextTick } from 'process';
 
 // @desc    Get all products
 // @route   GET /api/v1/products
@@ -35,13 +36,28 @@ export const getProduct: RequestHandler = asyncHandler(
 // @desc    Create product
 // @route   PUT /api/v1/products/
 // @access  Private
-export const createProduct: RequestHandler = asyncHandler(async (req, res) => {
-  // Adding addedBy to req.body as user.name (from our auth middleware)
-  req.body.addedBy = req.user.name;
+export const createProduct: RequestHandler = asyncHandler(
+  async (req, res, next) => {
+    // Adding addedBy to req.body as user.name (from our auth middleware)
+    req.body.addedBy = req.user.name;
 
-  const product = await Product.create(req.body);
-  res.status(201).json({ success: true, data: product });
-});
+    // Limiting the number of products a seller can add
+    const maxProducts: number = 5;
+    const totalAddedProducts = await Product.find({ addedBy: req.user.name });
+
+    if (totalAddedProducts.length >= maxProducts && req.user.role !== 'admin') {
+      return next(
+        new ErrorResponse(
+          `Maximum number of products a seller can add is ${maxProducts}`,
+          400
+        )
+      );
+    }
+
+    const product = await Product.create(req.body);
+    res.status(201).json({ success: true, data: product });
+  }
+);
 
 // @desc    Update product
 // @route   PUT /api/v1/products/:id
