@@ -2,7 +2,7 @@ import { RequestHandler } from 'express';
 import Product from '../models/Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import asyncHandler from 'express-async-handler';
-import { checkIdFormat } from '../utils/checkIdFormat';
+import mongoose from 'mongoose';
 
 // @desc    Get all products
 // @route   GET /api/v1/products
@@ -105,7 +105,7 @@ export const getProductsByMerchant = asyncHandler(async (req, res, next) => {
   const products = await Product.find({ addedById: req.params.id });
 
   // Check if the id is valid format
-  if (checkIdFormat(req.params.id) === false) {
+  if (mongoose.isValidObjectId(req.params.id) === false) {
     return next(new ErrorResponse(`Invalid id format`, 401));
   }
   // Check if merchant has any products
