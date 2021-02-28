@@ -36,6 +36,9 @@ export const getProduct: RequestHandler = asyncHandler(
 // @route   PUT /api/v1/products/
 // @access  Private
 export const createProduct: RequestHandler = asyncHandler(async (req, res) => {
+  // Adding addedBy to req.body as user.name (from our auth middleware)
+  req.body.addedBy = req.user.name;
+
   const product = await Product.create(req.body);
   res.status(201).json({ success: true, data: product });
 });
