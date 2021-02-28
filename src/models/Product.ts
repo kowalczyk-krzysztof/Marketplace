@@ -4,6 +4,10 @@ import slugify from 'slugify';
 // Had to create an interface for slugify to work
 interface Product extends mongoose.Document {
   name: string;
+  quantity: number;
+  description: string;
+  addedBy: string;
+  addedById: string;
   slug: string;
 }
 

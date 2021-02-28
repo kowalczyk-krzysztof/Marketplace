@@ -38,9 +38,9 @@ export const getProduct: RequestHandler = asyncHandler(
 // @access  Private
 export const createProduct: RequestHandler = asyncHandler(
   async (req, res, next) => {
-    // Adding addedBy to req.body as user.name (from our auth middleware)
+    // Adding addedBy to req.body with value of user.name (available from auth middleware)
     req.body.addedBy = req.user.name;
-    // Addding addedById to req.body as user._id (from our auth middleware)
+    // Addding addedById to req.body with value of user._id (available from auth middleware)
     req.body.addedById = req.user._id;
 
     // Limiting the number of products a merchant can add
@@ -66,6 +66,11 @@ export const createProduct: RequestHandler = asyncHandler(
 // @access  Private
 export const updateProduct: RequestHandler = asyncHandler(
   async (req, res, next) => {
+    // Check if id is in valid format
+    if (mongoose.isValidObjectId(req.params.id) === false) {
+      return next(new ErrorResponse(`Invalid id format`, 401));
+    }
+
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -85,6 +90,11 @@ export const updateProduct: RequestHandler = asyncHandler(
 // @access  Private
 export const deleteProduct: RequestHandler = asyncHandler(
   async (req, res, next) => {
+    // Check if id is in valid format
+    if (mongoose.isValidObjectId(req.params.id) === false) {
+      return next(new ErrorResponse(`Invalid id format`, 401));
+    }
+
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) {
       return next(
@@ -99,7 +109,7 @@ export const deleteProduct: RequestHandler = asyncHandler(
   }
 );
 
-// @desc    Get product by merchant
+// @desc    Get product by merchant id
 // @route   GET /api/v1/products/merchant/:id
 // @access  Public
 
@@ -107,14 +117,17 @@ export const getProductsByMerchant: RequestHandler = asyncHandler(
   async (req, res, next) => {
     const products = await Product.find({ addedById: req.params.id });
 
-    // Check if the id is valid format
+    // Check if id is valid format
     if (mongoose.isValidObjectId(req.params.id) === false) {
       return next(new ErrorResponse(`Invalid id format`, 401));
     }
     // Check if merchant has any products
     if (!products[0]) {
       return next(
-        new ErrorResponse(`No products by user of id of ${req.params.id}`, 401)
+        new ErrorResponse(
+          `No products from user of id of ${req.params.id}`,
+          401
+        )
       );
     }
 

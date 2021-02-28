@@ -20,7 +20,6 @@ const UserSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, 'Please add a name'],
-      immutable: (user) => user.role !== 'admin',
     },
 
     email: {
