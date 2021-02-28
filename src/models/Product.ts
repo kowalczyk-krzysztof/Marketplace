@@ -27,9 +27,8 @@ const ProductSchema = new mongoose.Schema({
   addedAt: { type: Date, default: Date.now },
   addedBy: {
     type: String,
-    required: [true, 'Author is required'],
-    maxlenght: [50, 'Author name can not be more than 50 characters'],
   },
+
   slug: String,
   // A slug is a human-readable, unique identifier, used to identify a resource instead of a less human-readable identifier like an id
 });
