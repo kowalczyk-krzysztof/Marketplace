@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import bcryptjs from 'bcryptjs';
 import jsonwebtoken from 'jsonwebtoken';
+import { NextFunction } from 'express';
 
 interface User extends mongoose.Document {
   name: string;
@@ -68,6 +69,7 @@ UserSchema.methods.matchPassword = async function (enteredPassword: string) {
   let user = this as User;
   return await bcryptjs.compare(enteredPassword, user.password);
 };
+
 // Exporting the schema with an interface applied
 const User = mongoose.model<User>('User', UserSchema);
 export default User;
