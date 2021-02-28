@@ -6,17 +6,17 @@ import productRouter from './routes/product';
 import errorHandler from './middleware/error';
 import userRouter from './routes/auth';
 
-dotenv.config({ path: 'config.env' });
-connectDB();
+dotenv.config({ path: 'config.env' }); // exporting environment variables
+connectDB(); // connecting to mongoDB
 
 const app = express();
 
-app.use(express.json());
-app.use(cookieParser());
+app.use(express.json()); // body parser
+app.use(cookieParser()); // cookie parser
 
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/auth', userRouter);
-app.use(errorHandler); // has to be after routers
+app.use(errorHandler); // errorHandler has to be after routers
 
 const PORT = process.env.PORT || 3000;
 

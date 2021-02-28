@@ -23,7 +23,7 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next): void => {
     const message = Object.values(err.errors).toString();
     error = new ErrorResponse(message, 400);
   }
-
+  // Mongoose Syntax Error
   if (err.name === 'SyntaxError') {
     const message = `Syntax Error`;
     error = new ErrorResponse(message, 400);

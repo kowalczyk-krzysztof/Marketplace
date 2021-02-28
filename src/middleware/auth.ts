@@ -22,17 +22,17 @@ export const protect = asynchandler(
     //   token = req.cookies.token
     // }
 
-    // Make sure token exists
+    // Check if token exists
     if (!token) {
       return next(
-        new ErrorResponse('Not authorised to access this route', 401)
+        new ErrorResponse('Not authorized to access this route', 401)
       );
     }
     try {
       // Verify token
       const secret = process.env.JWT_SECRET as jsonwebtoken.Secret;
       const decoded: any = jsonwebtoken.verify(token, secret);
-      // Decoded will be in this format {id: string, iat: number, exp: number}
+      // decoded will be in this format {id: string, iat: number, exp: number}
 
       // TODO - figure out how to handle type here
 
@@ -41,7 +41,7 @@ export const protect = asynchandler(
       next();
     } catch (err) {
       return next(
-        new ErrorResponse('Not authorised to access this route', 401)
+        new ErrorResponse('Not authorized to access this route', 401)
       );
     }
   }

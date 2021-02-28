@@ -5,7 +5,7 @@ import { ErrorResponse } from '../utils/ErrorResponse';
 
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user: User, statusCode: number, res: Response) => {
-  const token: string = user.getSignedJwtToken();
+  const token: string = user.getSignedJwtToken(); // jsonwebtoken
   const expireTime = (process.env.JWT_COOKIE_EXPIRE as unknown) as number;
   // Cookie options
   const options = {
@@ -27,16 +27,7 @@ const sendTokenResponse = (user: User, statusCode: number, res: Response) => {
 // @route   POST /api/v1/auth/register
 // @access  Public
 export const register: RequestHandler = asyncHandler(async (req, res) => {
-  const { name, email, password, role } = req.body;
-
-  // Create user
-  const user = await User.create({
-    name,
-    email,
-    password,
-    role,
-  });
-
+  const user = await User.create(req.body);
   sendTokenResponse(user, 200, res);
 });
 
@@ -85,12 +76,7 @@ export const getMe: RequestHandler = asyncHandler(async (req, res) => {
 // @access  Admin
 export const deleteUser: RequestHandler = asyncHandler(
   async (req, res, next) => {
-    // if (mongoose.isValidObjectId(req.params.id) === false) {
-    //   return next(new ErrorResponse(`Invalid id format`, 401));
-    // }
-    // Above check is not needed if you are using any of the findById methods - they will return a CastError which is handled by error handler
-
-    // This is needed because otherwise I won't be able to get user.role
+    // This is needed because otherwise you won't be able to get user.role
     const user = await User.findById(req.params.id);
 
     // Check if user is trying to delete himself, the check has to be done before you use findByIdAndDelete
@@ -138,7 +124,7 @@ export const getUser: RequestHandler = asyncHandler(async (req, res, next) => {
   // If id format is valid but user doesn't exist
   if (!user) {
     return next(
-      new ErrorResponse(`user not found with id of ${req.params.id}`, 404)
+      new ErrorResponse(`User not found with id of ${req.params.id}`, 404)
     );
   }
 
