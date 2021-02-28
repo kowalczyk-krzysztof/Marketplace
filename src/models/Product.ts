@@ -37,7 +37,6 @@ const ProductSchema = new mongoose.Schema(
     addedById: {
       type: String,
       required: true,
-      select: false,
     },
 
     slug: String,
@@ -51,5 +50,6 @@ ProductSchema.pre<Product>('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
-const Product = mongoose.model('Product', ProductSchema);
+
+const Product = mongoose.model<Product>('Product', ProductSchema);
 export default Product;

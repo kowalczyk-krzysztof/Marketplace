@@ -70,18 +70,34 @@ export const updateProduct: RequestHandler = asyncHandler(
     if (mongoose.isValidObjectId(req.params.id) === false) {
       return next(new ErrorResponse(`Invalid id format`, 401));
     }
+    const product = await Product.findById(req.params.id);
 
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    // Check if product exists
     if (!product) {
       return next(
         new ErrorResponse(`Product not found with id of ${req.params.id}`, 404)
       );
     }
+    // Check if req.user is the products owner or admin
+    if (product.addedById !== req.user.id && req.user.role !== 'admin') {
+      return next(
+        new ErrorResponse(
+          `User with id ${req.user.id} is not authorised to update this product`,
+          401
+        )
+      );
+    }
 
-    res.status(200).json({ sucess: true, data: product });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    res.status(200).json({ sucess: true, data: updatedProduct });
   }
 );
 
@@ -94,13 +110,25 @@ export const deleteProduct: RequestHandler = asyncHandler(
     if (mongoose.isValidObjectId(req.params.id) === false) {
       return next(new ErrorResponse(`Invalid id format`, 401));
     }
+    const product = await Product.findById(req.params.id);
 
-    const product = await Product.findByIdAndDelete(req.params.id);
+    // Check if product exists
     if (!product) {
       return next(
         new ErrorResponse(`Product not found with id of ${req.params.id}`, 404)
       );
     }
+
+    // Check if req.user is the products owner or admin
+    if (product.addedById !== req.user.id && req.user.role !== 'admin') {
+      return next(
+        new ErrorResponse(
+          `User with id ${req.user.id} is not authorised to delete this product`,
+          401
+        )
+      );
+    }
+    await Product.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       sucess: true,
