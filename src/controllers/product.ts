@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import Product from '../models/Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import asyncHandler from 'express-async-handler';
+import { checkIdFormat } from '../utils/checkIdFormat';
 
 // @desc    Get all products
 // @route   GET /api/v1/products
@@ -22,7 +23,7 @@ export const getProduct: RequestHandler = asyncHandler(
   async (req, res, next) => {
     const product = await Product.findById(req.params.id);
 
-    // If ID format is valid but product doesn't exist
+    // If id format is valid but product doesn't exist
     if (!product) {
       return next(
         new ErrorResponse(`Product not found with id of ${req.params.id}`, 404)
@@ -90,7 +91,10 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
     );
   }
 
-  res.status(200).json({ sucess: true, data: {} });
+  res.status(200).json({
+    sucess: true,
+    data: `Deleted product with id of ${req.params.id}`,
+  });
 });
 
 // @desc    Get product by merchant
@@ -101,8 +105,8 @@ export const getProductsByMerchant = asyncHandler(async (req, res, next) => {
   const products = await Product.find({ addedById: req.params.id });
 
   // Check if the id is valid format
-  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
-    return next(new ErrorResponse(`Invalid ID format`, 401));
+  if (checkIdFormat(req.params.id) === false) {
+    return next(new ErrorResponse(`Invalid id format`, 401));
   }
   // Check if merchant has any products
   if (!products[0]) {

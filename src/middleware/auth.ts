@@ -5,6 +5,7 @@ import User from '../models/User';
 import { NextFunction, Request, Response } from 'express';
 
 // Authorization via jsonwebtoken from cookie
+// Any routes that use protect will have acess to user and its properties
 export const protect = asynchandler(
   async (req: Request, res: Response, next: NextFunction) => {
     let token;
