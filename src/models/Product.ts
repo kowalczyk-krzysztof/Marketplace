@@ -27,6 +27,12 @@ const ProductSchema = new mongoose.Schema({
   addedAt: { type: Date, default: Date.now },
   addedBy: {
     type: String,
+    required: true,
+  },
+  addedById: {
+    type: String,
+    required: true,
+    select: false,
   },
 
   slug: String,
