@@ -8,7 +8,7 @@ import {
 import { authorize, protect } from '../middleware/auth';
 
 const adminRouter: Router = express.Router();
-
+// Protect and authorize middleware is necessary for admin routes to work properly
 adminRouter.route('/users').get(protect, authorize('ADMIN'), getUsers);
 adminRouter
   .route('/users/:id')

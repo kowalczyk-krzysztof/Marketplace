@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 
 interface Cart extends mongoose.Document {
-  user: any;
-  product: any;
+  user: string[];
+  product: string[];
 }
 const CartSchema = new mongoose.Schema(
   {
