@@ -9,6 +9,7 @@ import {
   updateMe,
   updateUser,
   forgotPassword,
+  resetPassword,
 } from '../controllers/auth';
 import { authorize, protect } from '../middleware/auth';
 
@@ -24,5 +25,6 @@ userRouter
   .get(protect, authorize('admin'), getUser)
   .put(protect, authorize('admin'), updateUser);
 userRouter.route('/forgotpassword').post(forgotPassword);
+userRouter.route('/resetpassword/:resettoken').put(resetPassword);
 
 export default userRouter;

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import bcryptjs from 'bcryptjs';
 import jsonwebtoken from 'jsonwebtoken';
-import crypto from 'crypto';
+import crypto, { Hash } from 'crypto';
 
 interface User extends mongoose.Document {
   name: string;

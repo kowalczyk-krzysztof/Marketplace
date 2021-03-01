@@ -3,6 +3,9 @@ import User from '../models/User';
 import asyncHandler from 'express-async-handler';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { sendEmail } from '../utils/sendEmail';
+import crypto from 'crypto';
+import { nextTick } from 'process';
+import errorHandler from '../middleware/error';
 
 // @desc    Register user
 // @route   POST /api/v1/auth/register
@@ -148,6 +151,7 @@ export const forgotPassword: RequestHandler = asyncHandler(
     }
     // Get reset token
     let resetToken = user.getResetPasswordToken();
+    console.log(resetToken);
 
     await user.save({ validateBeforeSave: false });
 
@@ -155,7 +159,6 @@ export const forgotPassword: RequestHandler = asyncHandler(
     const resetUrl = `${req.protocol}://${req.get(
       'host'
     )}/api/v1/auth/resetpassword/${resetToken}`;
-
     // Create message to pass, in actual frontend you want to put an actual link inside
 
     const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
@@ -179,11 +182,37 @@ export const forgotPassword: RequestHandler = asyncHandler(
 
       return next(new ErrorResponse('Email could not be sent', 500));
     }
+  }
+);
+// @desc    Reset password
+// @route   PUT /api/v1/auth/resetpassword/:resettoken
+// @access  Public
 
-    res.status(200).json({
-      success: true,
-      data: user,
+export const resetPassword: RequestHandler = asyncHandler(
+  async (req, res, next) => {
+    // Get hashed token from unhashed req.params.resettoken
+    const resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(req.params.resettoken)
+      .digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() }, // is greater than Date.now()
     });
+
+    if (!user) {
+      return next(new ErrorResponse('Invalid token', 400));
+    }
+
+    // Set new password
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save({ validateBeforeSave: false });
+
+    sendTokenResponse(user, 200, res);
   }
 );
 
