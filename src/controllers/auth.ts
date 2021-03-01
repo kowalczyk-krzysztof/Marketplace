@@ -4,8 +4,6 @@ import asyncHandler from 'express-async-handler';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { sendEmail } from '../utils/sendEmail';
 import crypto from 'crypto';
-import { nextTick } from 'process';
-import errorHandler from '../middleware/error';
 
 // @desc    Register user
 // @route   POST /api/v1/auth/register
@@ -114,17 +112,47 @@ export const getUser: RequestHandler = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({ sucess: true, data: user });
 });
-// @desc    Edit user (self)
-// @route   PUT /api/v1/auth/me
+// @desc    Logged in user edit name and email
+// @route   PUT /api/v1/auth/changedetails
 // @access  Private
-export const updateMe: RequestHandler = asyncHandler(async (req, res, next) => {
-  const user = await User.findByIdAndUpdate(req.user.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+export const updateNameAndEmail: RequestHandler = asyncHandler(
+  async (req, res, next) => {
+    // Limits fields user can update
+    const fieldsToUpdate = {
+      name: req.body.name,
+      email: req.body.email,
+    };
 
-  res.status(200).json({ sucess: true, data: user });
-});
+    const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.status(200).json({ sucess: true, data: user });
+  }
+);
+// @desc    Logged in user edit password
+// @route   PUT /api/v1/auth/updatepassword
+// @access  Private
+export const updatePassword: RequestHandler = asyncHandler(
+  async (req, res, next) => {
+    const user = await User.findById(req.user.id).select('+password');
+
+    if (!user) {
+      return next(new ErrorResponse(`User not found`, 404));
+    }
+
+    // Check current password
+    if (!(await user.matchPassword(req.body.currentPassword))) {
+      return next(new ErrorResponse('Password is incorrect', 401));
+    }
+
+    user.password = req.body.newPassword;
+    await user.save();
+
+    sendTokenResponse(user, 200, res);
+  }
+);
 
 // @desc    Edit user
 // @route   PUT /api/v1/users/:id
