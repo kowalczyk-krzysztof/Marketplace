@@ -1,8 +1,8 @@
 import { RequestHandler } from 'express';
-import Product from '../models/Product';
+import mongoose from 'mongoose';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import asyncHandler from 'express-async-handler';
-import mongoose from 'mongoose';
+import Product from '../models/Product';
 
 // @desc    Get all products
 // @route   GET /api/v1/products
@@ -40,14 +40,29 @@ export const createProduct: RequestHandler = asyncHandler(
   async (req, res, next) => {
     // Adding addedBy to req.body with value of user.name (available from auth middleware)
     req.body.addedBy = req.user.name;
-    // Addding addedById to req.body with value of user._id (available from auth middleware)
-    req.body.addedById = req.user._id;
+    // Addding addedById to req.body with value of user.id (available from auth middleware)
+    req.body.addedById = req.user.id;
+
+    // Making it so each user can have only one product with the same name, but other users can have products with that name
+    const nameUniqueForUser = await Product.findOne({
+      addedBy: req.user.name,
+      name: req.body.name,
+    });
+
+    if (nameUniqueForUser) {
+      next(
+        new ErrorResponse(
+          `${req.user.id} already has a product with name of ${req.body.name}`,
+          401
+        )
+      );
+    }
 
     // Limiting the number of products a merchant can add
     const maxProducts: number = 5;
     const totalAddedProducts = await Product.find({ addedBy: req.user.name });
 
-    if (totalAddedProducts.length >= maxProducts && req.user.role !== 'admin') {
+    if (totalAddedProducts.length >= maxProducts && req.user.role !== 'ADMIN') {
       return next(
         new ErrorResponse(
           `Maximum number of products a merchant can add is ${maxProducts}`,
@@ -79,7 +94,7 @@ export const updateProduct: RequestHandler = asyncHandler(
       );
     }
     // Check if req.user is the products owner or admin
-    if (product.addedById !== req.user.id && req.user.role !== 'admin') {
+    if (product.addedById !== req.user.id && req.user.role !== 'ADMIN') {
       return next(
         new ErrorResponse(
           `User with id ${req.user.id} is not authorised to update this product`,
@@ -120,10 +135,10 @@ export const deleteProduct: RequestHandler = asyncHandler(
     }
 
     // Check if req.user is the products owner or admin
-    if (product.addedById !== req.user.id && req.user.role !== 'admin') {
+    if (product.addedById !== req.user.id && req.user.role !== 'ADMIN') {
       return next(
         new ErrorResponse(
-          `User with id ${req.user.id} is not authorised to delete this product`,
+          `User with id of ${req.user.id} is not authorised to delete this product`,
           401
         )
       );
