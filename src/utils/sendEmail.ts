@@ -1,11 +1,10 @@
 import nodemailer from 'nodemailer';
-
 interface EmailOptions {
   email: string;
   subject: string;
   message: string;
 }
-
+// Method for sending emails
 export const sendEmail = async (options: EmailOptions) => {
   const port = (process.env.SMTP_PORT as unknown) as number;
 

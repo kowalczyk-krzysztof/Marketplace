@@ -1,8 +1,7 @@
 import mongoose from 'mongoose';
 import bcryptjs from 'bcryptjs';
 import jsonwebtoken from 'jsonwebtoken';
-import crypto, { Hash } from 'crypto';
-
+import crypto from 'crypto';
 interface User extends mongoose.Document {
   name: string;
   email: string;
@@ -11,10 +10,9 @@ interface User extends mongoose.Document {
   resetPasswordToken: string | undefined;
   resetPasswordExpire: number | undefined;
   createdAt: Date;
-  getSignedJwtToken(): any;
-  matchPassword(enteredPassword: string): any;
+  getSignedJwtToken(): string;
+  matchPassword(enteredPassword: string): string;
   getResetPasswordToken(): string;
-  // If you want to export methods you gotta put them in interface
 }
 
 const UserSchema = new mongoose.Schema(
@@ -22,6 +20,7 @@ const UserSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, 'Please add a name'],
+      maxlenght: [20, 'Name can not be more than 20 characters'],
     },
 
     email: {
@@ -35,8 +34,8 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['user', 'merchant'],
-      default: 'user',
+      enum: ['USER', 'MERCHANT'],
+      default: 'USER',
     },
     password: {
       type: String,
@@ -63,7 +62,7 @@ UserSchema.pre<User>('save', async function (next) {
 
 // Sign JWT and return
 UserSchema.methods.getSignedJwtToken = function () {
-  return jsonwebtoken.sign({ id: this._id }, process.env.JWT_SECRET!, {
+  return jsonwebtoken.sign({ id: this.id }, process.env.JWT_SECRET!, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 };

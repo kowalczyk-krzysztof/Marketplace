@@ -1,9 +1,9 @@
 import { RequestHandler, Response } from 'express';
-import User from '../models/User';
+import crypto from 'crypto';
 import asyncHandler from 'express-async-handler';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { sendEmail } from '../utils/sendEmail';
-import crypto from 'crypto';
+import User from '../models/User';
 
 // @desc    Register user
 // @route   POST /api/v1/auth/register

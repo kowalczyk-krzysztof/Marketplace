@@ -1,7 +1,8 @@
 import { RequestHandler } from 'express';
-import User from '../models/User';
 import asyncHandler from 'express-async-handler';
 import { ErrorResponse } from '../utils/ErrorResponse';
+import User from '../models/User';
+
 // @desc    Edit user
 // @route   PUT /api/v1/users/:id
 // @access  Admin
@@ -15,7 +16,7 @@ export const updateUser: RequestHandler = asyncHandler(
     }
 
     // Check if user is another admin
-    if (user.role === 'admin') {
+    if (user.role === 'ADMIN') {
       return next(new ErrorResponse(`You can not edit other admins`, 401));
     }
     await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -46,7 +47,7 @@ export const deleteUser: RequestHandler = asyncHandler(
     }
 
     // Check if user is another admin
-    if (user.role === 'admin') {
+    if (user.role === 'ADMIN') {
       return next(new ErrorResponse(`You can not delete other admins`, 401));
     }
 

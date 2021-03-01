@@ -1,11 +1,12 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { connectDB } from './config/db';
 import cookieParser from 'cookie-parser';
+import { connectDB } from './config/db';
 import errorHandler from './middleware/error';
 import productRouter from './routes/product';
 import userRouter from './routes/auth';
 import adminRouter from './routes/admin';
+import cartRouter from './routes/cart';
 
 dotenv.config({ path: 'config.env' }); // exporting environment variables
 connectDB(); // connecting to mongoDB
@@ -18,6 +19,7 @@ app.use(cookieParser()); // cookie parser
 app.use('/api/v1/products', productRouter);
 app.use('/api/v1/auth', userRouter);
 app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/cart', cartRouter);
 app.use(errorHandler); // errorHandler has to be after routers
 
 const PORT = process.env.PORT || 3000;
