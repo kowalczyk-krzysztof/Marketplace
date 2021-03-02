@@ -6,7 +6,6 @@ interface Product extends mongoose.Document {
   quantity: number;
   stock: string;
   description: string;
-  addedBy: string;
   addedById: string;
   slug: string;
 }
@@ -38,16 +37,7 @@ export const ProductSchema: Schema = new mongoose.Schema(
       maxlength: [500, 'Description can not be more than 500 characters'],
     },
     createdAt: { type: Date, immutable: true },
-    addedBy: {
-      type: String,
-      required: true,
-      immutable: true,
-    },
-    addedById: {
-      type: String,
-      required: true,
-      immutable: true,
-    },
+    addedById: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     slug: String,
     // A slug is a human-readable, unique identifier, used to identify a resource instead of a less human-readable identifier like an id
   },
@@ -59,5 +49,6 @@ ProductSchema.pre<Product>('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+
 const Product = mongoose.model<Product>('Product', ProductSchema);
 export default Product;

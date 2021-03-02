@@ -7,20 +7,22 @@ import Product from '../models/Product';
 // @desc    Get all products
 // @route   GET /api/v1/products
 // @access  Public
-export const getProducts: RequestHandler = asyncHandler(async (req, res) => {
-  const products = await Product.find();
+export const getProducts: RequestHandler = asyncHandler(
+  async (req, res): Promise<void> => {
+    const products = await Product.find();
 
-  res.status(200).json({
-    success: true,
-    numberOfProducts: products.length,
-    data: products,
-  });
-});
+    res.status(200).json({
+      success: true,
+      numberOfProducts: products.length,
+      data: products,
+    });
+  }
+);
 // @desc    Get single product
 // @route   GET /api/v1/products/:id
 // @access  Public
 export const getProduct: RequestHandler = asyncHandler(
-  async (req, res, next) => {
+  async (req, res, next): Promise<void> => {
     const product = await Product.findById(req.params.id);
 
     // If id format is valid but product doesn't exist
@@ -33,27 +35,19 @@ export const getProduct: RequestHandler = asyncHandler(
     res.status(200).json({ sucess: true, data: product });
   }
 );
-// @desc    Create product
-// @route   POST /api/v1/products/
-// @access  Private
 export const createProduct: RequestHandler = asyncHandler(
-  async (req, res, next) => {
-    // Adding addedBy to req.body with value of user.name (available from auth middleware)
-    req.body.addedBy = req.user.name;
-    // Addding addedById to req.body with value of user.id (available from auth middleware)
-    req.body.addedById = req.user.id;
-
+  async (req, res, next): Promise<void> => {
     // Making it so each user can have only one product with the same name, but other users can have products with that name
     const nameUniqueForUser = await Product.findOne({
-      addedBy: req.user.name,
+      addedById: req.user.id,
       name: req.body.name,
     });
 
     if (nameUniqueForUser) {
-      next(
+      return next(
         new ErrorResponse(
           `${req.user.id} already has a product with name of ${req.body.name}`,
-          401
+          400
         )
       );
     }
@@ -71,7 +65,13 @@ export const createProduct: RequestHandler = asyncHandler(
       );
     }
 
-    const product = await Product.create(req.body);
+    const product = await Product.create({
+      name: req.body.name,
+      quantity: req.body.quantity,
+      description: req.body.description,
+      pricePerUnit: req.body.pricePerUnit,
+      addedById: req.user.id,
+    });
     res.status(201).json({ success: true, data: product });
   }
 );
@@ -80,10 +80,10 @@ export const createProduct: RequestHandler = asyncHandler(
 // @route   PUT /api/v1/products/:id
 // @access  Private
 export const updateProduct: RequestHandler = asyncHandler(
-  async (req, res, next) => {
+  async (req, res, next): Promise<void> => {
     // Check if id is in valid format
     if (mongoose.isValidObjectId(req.params.id) === false) {
-      return next(new ErrorResponse(`Invalid id format`, 401));
+      return next(new ErrorResponse(`Invalid id format`, 400));
     }
     const product = await Product.findById(req.params.id);
 
@@ -112,7 +112,7 @@ export const updateProduct: RequestHandler = asyncHandler(
       }
     );
 
-    res.status(200).json({ sucess: true, data: updatedProduct });
+    res.status(201).json({ sucess: true, data: updatedProduct });
   }
 );
 
@@ -120,10 +120,10 @@ export const updateProduct: RequestHandler = asyncHandler(
 // @route   DELETE /api/v1/products/:id
 // @access  Private
 export const deleteProduct: RequestHandler = asyncHandler(
-  async (req, res, next) => {
+  async (req, res, next): Promise<void> => {
     // Check if id is in valid format
     if (mongoose.isValidObjectId(req.params.id) === false) {
-      return next(new ErrorResponse(`Invalid id format`, 401));
+      return next(new ErrorResponse(`Invalid id format`, 400));
     }
     const product = await Product.findById(req.params.id);
 
@@ -157,19 +157,19 @@ export const deleteProduct: RequestHandler = asyncHandler(
 // @access  Public
 
 export const getProductsByMerchant: RequestHandler = asyncHandler(
-  async (req, res, next) => {
+  async (req, res, next): Promise<void> => {
     const products = await Product.find({ addedById: req.params.id });
 
     // Check if id is valid format
     if (mongoose.isValidObjectId(req.params.id) === false) {
-      return next(new ErrorResponse(`Invalid id format`, 401));
+      return next(new ErrorResponse(`Invalid id format`, 400));
     }
     // Check if merchant has any products
-    if (!products[0]) {
+    if (products.length === 0) {
       return next(
         new ErrorResponse(
-          `No products from user of id of ${req.params.id}`,
-          401
+          `No products from user with id of ${req.params.id}`,
+          400
         )
       );
     }

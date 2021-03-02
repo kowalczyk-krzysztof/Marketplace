@@ -6,8 +6,9 @@ import User from '../models/User';
 
 // Authorization via jsonwebtoken from cookie
 // Any routes that use protect will have acess to user and its properties
+
 export const protect = asynchandler(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let token;
 
     if (
@@ -33,8 +34,6 @@ export const protect = asynchandler(
       const secret = process.env.JWT_SECRET as jsonwebtoken.Secret;
       const decoded: any = jsonwebtoken.verify(token, secret);
       // decoded will be in this format {id: string, iat: number, exp: number}
-
-      // TODO - figure out how to handle type here
 
       req.user = await User.findById(decoded.id);
 

@@ -51,7 +51,7 @@ const UserSchema = new mongoose.Schema(
 );
 
 // Encrypt password using bcrypt
-UserSchema.pre<User>('save', async function (next) {
+UserSchema.pre<User>('save', async function (next): Promise<void> {
   // Without this check you are unable to .save() because you're not providing a password and this.password becomes undefined
   if (!this.isModified('password')) {
     next();
@@ -61,20 +61,22 @@ UserSchema.pre<User>('save', async function (next) {
 });
 
 // Sign JWT and return
-UserSchema.methods.getSignedJwtToken = function () {
+UserSchema.methods.getSignedJwtToken = function (): string {
   return jsonwebtoken.sign({ id: this.id }, process.env.JWT_SECRET!, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 };
 
 // Match user entered password to hashed password in database
-UserSchema.methods.matchPassword = async function (enteredPassword: string) {
+UserSchema.methods.matchPassword = async function (
+  enteredPassword: string
+): Promise<boolean> {
   let user = this as User;
   return await bcryptjs.compare(enteredPassword, user.password);
 };
 
 // Generate and hash password reset token
-UserSchema.methods.getResetPasswordToken = function () {
+UserSchema.methods.getResetPasswordToken = function (): string {
   // Generate token
   const resetToken = crypto.randomBytes(20).toString('hex');
 

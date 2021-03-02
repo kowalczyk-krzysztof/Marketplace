@@ -8,56 +8,64 @@ import User from '../models/User';
 // @desc    Register user
 // @route   POST /api/v1/auth/register
 // @access  Public
-export const register: RequestHandler = asyncHandler(async (req, res) => {
-  const user = await User.create(req.body);
-  sendTokenResponse(user, 200, res);
-});
+export const register: RequestHandler = asyncHandler(
+  async (req, res): Promise<void> => {
+    const user = await User.create(req.body);
+    sendTokenResponse(user, 201, res);
+  }
+);
 
 // @desc    Login user
 // @route   POST /api/v1/auth/login
 // @access  Public
-export const login: RequestHandler = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body;
+export const login: RequestHandler = asyncHandler(
+  async (req, res, next): Promise<void> => {
+    const { email, password } = req.body;
 
-  // Validate email & password
-  if (!email || !password) {
-    return next(new ErrorResponse('Please provide an email and password', 400));
+    // Validate email & password
+    if (!email || !password) {
+      return next(
+        new ErrorResponse('Please provide an email and password', 400)
+      );
+    }
+
+    // Check for user
+    const user = await User.findOne({ email }).select('+password');
+
+    if (!user) {
+      return next(new ErrorResponse('Invalid credentials', 401));
+    }
+
+    // Check if password matches
+
+    const isMatch = await user.matchPassword(password);
+
+    if (!isMatch) {
+      return next(new ErrorResponse('Invalid credentials', 401));
+    }
+
+    sendTokenResponse(user, 200, res);
   }
-
-  // Check for user
-  const user = await User.findOne({ email }).select('+password');
-
-  if (!user) {
-    return next(new ErrorResponse('Invalid credentials', 401));
-  }
-
-  // Check if password matches
-
-  const isMatch = await user.matchPassword(password);
-
-  if (!isMatch) {
-    return next(new ErrorResponse('Invalid credentials', 401));
-  }
-
-  sendTokenResponse(user, 200, res);
-});
+);
 // @desc    Get current logged in user
 // @route   POST /api/v1/auth/me
 // @access  Private
-export const getMe: RequestHandler = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id);
+export const getMe: RequestHandler = asyncHandler(
+  async (req, res): Promise<void> => {
+    const user = await User.findById(req.user.id);
 
-  res.status(200).json({
-    success: true,
-    data: user,
-  });
-});
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  }
+);
 
 // @desc    Logged in user edit name and email
 // @route   PUT /api/v1/auth/changedetails
 // @access  Private
 export const updateNameAndEmail: RequestHandler = asyncHandler(
-  async (req, res, next) => {
+  async (req, res, next): Promise<void> => {
     // Limits fields user can update
     const fieldsToUpdate = {
       name: req.body.name,
@@ -69,14 +77,14 @@ export const updateNameAndEmail: RequestHandler = asyncHandler(
       runValidators: true,
     });
 
-    res.status(200).json({ sucess: true, data: user });
+    res.status(201).json({ sucess: true, data: user });
   }
 );
 // @desc    Logged in user edit password
 // @route   PUT /api/v1/auth/updatepassword
 // @access  Private
 export const updatePassword: RequestHandler = asyncHandler(
-  async (req, res, next) => {
+  async (req, res, next): Promise<void> => {
     const user = await User.findById(req.user.id).select('+password');
 
     if (!user) {
@@ -91,7 +99,7 @@ export const updatePassword: RequestHandler = asyncHandler(
     user.password = req.body.newPassword;
     await user.save();
 
-    sendTokenResponse(user, 200, res);
+    sendTokenResponse(user, 201, res);
   }
 );
 
@@ -99,12 +107,14 @@ export const updatePassword: RequestHandler = asyncHandler(
 // @route   POST /api/v1/auth/forgotpassword
 // @access  Public
 export const forgotPassword: RequestHandler = asyncHandler(
-  async (req, res, next) => {
+  async (req, res, next): Promise<void> => {
     const user = await User.findOne({ email: req.body.email });
 
     // Check is user exists
     if (!user) {
-      return next(new ErrorResponse('There is no user with that email', 404));
+      return next(
+        new ErrorResponse(`There is no user with email ${req.body.email}`, 404)
+      );
     }
     // Get reset token
     let resetToken = user.getResetPasswordToken();
@@ -146,7 +156,7 @@ export const forgotPassword: RequestHandler = asyncHandler(
 // @access  Public
 
 export const resetPassword: RequestHandler = asyncHandler(
-  async (req, res, next) => {
+  async (req, res, next): Promise<void> => {
     // Get hashed token from unhashed req.params.resettoken
     const resetPasswordToken = crypto
       .createHash('sha256')
@@ -169,7 +179,7 @@ export const resetPassword: RequestHandler = asyncHandler(
 
     await user.save({ validateBeforeSave: false });
 
-    sendTokenResponse(user, 200, res);
+    sendTokenResponse(user, 201, res);
   }
 );
 
