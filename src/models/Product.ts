@@ -1,8 +1,10 @@
 import mongoose from 'mongoose';
 import slugify from 'slugify';
 import { Schema } from 'mongoose';
+
 interface Product extends mongoose.Document {
   name: string;
+  photo: string;
   quantity: number;
   stock: string;
   description: string;
@@ -15,6 +17,10 @@ export const ProductSchema: Schema = new mongoose.Schema(
       type: String,
       required: [true, 'Product name is required'],
       maxlength: [50, 'Product name can not be more than 50 characters'],
+    },
+    photo: {
+      type: String,
+      default: 'no_photo.jpg',
     },
     quantity: {
       type: Number,
@@ -50,5 +56,8 @@ ProductSchema.pre<Product>('save', function (next) {
   next();
 });
 
-const Product = mongoose.model<Product>('Product', ProductSchema);
+const Product = mongoose.model<Product & mongoose.Document>(
+  'Product',
+  ProductSchema
+);
 export default Product;
