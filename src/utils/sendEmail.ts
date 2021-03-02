@@ -5,7 +5,7 @@ interface EmailOptions {
   message: string;
 }
 // Method for sending emails
-export const sendEmail = async (options: EmailOptions) => {
+export const sendEmail = async (options: EmailOptions): Promise<void> => {
   const port = (process.env.SMTP_PORT as unknown) as number;
 
   // Create reusable transporter object using the default SMTP transport
