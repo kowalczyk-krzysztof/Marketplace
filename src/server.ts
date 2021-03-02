@@ -29,3 +29,5 @@ app.listen(PORT, (): void => {
     `Server is up and running @ http://localhost:${PORT} in ${process.env.NODE_ENV} mode`
   );
 });
+
+console.log(true);
