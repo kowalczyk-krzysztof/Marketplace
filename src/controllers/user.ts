@@ -1,12 +1,15 @@
-import { RequestHandler, Response } from 'express';
+import path from 'path';
 import crypto from 'crypto';
 import asyncHandler from 'express-async-handler';
+import { RequestHandler } from 'express';
+import { UploadedFile } from 'express-fileupload';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { sendEmail } from '../utils/sendEmail';
+import { sendTokenResponse } from '../utils/sendTokenResponse';
 import User from '../models/User';
 
 // @desc    Register user
-// @route   POST /api/v1/auth/register
+// @route   POST /api/v1/user/register
 // @access  Public
 export const register: RequestHandler = asyncHandler(
   async (req, res): Promise<void> => {
@@ -16,7 +19,7 @@ export const register: RequestHandler = asyncHandler(
 );
 
 // @desc    Login user
-// @route   POST /api/v1/auth/login
+// @route   POST /api/v1/user/login
 // @access  Public
 export const login: RequestHandler = asyncHandler(
   async (req, res, next): Promise<void> => {
@@ -48,7 +51,7 @@ export const login: RequestHandler = asyncHandler(
   }
 );
 // @desc    Get current logged in user
-// @route   POST /api/v1/auth/me
+// @route   POST /api/v1/user/me
 // @access  Private
 export const getMe: RequestHandler = asyncHandler(
   async (req, res): Promise<void> => {
@@ -62,7 +65,7 @@ export const getMe: RequestHandler = asyncHandler(
 );
 
 // @desc    Logged in user edit name and email
-// @route   PUT /api/v1/auth/changedetails
+// @route   PUT /api/v1/user/changedetails
 // @access  Private
 export const updateNameAndEmail: RequestHandler = asyncHandler(
   async (req, res, next): Promise<void> => {
@@ -81,7 +84,7 @@ export const updateNameAndEmail: RequestHandler = asyncHandler(
   }
 );
 // @desc    Logged in user edit password
-// @route   PUT /api/v1/auth/updatepassword
+// @route   PUT /api/v1/user/updatepassword
 // @access  Private
 export const updatePassword: RequestHandler = asyncHandler(
   async (req, res, next): Promise<void> => {
@@ -104,7 +107,7 @@ export const updatePassword: RequestHandler = asyncHandler(
 );
 
 // @desc    Forgot password
-// @route   POST /api/v1/auth/forgotpassword
+// @route   POST /api/v1/user/forgotpassword
 // @access  Public
 export const forgotPassword: RequestHandler = asyncHandler(
   async (req, res, next): Promise<void> => {
@@ -125,7 +128,7 @@ export const forgotPassword: RequestHandler = asyncHandler(
     // Create reset url
     const resetUrl = `${req.protocol}://${req.get(
       'host'
-    )}/api/v1/auth/resetpassword/${resetToken}`;
+    )}/api/v1/user/resetpassword/${resetToken}`;
     // Create message to pass, in actual frontend you want to put an actual link inside
 
     const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
@@ -152,7 +155,7 @@ export const forgotPassword: RequestHandler = asyncHandler(
   }
 );
 // @desc    Reset password
-// @route   PUT /api/v1/auth/resetpassword/:resettoken
+// @route   PUT /api/v1/user/resetpassword/:resettoken
 // @access  Public
 
 export const resetPassword: RequestHandler = asyncHandler(
@@ -183,27 +186,8 @@ export const resetPassword: RequestHandler = asyncHandler(
   }
 );
 
-// Get token from model, create cookie and send response
-const sendTokenResponse = (user: User, statusCode: number, res: Response) => {
-  const token: string = user.getSignedJwtToken(); // jsonwebtoken
-  const expireTime = (process.env.JWT_COOKIE_EXPIRE as unknown) as number;
-  // Cookie options
-  const options = {
-    expires: new Date(Date.now() + expireTime * 24 * 60 * 60 * 1000),
-    httpOnly: true,
-    secure: false,
-  };
-
-  if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
-  }
-  res.status(statusCode).cookie('token', token, options).json({
-    succcess: true,
-    token,
-  });
-};
 // @desc    Log user out / clear cookie
-// @route   POST /api/v1/auth/logout
+// @route   POST /api/v1/user/logout
 // @access  Private
 export const logout: RequestHandler = asyncHandler(
   async (req, res): Promise<void> => {
@@ -217,3 +201,63 @@ export const logout: RequestHandler = asyncHandler(
     });
   }
 );
+// @desc      Upload photo for logged in user
+// @route     PUT /api/v1/user/photo
+// @access    Private
+export const userPhotoUpload = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  // Check if user exists
+  if (!user) {
+    return next(
+      new ErrorResponse(`User not found with id of ${req.user.id}`, 404)
+    );
+  }
+
+  // Check if there is a file to upload
+  if (!req.files) {
+    return next(new ErrorResponse(`Please upload a file`, 400));
+  }
+
+  const file = req.files.file as UploadedFile;
+
+  // Check if uploaded image is a photo
+
+  if (!file.mimetype.startsWith('image')) {
+    return next(new ErrorResponse(`Please upload an image file`, 400));
+  }
+
+  // Check file size
+  const maxFileSizeInBytes = (process.env
+    .MAX_FILE_UPLOAD_BYTES as unknown) as number;
+  const maxFileSizeInMB = maxFileSizeInBytes / 1048576; // 1 mb = 1048576 bytes
+
+  if (file.size > maxFileSizeInBytes) {
+    return next(
+      new ErrorResponse(
+        `Please upload an image less than ${maxFileSizeInMB}MB`,
+        400
+      )
+    );
+  }
+
+  // Create custom filename
+  file.name = `user_${user.id}${path.parse(file.name).ext}`;
+  // Moving file to folder
+  file.mv(
+    `${process.env.FILE_UPLOAD_PATH}/users/${file.name}`,
+    async (err: Error) => {
+      if (err) {
+        console.error(err);
+        return next(new ErrorResponse(`Problem with file upload`, 500));
+      }
+
+      await User.findByIdAndUpdate(req.user.id, { photo: file.name });
+
+      res.status(200).json({
+        success: true,
+        data: file.name,
+      });
+    }
+  );
+});

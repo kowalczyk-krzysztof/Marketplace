@@ -5,6 +5,7 @@ import crypto from 'crypto';
 interface User extends mongoose.Document {
   name: string;
   email: string;
+  photo: string;
   role: string;
   password: string;
   resetPasswordToken: string | undefined;
@@ -31,6 +32,10 @@ const UserSchema = new mongoose.Schema(
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         'Please add a valid email',
       ],
+    },
+    photo: {
+      type: String,
+      default: 'no_photo.jpg',
     },
     role: {
       type: String,

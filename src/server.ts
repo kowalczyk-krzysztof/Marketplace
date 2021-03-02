@@ -1,6 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import path from 'path';
 import cookieParser from 'cookie-parser';
+import fileupload from 'express-fileupload';
 import { connectDB } from './config/db';
 import errorHandler from './middleware/error';
 import productRouter from './routes/product';
@@ -12,12 +14,17 @@ dotenv.config({ path: 'config.env' }); // exporting environment variables
 connectDB(); // connecting to mongoDB
 
 const app = express();
-
-app.use(express.json()); // body parser
-app.use(cookieParser()); // cookie parser
+// Set body parser
+app.use(express.json());
+// Set cookie parser
+app.use(cookieParser());
+// Set file uploader
+app.use(fileupload());
+// Set static folder
+app.use(express.static(path.join(__dirname, '../', 'views')));
 
 app.use('/api/v1/products', productRouter);
-app.use('/api/v1/auth', userRouter);
+app.use('/api/v1/user', userRouter);
 app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/cart', cartRouter);
 app.use(errorHandler); // errorHandler has to be after routers

@@ -14,7 +14,7 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
     port: port,
 
     auth: {
-      user: process.env.SMTP_EMAIL,
+      user: process.env.SMTP_LOGIN,
       pass: process.env.SMTP_PASSWORD,
     },
   });

@@ -1,4 +1,5 @@
 import express, { Router } from 'express';
+import fileUpload from 'express-fileupload';
 import {
   getProducts,
   getProduct,
@@ -6,6 +7,7 @@ import {
   deleteProduct,
   updateProduct,
   getProductsByMerchant,
+  productFileUpload,
 } from '../controllers/product';
 import { protect, authorize } from '../middleware/auth';
 
@@ -22,6 +24,9 @@ productRouter
   .put(protect, authorize('MERCHANT', 'ADMIN'), updateProduct)
   .delete(protect, authorize('MERCHANT', 'ADMIN'), deleteProduct);
 
+productRouter
+  .route('/manage/:id/photo')
+  .put(protect, authorize('MERCHANT', 'ADMIN'), productFileUpload);
 productRouter.route('/merchant/:id').get(getProductsByMerchant);
 
 export default productRouter;
