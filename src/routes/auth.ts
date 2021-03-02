@@ -2,6 +2,7 @@ import express, { Router } from 'express';
 import {
   getMe,
   login,
+  logout,
   register,
   updateNameAndEmail,
   forgotPassword,
@@ -14,6 +15,7 @@ const userRouter: Router = express.Router();
 
 userRouter.route('/register').post(register);
 userRouter.route('/login').post(login);
+userRouter.route('/logout').get(logout);
 userRouter.route('/me').get(protect, getMe);
 userRouter.route('/changedetails').put(protect, updateNameAndEmail);
 userRouter.route('/updatepassword').put(protect, updatePassword);

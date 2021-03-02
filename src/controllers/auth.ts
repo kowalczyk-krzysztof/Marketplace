@@ -202,3 +202,18 @@ const sendTokenResponse = (user: User, statusCode: number, res: Response) => {
     token,
   });
 };
+// @desc    Log user out / clear cookie
+// @route   POST /api/v1/auth/logout
+// @access  Private
+export const logout: RequestHandler = asyncHandler(
+  async (req, res): Promise<void> => {
+    res.cookie('token', 'none', {
+      expires: new Date(Date.now() + 5 * 1000),
+      httpOnly: true,
+    });
+
+    res.status(200).json({
+      success: true,
+    });
+  }
+);

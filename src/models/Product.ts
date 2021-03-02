@@ -50,5 +50,8 @@ ProductSchema.pre<Product>('save', function (next) {
   next();
 });
 
-const Product = mongoose.model<Product>('Product', ProductSchema);
+const Product = mongoose.model<Product & mongoose.Document>(
+  'Product',
+  ProductSchema
+);
 export default Product;

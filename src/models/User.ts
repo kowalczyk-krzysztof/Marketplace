@@ -95,5 +95,5 @@ UserSchema.methods.getResetPasswordToken = function (): string {
 };
 
 // Exporting the model with an interface applied
-const User = mongoose.model<User>('User', UserSchema);
+const User = mongoose.model<User & mongoose.Document>('User', UserSchema);
 export default User;
