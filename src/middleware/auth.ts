@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jsonwebtoken from 'jsonwebtoken';
 import asynchandler from 'express-async-handler';
 import { ErrorResponse } from '../utils/ErrorResponse';
@@ -35,7 +35,7 @@ export const protect = asynchandler(
       const decoded: any = jsonwebtoken.verify(token, secret);
       // decoded will be in this format {id: string, iat: number, exp: number}
 
-      req.user = await User.findById(decoded.id);
+      res.locals.user = await User.findById(decoded.id);
 
       next();
     } catch (err) {
@@ -49,10 +49,11 @@ export const protect = asynchandler(
 // Grant access to specific roles - NOTE: ROLE NAMES ARE CASE SENSITIVE!
 export const authorize = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!roles.includes(req.user.role)) {
+    const user = res.locals.user.role;
+    if (!roles.includes(user)) {
       return next(
         new ErrorResponse(
-          `User with role of ${req.user.role} is unauthorized to access this route`,
+          `User with role of ${user} is unauthorized to access this route`,
           403
         )
       );
@@ -60,3 +61,16 @@ export const authorize = (...roles: string[]) => {
     next();
   };
 };
+
+export const findByIdExists = asynchandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    let checkUser = await User.findById(req.params.id);
+    if (!checkUser) {
+      return next(
+        new ErrorResponse(`User not found with id of ${req.params.id}`, 404)
+      );
+    }
+
+    next();
+  }
+);

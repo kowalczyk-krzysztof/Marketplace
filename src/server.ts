@@ -6,7 +6,7 @@ import fileupload from 'express-fileupload';
 import { connectDB } from './config/db';
 import errorHandler from './middleware/error';
 import productRouter from './routes/product';
-import userRouter from './routes/auth';
+import userRouter from './routes/user';
 import adminRouter from './routes/admin';
 import cartRouter from './routes/cart';
 

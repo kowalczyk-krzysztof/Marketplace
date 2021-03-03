@@ -1,12 +1,12 @@
 import express, { Router } from 'express';
-import fileUpload from 'express-fileupload';
 import {
   getProducts,
   getProduct,
+  getMerchantFromProductId,
+  getProductsByMerchant,
   createProduct,
   deleteProduct,
   updateProduct,
-  getProductsByMerchant,
   productFileUpload,
 } from '../controllers/product';
 import { protect, authorize } from '../middleware/auth';
@@ -14,13 +14,14 @@ import { protect, authorize } from '../middleware/auth';
 const productRouter: Router = express.Router();
 
 productRouter.route('/').get(getProducts);
+productRouter.route('/:id').get(getProduct);
+productRouter.route('/:id/merchant').get(getMerchantFromProductId);
 productRouter
   .route('/manage')
   .post(protect, authorize('MERCHANT', 'ADMIN'), createProduct);
 
 productRouter
   .route('/manage/:id')
-  .get(getProduct)
   .put(protect, authorize('MERCHANT', 'ADMIN'), updateProduct)
   .delete(protect, authorize('MERCHANT', 'ADMIN'), deleteProduct);
 

@@ -21,6 +21,7 @@ const UserSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, 'Please add a name'],
+      minlength: [4, 'Name needs to be at least 4 characters'],
       maxlenght: [20, 'Name can not be more than 20 characters'],
     },
 
@@ -39,13 +40,20 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['USER', 'MERCHANT'],
-      default: 'USER',
+      enum: {
+        values: ['USER', 'MERCHANT'],
+        message: 'Valid roles are: USER and MERCHANT',
+        default: 'USER',
+      },
     },
     password: {
       type: String,
       required: [true, 'Please add a password'],
-      minlength: 6,
+      match: [
+        /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/,
+        'Password needs to be at least 8 characters and contain one uppercase and lowercase letter, one digit and at least one special character',
+      ], // {8,} is the password length
+
       select: false, // makes it so when getting the password from db, we won't see it
     },
     resetPasswordToken: String,
@@ -57,12 +65,13 @@ const UserSchema = new mongoose.Schema(
 
 // Encrypt password using bcrypt
 UserSchema.pre<User>('save', async function (next): Promise<void> {
-  // Without this check you are unable to .save() because you're not providing a password and this.password becomes undefined
+  // Without this check, user password would get hashed again  with different salt on every save which would break the password. So with this check, the password only gets hashed if modified so when CREATING the user or MODYFING password
   if (!this.isModified('password')) {
     next();
   }
+  let user = this;
   const salt: string = await bcryptjs.genSalt(10);
-  this.password = await bcryptjs.hash(this.password, salt);
+  user.password = await bcryptjs.hash(user.password, salt);
 });
 
 // Sign JWT and return
