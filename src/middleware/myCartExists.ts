@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import asynchandler from 'express-async-handler';
 import Cart from '../models/Cart';
 
-export const cartExists = asynchandler(
+export const myCartExists = asynchandler(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const checkCart = await Cart.findOne({ owner: res.locals.user.id });
     let createdCart = checkCart;

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import User from '../models/User';
+import Cart from '../models/Cart';
 
 // @desc    Edit user
 // @route   PUT /api/v1/users/:id
@@ -84,3 +85,28 @@ export const getUser = asyncHandler(
     res.status(200).json({ sucess: true, data: user });
   }
 );
+// @desc    Get cart of user
+// @route   GET /api/v1/auth/users/:id/cart
+// @access  Admin
+export const getUserCart = asyncHandler(async (req: Request, res: Response) => {
+  const checkCart = await Cart.findOne({ owner: req.params.id });
+  let cartStatus;
+  // Check if cart exists
+  if (!checkCart) {
+    await Cart.create({ owner: req.params.id });
+    cartStatus = 'Cart is empty';
+  }
+  const cart = await Cart.findOne({ owner: req.params.id });
+  // Check is cart has products
+  if (!cart?.product[0]) {
+    cartStatus = 'Cart is empty';
+  } else {
+    cartStatus = await cart
+      .populate('product', 'name pricePerUnit stock description addedBy photo')
+      .execPopulate();
+  }
+  res.status(200).json({
+    success: true,
+    data: cartStatus,
+  });
+});

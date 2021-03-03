@@ -4,6 +4,7 @@ import {
   getUsers,
   getUser,
   updateUser,
+  getUserCart,
 } from '../controllers/admin';
 import { authorize, protect, findByIdExists } from '../middleware/auth';
 
@@ -15,5 +16,8 @@ adminRouter
   .delete(protect, authorize('ADMIN'), findByIdExists, deleteUser)
   .get(protect, authorize('ADMIN'), findByIdExists, getUser)
   .put(protect, authorize('ADMIN'), findByIdExists, updateUser);
+adminRouter
+  .route('/users/:id/cart')
+  .get(protect, authorize('ADMIN'), getUserCart);
 
 export default adminRouter;
