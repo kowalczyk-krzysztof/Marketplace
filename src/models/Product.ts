@@ -16,7 +16,8 @@ export const ProductSchema: Schema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, 'Product name is required'],
-      maxlength: [50, 'Product name can not be more than 50 characters'],
+      minlength: [3, 'Product name needs to be at least 4 characters'],
+      maxlength: [30, 'Product name can not be more than 50 characters'],
     },
     photo: {
       type: String,
@@ -40,6 +41,7 @@ export const ProductSchema: Schema = new mongoose.Schema(
     description: {
       type: String,
       required: [true, 'Please add a description'],
+      minlength: [4, 'Description needs to be at least 4 characters'],
       maxlength: [500, 'Description can not be more than 500 characters'],
     },
     createdAt: { type: Date, immutable: true },
@@ -51,7 +53,6 @@ export const ProductSchema: Schema = new mongoose.Schema(
 );
 
 ProductSchema.pre<Product>('save', function (next) {
-  // Has to be a normal function due to scope
   this.slug = slugify(this.name, { lower: true });
   next();
 });

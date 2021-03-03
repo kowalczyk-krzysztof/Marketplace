@@ -1,13 +1,14 @@
-import { RequestHandler } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import User from '../models/User';
+import Cart from '../models/Cart';
 
 // @desc    Edit user
 // @route   PUT /api/v1/users/:id
 // @access  Admin
-export const updateUser: RequestHandler = asyncHandler(
-  async (req, res, next): Promise<void> => {
+export const updateUser = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = await User.findById(req.params.id);
 
     // Check if user exists
@@ -31,13 +32,13 @@ export const updateUser: RequestHandler = asyncHandler(
 // @desc    Delete user
 // @route   DELETE /api/v1/auth/users/:id
 // @access  Admin
-export const deleteUser: RequestHandler = asyncHandler(
-  async (req, res, next): Promise<void> => {
+export const deleteUser = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // This is needed because otherwise you won't be able to get user.role
     const user = await User.findById(req.params.id);
 
     // Check if user is trying to delete himself, the check has to be done before you use findByIdAndDelete
-    if (req.params.id === req.user.id) {
+    if (req.params.id === res.locals.user.id) {
       return next(new ErrorResponse(`You can't delete yourself`, 401));
     }
 
@@ -62,8 +63,8 @@ export const deleteUser: RequestHandler = asyncHandler(
 // @desc    Get all users
 // @route   GET /api/v1/auth/users/
 // @access  Admin
-export const getUsers: RequestHandler = asyncHandler(
-  async (req, res): Promise<void> => {
+export const getUsers = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = await User.find();
 
     res.status(200).json({
@@ -77,17 +78,35 @@ export const getUsers: RequestHandler = asyncHandler(
 // @desc    Get single user
 // @route   GET /api/v1/auth/users/:id
 // @access  Admin
-export const getUser: RequestHandler = asyncHandler(
-  async (req, res, next): Promise<void> => {
-    const user = await User.findById(req.params.id);
-
-    // If id format is valid but user doesn't exist
-    if (!user) {
-      return next(
-        new ErrorResponse(`User not found with id of ${req.params.id}`, 404)
-      );
-    }
+export const getUser = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const user = res.locals.user;
 
     res.status(200).json({ sucess: true, data: user });
   }
 );
+// @desc    Get cart of user
+// @route   GET /api/v1/auth/users/:id/cart
+// @access  Admin
+export const getUserCart = asyncHandler(async (req: Request, res: Response) => {
+  const checkCart = await Cart.findOne({ owner: req.params.id });
+  let cartStatus;
+  // Check if cart exists
+  if (!checkCart) {
+    await Cart.create({ owner: req.params.id });
+    cartStatus = 'Cart is empty';
+  }
+  const cart = await Cart.findOne({ owner: req.params.id });
+  // Check is cart has products
+  if (cart?.product.length === 0) {
+    cartStatus = 'Cart is empty';
+  } else {
+    cartStatus = await cart
+      ?.populate('product', 'name pricePerUnit stock description addedBy photo')
+      .execPopulate();
+  }
+  res.status(200).json({
+    success: true,
+    data: cartStatus,
+  });
+});
