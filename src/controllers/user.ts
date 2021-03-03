@@ -11,19 +11,20 @@ import Product from '../models/Product';
 // @desc    Register user
 // @route   POST /api/v1/user/register
 // @access  Public
+// TODO - add email authentication
 export const register = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    await User.create(req.body);
-    const siteUrl = `${req.protocol}://${req.get('host')}`;
-    console.log(siteUrl);
-
     // Check if user is trying to register as admin
     if (req.body.role === 'ADMIN')
       throw new ErrorResponse('You can not register as an ADMIN', 401);
+
+    await User.create(req.body);
+    const siteUrl = `${req.protocol}://${req.get('host')}`;
+    console.log(siteUrl);
 
     const message = `You are receiving this email because you (or someone else) has created an account in ${siteUrl}.`;
     await sendEmail({
@@ -39,8 +40,6 @@ export const register = async (
     next(err);
   }
 };
-
-// TODO - add email authentication
 
 // @desc    Login user
 // @route   POST /api/v1/user/login
