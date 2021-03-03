@@ -189,7 +189,7 @@ export const getProductsByMerchant = asyncHandler(
 export const productFileUpload = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const product = await Product.findById(req.params.id);
-
+    // TODO adding multiple photos for products
     // Check if product exists
     if (!product) {
       return next(

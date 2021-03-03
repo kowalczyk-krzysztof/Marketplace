@@ -140,7 +140,7 @@ export const updatePassword = asyncHandler(
 );
 
 // @desc    Forgot password
-// @route   POST /api/v1/user/forgotpassword
+// @route   PUT /api/v1/user/forgotpassword
 // @access  Public
 export const forgotPassword = asyncHandler(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -229,7 +229,7 @@ export const logout = asyncHandler(
       expires: new Date(Date.now() + 5 * 1000),
       httpOnly: true,
     });
-
+    // TODO Blacklist cookies
     res.status(200).json({
       success: true,
     });

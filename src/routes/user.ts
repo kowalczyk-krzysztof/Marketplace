@@ -17,13 +17,13 @@ const userRouter: Router = express.Router();
 
 userRouter.route('/register').post(register);
 userRouter.route('/login').post(login);
-userRouter.route('/logout').get(logout);
+userRouter.route('/logout').post(logout);
 userRouter.route('/profile').get(protect, getMe);
 userRouter.route(`/profile/products`).get(protect, myCreatedProducts);
 userRouter.route('/profile/updatepassword').put(protect, updatePassword);
 userRouter.route('/profile/changedetails').put(protect, updateNameAndEmail);
 userRouter.route('/profile/photo').put(protect, userPhotoUpload);
-userRouter.route('/forgotpassword').post(forgotPassword);
+userRouter.route('/forgotpassword').put(forgotPassword);
 userRouter.route('/resetpassword/:resettoken').put(resetPassword);
 
 export default userRouter;

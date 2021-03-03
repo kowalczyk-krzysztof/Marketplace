@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import asyncHandler from 'express-async-handler';
-import mongoose, { mongo } from 'mongoose';
-import { nextTick } from 'process';
-import Cart from '../models/Cart';
+import mongoose from 'mongoose';
 import Product from '../models/Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
 
@@ -33,9 +31,9 @@ export const getMyCart = asyncHandler(
   }
 );
 // @desc    Add product to cart
-// @route   GET /api/v1/cart/add/:id
+// @route   PUT /api/v1/cart/add/:id
 // @access  Private
-export const addItemToCart = asyncHandler(
+export const addProductToCart = asyncHandler(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const cart = res.locals.cart;
 
@@ -60,10 +58,53 @@ export const addItemToCart = asyncHandler(
         data: `You already have product with id of ${req.params.id} in your cart`,
       });
     else
-      res.status(201).json({
+      res.status(200).json({
         success: true,
         data: `Added product with id of ${req.params.id} to cart`,
       });
+  }
+);
+
+// @desc    Add products to cart
+// @route   PUT /api/v1/cart/add/
+// @access  Private
+export const addManyProducts = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const cart = res.locals.cart;
+    const productsToAdd = req.body.products;
+    const addedProducts: string[] = [];
+
+    // Checks if products have valid ids, for some reason I need to have it as an seperate check
+    for (const product of productsToAdd) {
+      console.log(product);
+
+      if (!mongoose.isValidObjectId(product))
+        return next(
+          new ErrorResponse('One or more products has an invalid id', 400)
+        );
+    }
+
+    // Adding products
+    for (const product of productsToAdd) {
+      const productExists = await Product.findById(product);
+      if (!productExists) break;
+      // Adds products, not using addToSet becuase I want to have added products stored in an array
+      if (cart.product.includes(product)) break;
+      cart.product.push(product);
+      addedProducts.push(product);
+    }
+    let message;
+    if (addedProducts.length === 0)
+      message = `No products were added. Some might be already in your cart`;
+    else
+      message = `Added products: ${addedProducts}. If you don't see some products, they might be already in your cart`;
+
+    cart.save();
+
+    res.status(200).json({
+      success: true,
+      data: message,
+    });
   }
 );
 
@@ -81,6 +122,8 @@ export const deleteProductFromCart = asyncHandler(
 
     // User shouldn't have non existent elements in his cart
     for (const product of productsToDelete) {
+      console.log(product);
+
       if (!cart.product.includes(product))
         return next(new ErrorResponse('Something went wrong', 400));
       cart.product.pull(product);
@@ -90,18 +133,31 @@ export const deleteProductFromCart = asyncHandler(
     if (deletedProducts.length === 0)
       return next(new ErrorResponse('Something went wrong', 400));
 
-    let message;
-    if (deletedProducts.length === 1) {
-      message = `Deleted product with id ${deletedProducts}.`;
-    } else {
-      message = `Deleted products with id ${deletedProducts}.`;
-    }
-
     cart.save();
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      data: message,
+      data: `Deleted products: ${deletedProducts}`,
+    });
+  }
+);
+
+// @desc    Empty cart
+// @route   PUT /api/v1/cart/mycart/delete/:id
+// @access  Private
+
+export const emptyCart = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const cart = res.locals.cart;
+    if (cart.product.length === 0)
+      return next(new ErrorResponse(`Your cart is already empty`, 400));
+
+    cart.product.splice(0, cart.product.length);
+    cart.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Your cart is now empty',
     });
   }
 );
