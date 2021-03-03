@@ -1,14 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import jsonwebtoken from 'jsonwebtoken';
-import asynchandler from 'express-async-handler';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import User from '../models/User';
 
 // Authorization via jsonwebtoken from cookie
 // Any routes that use protect will have acess to user and its properties
 
-export const protect = asynchandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const protect = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
     let token;
 
     if (
@@ -24,11 +27,9 @@ export const protect = asynchandler(
     // }
 
     // Check if token exists
-    if (!token) {
-      return next(
-        new ErrorResponse('Not authorized to access this route', 401)
-      );
-    }
+    if (!token)
+      throw new ErrorResponse('Not authorized to access this route', 401);
+
     try {
       // Verify token
       const secret = process.env.JWT_SECRET as jsonwebtoken.Secret;
@@ -39,31 +40,36 @@ export const protect = asynchandler(
 
       next();
     } catch (err) {
-      return next(
-        new ErrorResponse('Not authorized to access this route', 401)
-      );
+      throw new ErrorResponse('Not authorized to access this route', 401);
     }
+  } catch (err) {
+    next(err);
   }
-);
+};
 
 // Grant access to specific roles - NOTE: ROLE NAMES ARE CASE SENSITIVE!
 export const authorize = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    const user = res.locals.user.role;
-    if (!roles.includes(user)) {
-      return next(
-        new ErrorResponse(
+    try {
+      const user = res.locals.user.role;
+      if (!roles.includes(user))
+        throw new ErrorResponse(
           `User with role of ${user} is unauthorized to access this route`,
           403
-        )
-      );
+        );
+      next();
+    } catch (err) {
+      next(err);
     }
-    next();
   };
 };
 // TODO - MAKE IT GENERIC
-export const findByIdExists = asynchandler(
-  async (req: Request, res: Response, next: NextFunction) => {
+export const findByIdExists = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
     let checkUser = await User.findById(req.params.id);
     if (!checkUser) {
       return next(
@@ -72,5 +78,7 @@ export const findByIdExists = asynchandler(
     }
 
     next();
+  } catch (err) {
+    next(err);
   }
-);
+};

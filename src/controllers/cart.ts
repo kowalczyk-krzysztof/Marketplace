@@ -1,16 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
-import asyncHandler from 'express-async-handler';
-import mongoose, { mongo } from 'mongoose';
-import { nextTick } from 'process';
-import Cart from '../models/Cart';
 import Product from '../models/Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
 
 // @desc    Get cart of logged in user
 // @route   GET /api/v1/cart/mycart
 // @access  Private
-export const getMyCart = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
+export const getMyCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
     // This is called REFERENCING documents - it queries for every single document, there's an another approach called EMBEDDED documents but I don't think it's a good approach for a cart
 
     // Check if cart has no products
@@ -30,25 +30,29 @@ export const getMyCart = asyncHandler(
       success: true,
       data: cartStatus,
     });
+  } catch (err) {
+    next(err);
   }
-);
+};
+
 // @desc    Add product to cart
-// @route   GET /api/v1/cart/add/:id
+// @route   PUT /api/v1/cart/add/:id
 // @access  Private
-export const addItemToCart = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const addProductToCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
     const cart = res.locals.cart;
 
     // Check if product exists
     const product = await Product.findById(req.params.id);
-    if (!product) {
-      return next(
-        new ErrorResponse(
-          `Product with id of ${req.params.id} does not exist`,
-          404
-        )
+    if (!product)
+      throw new ErrorResponse(
+        `Product with id of ${req.params.id} does not exist`,
+        404
       );
-    }
 
     cart.product.addToSet(req.params.id);
     cart.save();
@@ -64,15 +68,21 @@ export const addItemToCart = asyncHandler(
         success: true,
         data: `Added product with id of ${req.params.id} to cart`,
       });
+  } catch (err) {
+    next(err);
   }
-);
+};
 
 // @desc    Delete products from cart
 // @route   PUT /api/v1/cart/mycart/delete/:id
 // @access  Private
-
-export const deleteProductFromCart = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+// TODO FIX THIS
+export const deleteProductFromCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
     const cart = res.locals.cart;
     const productsToDelete: string[] = req.body.products;
     const deletedProducts: string[] = [];
@@ -82,14 +92,13 @@ export const deleteProductFromCart = asyncHandler(
     // User shouldn't have non existent elements in his cart
     for (const product of productsToDelete) {
       if (!cart.product.includes(product))
-        return next(new ErrorResponse('Something went wrong', 400));
+        throw new ErrorResponse('Something went wrong', 400);
       cart.product.pull(product);
       deletedProducts.push(product);
     }
 
     if (deletedProducts.length === 0)
-      return next(new ErrorResponse('Something went wrong', 400));
-
+      throw new ErrorResponse('Something went wrong', 400);
     let message;
     if (deletedProducts.length === 1) {
       message = `Deleted product with id ${deletedProducts}.`;
@@ -103,5 +112,31 @@ export const deleteProductFromCart = asyncHandler(
       success: true,
       data: message,
     });
+  } catch (err) {
+    next(err);
   }
-);
+};
+// @desc    Empty cart
+// @route   PUT /api/v1/cart/mycart/delete/:id
+// @access  Private
+export const emptyCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const cart = res.locals.cart;
+    if (cart.product.length === 0)
+      throw new ErrorResponse(`Your cart is already empty`, 400);
+
+    cart.product.splice(0, cart.product.length);
+    cart.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Your cart is now empty',
+    });
+  } catch (err) {
+    next(err);
+  }
+};

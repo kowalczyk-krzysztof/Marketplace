@@ -1,6 +1,5 @@
 import path from 'path';
 import crypto from 'crypto';
-import asyncHandler from 'express-async-handler';
 import { Request, Response, NextFunction } from 'express';
 import { UploadedFile } from 'express-fileupload';
 import { ErrorResponse } from '../utils/ErrorResponse';
@@ -12,16 +11,19 @@ import Product from '../models/Product';
 // @desc    Register user
 // @route   POST /api/v1/user/register
 // @access  Public
-export const register = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
     await User.create(req.body);
     const siteUrl = `${req.protocol}://${req.get('host')}`;
     console.log(siteUrl);
 
     // Check if user is trying to register as admin
-    if (req.body.role === 'ADMIN') {
-      return next(new ErrorResponse('You can not register as an ADMIN', 401));
-    }
+    if (req.body.role === 'ADMIN')
+      throw new ErrorResponse('You can not register as an ADMIN', 401);
 
     const message = `You are receiving this email because you (or someone else) has created an account in ${siteUrl}.`;
     await sendEmail({
@@ -33,62 +35,74 @@ export const register = asyncHandler(
     res
       .status(200)
       .json({ success: true, message: 'Account created. Check your email' });
+  } catch (err) {
+    next(err);
   }
+};
 
-  // TODO - add email authentication
-);
+// TODO - add email authentication
 
 // @desc    Login user
 // @route   POST /api/v1/user/login
 // @access  Public
-export const login = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
     const { email, password } = req.body;
 
     // Check is email and password are provided in req.body
-    if (!email || !password) {
-      return next(
-        new ErrorResponse('Please provide an email and password', 400)
-      );
-    }
+    if (!email || !password)
+      throw new ErrorResponse('Please provide an email and password', 400);
 
     // Check for user
     const user = await User.findOne({ email }).select('+password');
 
-    if (!user) {
-      return next(new ErrorResponse('Invalid credentials', 401));
-    }
+    if (!user) throw new ErrorResponse('Invalid credentials', 401);
 
     // Check if password matches
 
     const isMatch = await user.matchPassword(password);
 
-    if (!isMatch) {
-      return next(new ErrorResponse('Invalid credentials', 401));
-    }
+    if (!isMatch) throw new ErrorResponse('Invalid credentials', 401);
 
     sendTokenResponse(user, 200, res);
+  } catch (err) {
+    next(err);
   }
-);
+};
+
 // @desc    Get current logged in user
 // @route   GET /api/v1/user/profile
 // @access  Private
-export const getMe = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
+export const getMe = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
     const user = await User.findById(res.locals.user.id);
 
     res.status(200).json({
       success: true,
       data: user,
     });
+  } catch (err) {
+    next(err);
   }
-);
+};
 
 // @desc    Logged in user edit name, email and role
 // @route   PUT /api/v1/user/profile/changedetails
 // @access  Private
-export const updateNameAndEmail = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const updateNameAndEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
     // Limits fields user can update
     const user = res.locals.user;
 
@@ -100,9 +114,8 @@ export const updateNameAndEmail = asyncHandler(
     };
 
     // Check if user is trying to register as admin
-    if (req.body.role === 'ADMIN') {
-      return next(new ErrorResponse('You can not set role to ADMIN', 401));
-    }
+    if (req.body.role === 'ADMIN')
+      new ErrorResponse('You can not set role to ADMIN', 401);
 
     const updatedUser = await User.findByIdAndUpdate(
       res.locals.user.id,
@@ -114,47 +127,56 @@ export const updateNameAndEmail = asyncHandler(
     );
 
     res.status(201).json({ sucess: true, data: updatedUser });
+  } catch (err) {
+    next(err);
   }
-);
+};
+
 // @desc    Logged in user edit password
 // @route   PUT /api/v1/user/profile/updatepassword
 // @access  Private
-export const updatePassword = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const updatePassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
     const user = await User.findById(res.locals.user.id).select('+password');
 
-    if (!user) {
-      return next(new ErrorResponse(`User not found`, 404));
-    }
+    if (!user) throw new ErrorResponse(`User not found`, 404);
 
     // Check current password
-    if (!(await user.matchPassword(req.body.currentPassword))) {
-      return next(new ErrorResponse('Password is incorrect', 401));
-    }
+    if (!(await user.matchPassword(req.body.currentPassword)))
+      throw new ErrorResponse('Password is incorrect', 401);
 
     user.password = req.body.newPassword;
     await user.save();
 
     sendTokenResponse(user, 201, res);
+  } catch (err) {
+    next(err);
   }
-);
+};
 
 // @desc    Forgot password
-// @route   POST /api/v1/user/forgotpassword
+// @route   PUT /api/v1/user/forgotpassword
 // @access  Public
-export const forgotPassword = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
     const user = await User.findOne({ email: req.body.email });
 
     // Check is user exists
-    if (!user) {
-      return next(
-        new ErrorResponse(`There is no user with email ${req.body.email}`, 404)
+    if (!user)
+      throw new ErrorResponse(
+        `There is no user with email ${req.body.email}`,
+        404
       );
-    }
     // Get reset token
     let resetToken = user.getResetPasswordToken();
-    console.log(resetToken);
 
     await user.save({ validateBeforeSave: false });
 
@@ -183,16 +205,23 @@ export const forgotPassword = asyncHandler(
 
       await user.save({ validateBeforeSave: false });
 
-      return next(new ErrorResponse('Email could not be sent', 500));
+      throw new ErrorResponse('Email could not be sent', 500);
     }
+  } catch (err) {
+    next(err);
   }
-);
+};
+
 // @desc    Reset password
 // @route   PUT /api/v1/user/resetpassword/:resettoken
 // @access  Public
 
-export const resetPassword = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
     // Get hashed token from unhashed req.params.resettoken
     const resetPasswordToken = crypto
       .createHash('sha256')
@@ -205,9 +234,7 @@ export const resetPassword = asyncHandler(
     });
     console.log(user);
 
-    if (!user) {
-      return next(new ErrorResponse('Invalid token', 400));
-    }
+    if (!user) throw new ErrorResponse('Invalid token', 400);
 
     // Set new password
     user.password = req.body.password;
@@ -217,69 +244,69 @@ export const resetPassword = asyncHandler(
     await user.save({ validateBeforeSave: false });
 
     sendTokenResponse(user, 201, res);
+  } catch (err) {
+    next(err);
   }
-);
+};
 
 // @desc    Log user out / clear cookie
 // @route   POST /api/v1/user/logout
 // @access  Private
-export const logout = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    res.cookie('token', 'none', {
-      expires: new Date(Date.now() + 5 * 1000),
-      httpOnly: true,
-    });
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  res.cookie('token', 'none', {
+    expires: new Date(Date.now() + 5 * 1000),
+    httpOnly: true,
+  });
 
-    res.status(200).json({
-      success: true,
-    });
-  }
+  res.status(200).json({
+    success: true,
+  });
+};
 
-  // TODO Add cookie blacklisting
-);
+// TODO Add cookie blacklisting
+
 // @desc      Upload photo for logged in user
 // @route     PUT /api/v1/user/profile/photo
 // @access    Private
-export const userPhotoUpload = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
+export const userPhotoUpload = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
     const user = await User.findById(res.locals.user.id);
 
     // Check if user exists
-    if (!user) {
-      return next(
-        new ErrorResponse(
-          `User not found with id of ${res.locals.user.id}`,
-          404
-        )
+    if (!user)
+      throw new ErrorResponse(
+        `User not found with id of ${res.locals.user.id}`,
+        404
       );
-    }
 
     // Check if there is a file to upload
-    if (!req.files) {
-      return next(new ErrorResponse(`Please upload a file`, 400));
-    }
+    if (!req.files) throw new ErrorResponse(`Please upload a file`, 400);
 
     const file = req.files.file as UploadedFile;
 
     // Check if uploaded image is a photo
 
-    if (!file.mimetype.startsWith('image')) {
-      return next(new ErrorResponse(`Please upload an image file`, 400));
-    }
+    if (!file.mimetype.startsWith('image'))
+      throw new ErrorResponse(`Please upload an image file`, 400);
 
     // Check file size
     const maxFileSizeInBytes = (process.env
       .MAX_FILE_UPLOAD_BYTES as unknown) as number;
     const maxFileSizeInMB = maxFileSizeInBytes / 1048576; // 1 mb = 1048576 bytes
 
-    if (file.size > maxFileSizeInBytes) {
-      return next(
-        new ErrorResponse(
-          `Please upload an image less than ${maxFileSizeInMB}MB`,
-          400
-        )
+    if (file.size > maxFileSizeInBytes)
+      throw new ErrorResponse(
+        `Please upload an image less than ${maxFileSizeInMB}MB`,
+        400
       );
-    }
 
     // Create custom filename
     file.name = `user_${user.id}${path.parse(file.name).ext}`;
@@ -289,10 +316,12 @@ export const userPhotoUpload = asyncHandler(
       async (err: Error) => {
         if (err) {
           console.error(err);
-          return next(new ErrorResponse(`Problem with file upload`, 500));
+          throw new ErrorResponse(`Problem with file upload`, 500);
         }
 
-        await User.findByIdAndUpdate(res.locals.user.id, { photo: file.name });
+        await User.findByIdAndUpdate(res.locals.user.id, {
+          photo: file.name,
+        });
 
         res.status(200).json({
           success: true,
@@ -300,23 +329,30 @@ export const userPhotoUpload = asyncHandler(
         });
       }
     );
+  } catch (err) {
+    next(err);
   }
-);
+};
 
 // @desc    Get products created by logged in user
 // @route   GET /api/v1/profile/products
 // @access  Private
 
-export const myCreatedProducts = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const myCreatedProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
     const user = res.locals.user.id;
     const products = await Product.find({ addedById: user });
 
     // Check if logged in user has any created products
-    if (products.length === 0) {
-      return next(new ErrorResponse(`You have not added any products`, 404));
-    }
+    if (products.length === 0)
+      throw new ErrorResponse(`You have not added any products`, 404);
 
     res.status(200).json({ success: true, data: products });
+  } catch (err) {
+    next(err);
   }
-);
+};

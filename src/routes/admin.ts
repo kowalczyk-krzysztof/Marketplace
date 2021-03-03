@@ -17,7 +17,7 @@ adminRouter
   .get(protect, authorize('ADMIN'), findByIdExists, getUser)
   .put(protect, authorize('ADMIN'), findByIdExists, updateUser);
 adminRouter
-  .route('/users/:id/cart')
+  .route('/users/cart/:id')
   .get(protect, authorize('ADMIN'), getUserCart);
 
 export default adminRouter;
