@@ -98,11 +98,11 @@ export const getUserCart = asyncHandler(async (req: Request, res: Response) => {
   }
   const cart = await Cart.findOne({ owner: req.params.id });
   // Check is cart has products
-  if (!cart?.product[0]) {
+  if (cart?.product.length === 0) {
     cartStatus = 'Cart is empty';
   } else {
     cartStatus = await cart
-      .populate('product', 'name pricePerUnit stock description addedBy photo')
+      ?.populate('product', 'name pricePerUnit stock description addedBy photo')
       .execPopulate();
   }
   res.status(200).json({

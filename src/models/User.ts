@@ -41,7 +41,7 @@ const UserSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ['USER', 'MERCHANT'],
+        values: ['USER', 'MERCHANT', 'ADMIN'],
         message: 'Valid roles are: USER and MERCHANT',
         default: 'USER',
       },

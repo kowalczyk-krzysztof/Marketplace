@@ -61,7 +61,7 @@ export const authorize = (...roles: string[]) => {
     next();
   };
 };
-
+// TODO - MAKE IT GENERIC
 export const findByIdExists = asynchandler(
   async (req: Request, res: Response, next: NextFunction) => {
     let checkUser = await User.findById(req.params.id);

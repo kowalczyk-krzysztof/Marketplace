@@ -18,6 +18,11 @@ export const register = asyncHandler(
     const siteUrl = `${req.protocol}://${req.get('host')}`;
     console.log(siteUrl);
 
+    // Check if user is trying to register as admin
+    if (req.body.role === 'ADMIN') {
+      return next(new ErrorResponse('You can not register as an ADMIN', 401));
+    }
+
     const message = `You are receiving this email because you (or someone else) has created an account in ${siteUrl}.`;
     await sendEmail({
       email: req.body.email,
@@ -79,11 +84,11 @@ export const getMe = asyncHandler(
   }
 );
 
-// @desc    Logged in user edit name and email
+// @desc    Logged in user edit name, email and role
 // @route   PUT /api/v1/user/profile/changedetails
 // @access  Private
 export const updateNameAndEmail = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     // Limits fields user can update
     const user = res.locals.user;
 
@@ -93,6 +98,11 @@ export const updateNameAndEmail = asyncHandler(
       email: req.body.email || user.email,
       role: req.body.role || user.role,
     };
+
+    // Check if user is trying to register as admin
+    if (req.body.role === 'ADMIN') {
+      return next(new ErrorResponse('You can not set role to ADMIN', 401));
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       res.locals.user.id,
@@ -121,9 +131,9 @@ export const updatePassword = asyncHandler(
     if (!(await user.matchPassword(req.body.currentPassword))) {
       return next(new ErrorResponse('Password is incorrect', 401));
     }
-    // validateModifiedOnly is needed otherwise ADMIN won't be able to update password because the ADMIN role is not a valid role in schema
+
     user.password = req.body.newPassword;
-    await user.save({ validateModifiedOnly: true });
+    await user.save();
 
     sendTokenResponse(user, 201, res);
   }
@@ -224,6 +234,8 @@ export const logout = asyncHandler(
       success: true,
     });
   }
+
+  // TODO Add cookie blacklisting
 );
 // @desc      Upload photo for logged in user
 // @route     PUT /api/v1/user/profile/photo
