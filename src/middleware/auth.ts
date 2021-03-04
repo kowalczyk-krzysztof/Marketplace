@@ -36,7 +36,7 @@ export const protect = async (
       const decoded: any = jsonwebtoken.verify(token, secret);
       // decoded will be in this format {id: string, iat: number, exp: number}
 
-      res.locals.user = await User.findById(decoded.id);
+      res.locals.user = await User.userExists(decoded.id);
 
       next();
     } catch (err) {

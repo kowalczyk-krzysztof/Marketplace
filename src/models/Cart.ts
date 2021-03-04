@@ -3,7 +3,6 @@ interface Cart extends mongoose.Document {
   owner: mongoose.Types.Array<ObjectId>;
   product: mongoose.Types.Array<ObjectId>;
 }
-
 interface CartModel extends mongoose.Model<Cart> {
   cartExists(id: string): Promise<any>;
 }

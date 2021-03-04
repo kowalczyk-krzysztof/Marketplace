@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import Cart from '../models/Cart';
 import Product from '../models/Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
+import mongoose from 'mongoose';
 
 // @desc    Get cart of logged in user
 // @route   GET /api/v1/cart/mycart
@@ -17,18 +18,20 @@ export const getMyCart = async (
     // Check if cart has no products
     const cart = await Cart.cartExists(res.locals.user.id);
     let cartStatus;
-
-    if (cart.product.length === 0) {
-      cartStatus = 'Your cart is empty';
-    } else
+    let productCount;
+    if ((await cart.product.length) === 0) cartStatus = 'Your cart is empty';
+    else {
       cartStatus = await cart.execPopulate(
         'product',
         'name pricePerUnit stock description addedBy photo'
       );
+      productCount = cart.product.length;
+    }
 
     // ATTENTION! For some reason populate() doesn't work inside an if statement - you need to use execPopulate
     res.status(200).json({
       success: true,
+      count: productCount,
       data: cartStatus,
     });
   } catch (err) {
@@ -36,7 +39,7 @@ export const getMyCart = async (
   }
 };
 
-// @desc    Add product to cart
+// @desc    Add single product to cart
 // @route   PUT /api/v1/cart/add/:id
 // @access  Private
 export const addProductToCart = async (
@@ -62,18 +65,86 @@ export const addProductToCart = async (
     else
       res.status(201).json({
         success: true,
-        data: `Added product with id of ${req.params.id} to cart`,
+        data: `Added product with id of ${req.params.id} to your cart`,
       });
   } catch (err) {
     next(err);
   }
 };
 
-// @desc    Delete products from cart
+// @desc    Add many products to cart
+// @route   PUT /api/v1/cart/add/
+// @access  Private
+export const addManyProductsToCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const cart = await Cart.cartExists(res.locals.user.id);
+    const productsToAdd = req.body.products;
+    const addedProducts: string[] = [];
+
+    // Adding products
+    for (const product of productsToAdd) {
+      if (!mongoose.isValidObjectId(product))
+        throw new ErrorResponse('One or more products has an invalid id', 400);
+
+      const productExists = await Product.findById(product);
+      if (productExists && !cart.product.includes(product)) {
+        cart.product.push(product);
+        addedProducts.push(product);
+      }
+    }
+
+    let message;
+    if (addedProducts.length === 0)
+      message = `No products were added. Some might be already in your cart`;
+    else
+      message = `Added products: ${addedProducts}. If you don't see some products, they might be already in your cart`;
+
+    cart.save();
+
+    res.status(200).json({
+      success: true,
+      data: message,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+// @desc    Delete single product from cart
 // @route   PUT /api/v1/cart/mycart/delete/:id
 // @access  Private
-// TODO FIX THIS
 export const deleteProductFromCart = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const cart = await Cart.cartExists(res.locals.user.id);
+    const product = req.params.id;
+
+    if (!cart.product.includes(product))
+      throw new ErrorResponse('Something went wrong', 400);
+
+    cart.product.pull(product);
+    cart.save();
+
+    res.status(201).json({
+      success: true,
+      data: `Removed product with id of ${product} from your cart`,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Delete many products from cart
+// @route   PUT /api/v1/cart/mycart/delete/
+// @access  Private
+
+export const deleteManyProductFromCart = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -82,7 +153,7 @@ export const deleteProductFromCart = async (
     const cart = await Cart.cartExists(res.locals.user.id);
     const productsToDelete: string[] = req.body.products;
     const deletedProducts: string[] = [];
-    // Deleting products
+
     //  .forEach expects a synchronous function and won't do anything with the return value. It just calls the function and on to the next. for...of will actually await on the result of the execution of the function.
 
     // User shouldn't have non existent elements in his cart
@@ -95,23 +166,18 @@ export const deleteProductFromCart = async (
 
     if (deletedProducts.length === 0)
       throw new ErrorResponse('Something went wrong', 400);
-    let message;
-    if (deletedProducts.length === 1) {
-      message = `Deleted product with id ${deletedProducts}.`;
-    } else {
-      message = `Deleted products with id ${deletedProducts}.`;
-    }
 
     cart.save();
 
     res.status(201).json({
       success: true,
-      data: message,
+      data: `Removed products: ${deletedProducts}`,
     });
   } catch (err) {
     next(err);
   }
 };
+
 // @desc    Empty cart
 // @route   PUT /api/v1/cart/mycart/delete/:id
 // @access  Private
