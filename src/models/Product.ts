@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import slugify from 'slugify';
 import { Schema } from 'mongoose';
+import { ErrorResponse } from '../utils/ErrorResponse';
 
 interface Product extends mongoose.Document {
   name: string;
@@ -10,6 +11,11 @@ interface Product extends mongoose.Document {
   description: string;
   addedById: string;
   slug: string;
+}
+
+// Interface ProductModel is needed for static methods to work with TypeScript
+interface ProductModel extends mongoose.Model<Product> {
+  productExists(id: string): Promise<Product>;
 }
 export const ProductSchema: Schema = new mongoose.Schema(
   {
@@ -49,6 +55,7 @@ export const ProductSchema: Schema = new mongoose.Schema(
     slug: String,
     // A slug is a human-readable, unique identifier, used to identify a resource instead of a less human-readable identifier like an id
   },
+
   { timestamps: true } // this has to be passed to constructor, so after the object with all properties
 );
 
@@ -57,8 +64,12 @@ ProductSchema.pre<Product>('save', function (next) {
   next();
 });
 
-const Product = mongoose.model<Product & mongoose.Document>(
-  'Product',
-  ProductSchema
-);
+ProductSchema.statics.productExists = async function (id) {
+  let product = await Product.findById(id);
+  if (!product)
+    throw new ErrorResponse(`Product with id of ${id} does not exist`, 404);
+  return product;
+};
+
+const Product = mongoose.model<Product, ProductModel>('Product', ProductSchema);
 export default Product;

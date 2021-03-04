@@ -12,11 +12,9 @@ export const updateUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.userExists(req.params.id);
 
-    // Check if user exists
-    if (!user) throw new ErrorResponse(`User doesn't exist`, 401);
-
+    // Check if admin is trying to edit its own profile
     if (user.id === res.locals.user.id)
       throw new ErrorResponse(
         `If you want to edit yourself go to your profile`,
@@ -47,17 +45,11 @@ export const deleteUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // This is needed because otherwise you won't be able to get user.role
-    const user = await User.findById(req.params.id);
+    const user = await User.userExists(req.params.id);
 
-    // Check if user is trying to delete himself, the check has to be done before you use findByIdAndDelete
-    if (req.params.id === res.locals.user.id) {
+    // Check if user is trying to delete itself
+    if (user.id === res.locals.user.id) {
       throw new ErrorResponse(`You can't delete yourself`, 401);
-    }
-
-    // Check if user exists
-    if (!user) {
-      throw new ErrorResponse(`User doesn't exist`, 401);
     }
 
     // Check if user is another admin
@@ -106,7 +98,7 @@ export const getUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = res.locals.user;
+    const user = await User.userExists(req.params.id);
 
     res.status(200).json({ sucess: true, data: user });
   } catch (err) {

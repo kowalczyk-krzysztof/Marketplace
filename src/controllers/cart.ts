@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import Cart from '../models/Cart';
 import Product from '../models/Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
 
@@ -14,15 +15,16 @@ export const getMyCart = async (
     // This is called REFERENCING documents - it queries for every single document, there's an another approach called EMBEDDED documents but I don't think it's a good approach for a cart
 
     // Check if cart has no products
-    const cart = res.locals.cart;
+    const cart = await Cart.cartExists(res.locals.user.id);
     let cartStatus;
+
     if (cart.product.length === 0) {
       cartStatus = 'Your cart is empty';
-    }
-    cartStatus = await cart.execPopulate(
-      'product',
-      'name pricePerUnit stock description addedBy photo'
-    );
+    } else
+      cartStatus = await cart.execPopulate(
+        'product',
+        'name pricePerUnit stock description addedBy photo'
+      );
 
     // ATTENTION! For some reason populate() doesn't work inside an if statement - you need to use execPopulate
     res.status(200).json({
@@ -43,15 +45,10 @@ export const addProductToCart = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const cart = res.locals.cart;
+    const cart = await Cart.cartExists(res.locals.user.id);
 
     // Check if product exists
-    const product = await Product.findById(req.params.id);
-    if (!product)
-      throw new ErrorResponse(
-        `Product with id of ${req.params.id} does not exist`,
-        404
-      );
+    await Product.productExists(req.params.id);
 
     cart.product.addToSet(req.params.id);
     cart.save();
@@ -82,7 +79,7 @@ export const deleteProductFromCart = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const cart = res.locals.cart;
+    const cart = await Cart.cartExists(res.locals.user.id);
     const productsToDelete: string[] = req.body.products;
     const deletedProducts: string[] = [];
     // Deleting products
@@ -124,7 +121,7 @@ export const emptyCart = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const cart = res.locals.cart;
+    const cart = await Cart.cartExists(res.locals.user.id);
     if (cart.product.length === 0)
       throw new ErrorResponse(`Your cart is already empty`, 400);
 

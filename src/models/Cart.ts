@@ -1,9 +1,13 @@
 import mongoose, { ObjectId } from 'mongoose';
-
 interface Cart extends mongoose.Document {
   owner: mongoose.Types.Array<ObjectId>;
   product: mongoose.Types.Array<ObjectId>;
 }
+
+interface CartModel extends mongoose.Model<Cart> {
+  cartExists(id: string): Promise<any>;
+}
+
 const CartSchema = new mongoose.Schema(
   {
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -17,5 +21,11 @@ const CartSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Cart = mongoose.model<Cart & mongoose.Document>('Cart', CartSchema);
+CartSchema.statics.cartExists = async function (id) {
+  let cart = await Cart.findOne({ owner: id });
+  if (!cart) cart = await Cart.create({ owner: id });
+  return cart;
+};
+
+const Cart = mongoose.model<Cart, CartModel>('Cart', CartSchema);
 export default Cart;

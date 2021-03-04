@@ -63,22 +63,3 @@ export const authorize = (...roles: string[]) => {
     }
   };
 };
-// TODO - MAKE IT GENERIC
-export const findByIdExists = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    let checkUser = await User.findById(req.params.id);
-    if (!checkUser) {
-      return next(
-        new ErrorResponse(`User not found with id of ${req.params.id}`, 404)
-      );
-    }
-
-    next();
-  } catch (err) {
-    next(err);
-  }
-};

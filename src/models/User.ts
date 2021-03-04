@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import bcryptjs from 'bcryptjs';
 import jsonwebtoken from 'jsonwebtoken';
 import crypto from 'crypto';
+import { ErrorResponse } from '../utils/ErrorResponse';
 interface User extends mongoose.Document {
   name: string;
   email: string;
@@ -14,6 +15,11 @@ interface User extends mongoose.Document {
   getSignedJwtToken(): string;
   matchPassword(enteredPassword: string): string;
   getResetPasswordToken(): string;
+}
+
+// Interface UserModel is needed for static methods to work with TypeScript, instance methods go into User
+interface UserModel extends mongoose.Model<User> {
+  userExists(id: string): Promise<User>;
 }
 
 const UserSchema = new mongoose.Schema(
@@ -108,6 +114,13 @@ UserSchema.methods.getResetPasswordToken = function (): string {
   return resetToken; // original token
 };
 
+UserSchema.statics.userExists = async function (id) {
+  let user = await User.findById(id);
+  if (!user)
+    throw new ErrorResponse(`User with id of ${id} does not exist`, 404);
+  return user;
+};
+
 // Exporting the model with an interface applied
-const User = mongoose.model<User & mongoose.Document>('User', UserSchema);
+const User = mongoose.model<User, UserModel>('User', UserSchema);
 export default User;

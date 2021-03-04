@@ -86,7 +86,7 @@ export const getMe = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = await User.findById(res.locals.user.id);
+    const user = await User.userExists(res.locals.user.id);
 
     res.status(200).json({
       success: true,
@@ -106,8 +106,7 @@ export const updateNameAndEmail = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Limits fields user can update
-    const user = res.locals.user;
+    const user = await User.userExists(res.locals.user.id);
 
     // Without those || expressions fields could be empty and both email and name are required by schema
 
@@ -282,14 +281,7 @@ export const userPhotoUpload = async (
   next: NextFunction
 ) => {
   try {
-    const user = await User.findById(res.locals.user.id);
-
-    // Check if user exists
-    if (!user)
-      throw new ErrorResponse(
-        `User not found with id of ${res.locals.user.id}`,
-        404
-      );
+    const user = await User.userExists(res.locals.user.id);
 
     // Check if there is a file to upload
     if (!req.files) throw new ErrorResponse(`Please upload a file`, 400);
