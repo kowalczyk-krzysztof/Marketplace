@@ -1,4 +1,4 @@
-import express, { Router } from 'express';
+import express from 'express';
 import {
   getProducts,
   getProduct,
@@ -11,7 +11,7 @@ import {
 } from '../controllers/product';
 import { protect, authorize } from '../middleware/auth';
 
-const productRouter: Router = express.Router();
+const productRouter = express.Router();
 
 productRouter.route('/').get(getProducts);
 productRouter.route('/:id').get(getProduct);

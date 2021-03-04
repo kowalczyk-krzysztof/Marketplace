@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import Cart from '../models/Cart';
 import Product from '../models/Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
+import mongoose from 'mongoose';
 
 // @desc    Get cart of logged in user
 // @route   GET /api/v1/cart/mycart
@@ -69,10 +70,51 @@ export const addProductToCart = async (
   }
 };
 
-// @desc    Delete products from cart
-// @route   PUT /api/v1/cart/mycart/delete/:id
+// @desc    Add products to cart
+// @route   PUT /api/v1/cart/add/
 // @access  Private
-// TODO FIX THIS
+export const addManyProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const cart = await Cart.cartExists(res.locals.user.id);
+    const productsToAdd = req.body.products;
+    const addedProducts: string[] = [];
+
+    // Adding products
+    for (const product of productsToAdd) {
+      if (!mongoose.isValidObjectId(product))
+        throw new ErrorResponse('One or more products has an invalid id', 400);
+
+      const productExists = await Product.findById(product);
+      if (!productExists || cart.product.includes(product)) continue;
+      cart.product.push(product);
+      addedProducts.push(product);
+    }
+
+    let message;
+    if (addedProducts.length === 0)
+      message = `No products were added. Some might be already in your cart`;
+    else
+      message = `Added products: ${addedProducts}. If you don't see some products, they might be already in your cart`;
+
+    cart.save();
+
+    res.status(200).json({
+      success: true,
+      data: message,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Delete products from cart
+// @route   PUT /api/v1/cart/mycart/delete/
+// @access  Private
+
 export const deleteProductFromCart = async (
   req: Request,
   res: Response,
