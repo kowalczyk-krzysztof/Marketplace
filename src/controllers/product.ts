@@ -35,14 +35,7 @@ export const getProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const product = await Product.findById(req.params.id);
-
-    // If id format is valid but product doesn't exist
-    if (!product)
-      throw new ErrorResponse(
-        `Product not found with id of ${req.params.id}`,
-        404
-      );
+    const product = await Product.productExists(req.params.id);
 
     res.status(200).json({ sucess: true, data: product });
   } catch (err) {
@@ -111,14 +104,8 @@ export const updateProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.productExists(req.params.id);
 
-    // Check if product exists
-    if (!product)
-      throw new ErrorResponse(
-        `Product not found with id of ${req.params.id}`,
-        404
-      );
     // Check if res.locals.user is the products owner or admin
     if (
       product.addedById !== res.locals.user.id &&
@@ -153,15 +140,7 @@ export const deleteProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const product = await Product.findById(req.params.id);
-
-    // Check if product exists
-    if (!product)
-      throw new ErrorResponse(
-        `Product not found with id of ${req.params.id}`,
-        404
-      );
-
+    const product = await Product.productExists(req.params.id);
     // Check if res.locals.user is the products owner or admin
     if (
       product.addedById !== res.locals.user.id &&
@@ -216,14 +195,7 @@ export const productFileUpload = async (
   next: NextFunction
 ) => {
   try {
-    const product = await Product.findById(req.params.id);
-
-    // Check if product exists
-    if (!product)
-      throw new ErrorResponse(
-        `Product not found with id of ${req.params.id}`,
-        404
-      );
+    const product = await Product.productExists(req.params.id);
 
     // Check if user is product owner
     if (
@@ -289,14 +261,8 @@ export const getMerchantFromProductId = async (
   next: NextFunction
 ) => {
   try {
-    const product = await Product.findById(req.params.id);
-    if (!product)
-      throw new ErrorResponse(
-        `Product with id of ${req.params.id} does not exist`,
-        404
-      );
-
-    const merchant = await User.findById(product?.addedById);
+    const product = await Product.productExists(req.params.id);
+    const merchant = await User.userExists(product.addedById);
     res.status(200).json({
       success: true,
       data: merchant,
