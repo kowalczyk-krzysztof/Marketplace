@@ -10,6 +10,8 @@ import {
   resetPassword,
   userPhotoUpload,
   myCreatedProducts,
+  verifyEmail,
+  resendVerifyEmail,
 } from '../controllers/user';
 import { protect } from '../middleware/auth';
 
@@ -25,5 +27,7 @@ userRouter.route('/profile/changedetails').put(protect, updateNameAndEmail);
 userRouter.route('/profile/photo').put(protect, userPhotoUpload);
 userRouter.route('/forgotpassword').put(forgotPassword);
 userRouter.route('/resetpassword/:resettoken').put(resetPassword);
+userRouter.route('/verifyemail/:resettoken').put(verifyEmail);
+userRouter.route('/resendverifyemail').put(resendVerifyEmail);
 
 export default userRouter;

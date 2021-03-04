@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ErrorResponse } from '../utils/ErrorResponse';
+import colors from 'colors';
 
 const errorHandler = (
   err: any,
@@ -12,7 +13,7 @@ const errorHandler = (
   error.next = err.message; // Uses the message passed to next() in the controller, for example `Product not found with id of ${req.params.id}`
 
   // Log to console for dev
-  console.log(err);
+  console.log(colors.white.bgRed.bold(err));
 
   // Mongoose invalid ObjectId
   if (err.kind === 'ObjectId') {

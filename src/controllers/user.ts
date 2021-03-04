@@ -11,7 +11,7 @@ import Product from '../models/Product';
 // @desc    Register user
 // @route   POST /api/v1/user/register
 // @access  Public
-// TODO - add email authentication
+
 export const register = async (
   req: Request,
   res: Response,
@@ -22,20 +22,28 @@ export const register = async (
     if (req.body.role === 'ADMIN')
       throw new ErrorResponse('You can not register as an ADMIN', 401);
 
+    const [token, hashedToken, tokenExpiration] = User.getVerifyEmailToken();
+
     await User.create({
       name: req.body.name,
       email: req.body.email,
       password: req.body.password,
       role: req.body.role || 'USER',
+      verifyEmailToken: hashedToken,
+      verifyEmailTokenExpire: tokenExpiration,
     });
-    const siteUrl = `${req.protocol}://${req.get('host')}`;
 
-    const message = `You are receiving this email because you (or someone else) has created an account in ${siteUrl}.`;
+    const siteUrl = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/user/verifyemail/${token}`;
+
+    const message = `You are receiving this email because you (or someone else) has created an account in Marketplace. Please verify your email at \n\n${siteUrl}\n\nLink expires in 24 hours`;
     await sendEmail({
       email: req.body.email,
       subject: 'Welcome to Marketplace',
       message,
     });
+
     // I dont want the user to get assigned a JWT token when registering
     res.status(201).json({
       success: true,
@@ -221,8 +229,7 @@ export const forgotPassword = async (
 
       res.status(200).json({ success: true, data: 'Email sent' });
     } catch (err) {
-      console.log(err);
-      // If something goes wrong then delete the token and expire from dataabase
+      // If something goes wrong then delete the token and expire from database
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;
 
@@ -255,7 +262,6 @@ export const resetPassword = async (
       resetPasswordToken,
       resetPasswordExpire: { $gt: Date.now() }, // is greater than Date.now()
     });
-    console.log(user);
 
     if (!user) throw new ErrorResponse('Invalid token', 400);
 
@@ -348,6 +354,98 @@ export const myCreatedProducts = async (
       throw new ErrorResponse(`You have not added any products`, 404);
 
     res.status(200).json({ success: true, data: products });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Verify email
+// @route   PUT /api/v1/user/verifyemail/:resettoken
+// @access  Public
+
+export const verifyEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    // Get hashed token from unhashed req.params.resettoken
+    const verifyEmailToken = crypto
+      .createHash('sha256')
+      .update(req.params.resettoken)
+      .digest('hex');
+
+    const user = await User.findOne({
+      verifyEmailToken,
+      verifyEmailTokenExpire: { $gt: Date.now() }, // is greater than Date.now()
+    });
+
+    if (!user) throw new ErrorResponse('Invalid token', 400);
+
+    // Verify user
+    user.verifiedEmail = 'VERIFIED';
+    user.verifyEmailToken = undefined;
+    user.verifyEmailTokenExpire = undefined;
+
+    await user.save({ validateBeforeSave: false });
+
+    res.status(201).json({
+      success: true,
+      data: 'Your email address has been successfully verified',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+// @desc    Resend verification email
+// @route   PUT /api/v1/user/verifyemail/resend
+// @access  Public
+export const resendVerifyEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (user?.verifiedEmail === 'VERIFIED')
+      throw new ErrorResponse('Email is already verified for this user', 400);
+    // Check is user exists
+    if (!user)
+      throw new ErrorResponse(
+        `There is no user with email ${req.body.email}`,
+        404
+      );
+    // Get reset token
+    const [token, hashedToken, tokenExpiration] = User.getVerifyEmailToken();
+
+    user.verifyEmailToken = hashedToken;
+    user.verifyEmailTokenExpire = tokenExpiration;
+
+    await user.save({ validateBeforeSave: false });
+
+    // Create reset url
+    const resetUrl = `${req.protocol}://${req.get(
+      'host'
+    )}/api/v1/user/verifyemail/${token}`;
+    const message = `Your email verification link\n\n${resetUrl}\n\nExpires in 24 hours`;
+    try {
+      // Passing options
+      await sendEmail({
+        email: user.email,
+        subject: 'Email verification',
+        message,
+      });
+
+      res.status(200).json({ success: true, data: 'Email sent' });
+    } catch (err) {
+      // If something goes wrong then delete the token and expire from database
+      user.verifyEmailToken = undefined;
+      user.verifyEmailTokenExpire = undefined;
+
+      await user.save({ validateBeforeSave: false });
+
+      throw new ErrorResponse('Email could not be sent', 500);
+    }
   } catch (err) {
     next(err);
   }

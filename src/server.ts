@@ -9,6 +9,7 @@ import productRouter from './routes/product';
 import userRouter from './routes/user';
 import adminRouter from './routes/admin';
 import cartRouter from './routes/cart';
+import colors from 'colors';
 
 dotenv.config({ path: 'config.env' }); // exporting environment variables
 connectDB(); // connecting to mongoDB
@@ -33,6 +34,8 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, (): void => {
   console.log(
-    `Server is up and running @ http://localhost:${PORT} in ${process.env.NODE_ENV} mode`
+    colors.yellow.bgGreen.bold(
+      `Server is up and running @ http://localhost:${PORT} in ${process.env.NODE_ENV} mode`
+    )
   );
 });
