@@ -19,8 +19,8 @@ const app = express();
 app.use(express.json());
 // Set cookie parser
 app.use(cookieParser());
-// Set file uploader
-app.use(fileupload());
+// Set file uploader - createParentPath: true allows for dynamic paths
+app.use(fileupload({ createParentPath: true, tempFileDir: '/tmp/' }));
 // Set static folder
 app.use(express.static(path.join(__dirname, '../', 'views')));
 
