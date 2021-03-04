@@ -18,12 +18,11 @@ export const getMyCart = async (
     let cartStatus;
     if (cart.product.length === 0) {
       cartStatus = 'Your cart is empty';
-    } else {
-      cartStatus = await cart.execPopulate(
-        'product',
-        'name pricePerUnit stock description addedBy photo'
-      );
     }
+    cartStatus = await cart.execPopulate(
+      'product',
+      'name pricePerUnit stock description addedBy photo'
+    );
 
     // ATTENTION! For some reason populate() doesn't work inside an if statement - you need to use execPopulate
     res.status(200).json({

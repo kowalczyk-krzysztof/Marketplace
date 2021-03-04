@@ -1,5 +1,3 @@
 node_modules
 config.env
 dist
-views/uploads/products
-views/uploads/users

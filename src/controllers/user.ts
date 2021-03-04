@@ -22,9 +22,13 @@ export const register = async (
     if (req.body.role === 'ADMIN')
       throw new ErrorResponse('You can not register as an ADMIN', 401);
 
-    await User.create(req.body);
+    await User.create({
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password,
+      role: req.body.role || 'USER',
+    });
     const siteUrl = `${req.protocol}://${req.get('host')}`;
-    console.log(siteUrl);
 
     const message = `You are receiving this email because you (or someone else) has created an account in ${siteUrl}.`;
     await sendEmail({
@@ -106,6 +110,7 @@ export const updateNameAndEmail = async (
     const user = res.locals.user;
 
     // Without those || expressions fields could be empty and both email and name are required by schema
+
     const fieldsToUpdate = {
       name: req.body.name || user.name,
       email: req.body.email || user.email,
