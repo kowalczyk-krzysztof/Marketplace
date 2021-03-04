@@ -37,9 +37,10 @@ export const register = async (
       message,
     });
     // I dont want the user to get assigned a JWT token when registering
-    res
-      .status(200)
-      .json({ success: true, message: 'Account created. Check your email' });
+    res.status(201).json({
+      success: true,
+      message: 'Account created. Please verify your email',
+    });
   } catch (err) {
     next(err);
   }
@@ -77,10 +78,29 @@ export const login = async (
   }
 };
 
-// @desc    Get current logged in user
+// @desc    Log user out / clear cookie
+// @route   POST /api/v1/user/logout
+// @access  Private
+// TODO Add cookie blacklisting
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  res.cookie('token', 'none', {
+    expires: new Date(Date.now() + 5 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(200).json({
+    success: true,
+  });
+};
+
+// @desc    Get logged in user
 // @route   GET /api/v1/user/profile
 // @access  Private
-export const getMe = async (
+export const getMyProfile = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -189,7 +209,7 @@ export const forgotPassword = async (
     )}/api/v1/user/resetpassword/${resetToken}`;
     // Create message to pass, in actual frontend you want to put an actual link inside
 
-    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please visit: \n\n ${resetUrl}`;
     // Sending email
     try {
       // Passing options
@@ -251,26 +271,6 @@ export const resetPassword = async (
     next(err);
   }
 };
-
-// @desc    Log user out / clear cookie
-// @route   POST /api/v1/user/logout
-// @access  Private
-export const logout = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  res.cookie('token', 'none', {
-    expires: new Date(Date.now() + 5 * 1000),
-    httpOnly: true,
-  });
-
-  res.status(200).json({
-    success: true,
-  });
-};
-
-// TODO Add cookie blacklisting
 
 // @desc      Upload photo for logged in user
 // @route     PUT /api/v1/user/profile/photo

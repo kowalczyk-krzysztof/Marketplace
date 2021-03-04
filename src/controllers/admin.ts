@@ -3,6 +3,44 @@ import { ErrorResponse } from '../utils/ErrorResponse';
 import User from '../models/User';
 import Cart from '../models/Cart';
 
+// @desc    Get all users
+// @route   GET /api/v1/admin/users/
+// @access  Admin
+export const getAllUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const user = await User.find();
+
+    res.status(200).json({
+      success: true,
+      count: user.length,
+      data: user,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Get single user
+// @route   GET /api/v1/admin/users/:id
+// @access  Admin
+export const getUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const user = await User.userExists(req.params.id);
+
+    res.status(200).json({ sucess: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // @desc    Edit user
 // @route   PUT /api/v1/users/:id
 // @access  Admin
@@ -61,46 +99,8 @@ export const deleteUser = async (
 
     res.status(200).json({
       success: true,
-      data: `Deleted user with id of: ${req.params.id}`,
+      data: `Deleted user with id of: ${user.id}`,
     });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// @desc    Get all users
-// @route   GET /api/v1/admin/users/
-// @access  Admin
-export const getUsers = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const user = await User.find();
-
-    res.status(200).json({
-      success: true,
-      numberOfUsers: user.length,
-      data: user,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// @desc    Get single user
-// @route   GET /api/v1/admin/users/:id
-// @access  Admin
-export const getUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const user = await User.userExists(req.params.id);
-
-    res.status(200).json({ sucess: true, data: user });
   } catch (err) {
     next(err);
   }
@@ -115,27 +115,22 @@ export const getUserCart = async (
   next: NextFunction
 ) => {
   try {
-    const checkCart = await Cart.findOne({ owner: req.params.id });
+    const cart = await Cart.cartExists(req.params.id);
     let cartStatus;
-    // Check if cart exists
-    if (!checkCart) {
-      await Cart.create({ owner: req.params.id });
-      cartStatus = 'Cart is empty';
+    let productCount;
+
+    if (cart.product.length === 0) cartStatus = 'Cart is empty';
+    else {
+      cartStatus = await cart.execPopulate(
+        'product',
+        'name pricePerUnit stock description addedBy photo'
+      );
+      productCount = cart.product.length;
     }
-    const cart = await Cart.findOne({ owner: req.params.id });
-    // Check is cart has products
-    if (cart?.product.length === 0) {
-      cartStatus = 'Cart is empty';
-    } else {
-      cartStatus = await cart
-        ?.populate(
-          'product',
-          'name pricePerUnit stock description addedBy photo'
-        )
-        .execPopulate();
-    }
+
     res.status(200).json({
       success: true,
+      count: productCount,
       data: cartStatus,
     });
   } catch (err) {

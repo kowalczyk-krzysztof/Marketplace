@@ -5,27 +5,6 @@ import { ErrorResponse } from '../utils/ErrorResponse';
 import Product from '../models/Product';
 import User from '../models/User';
 
-// @desc    Get all products
-// @route   GET /api/v1/products
-// @access  Public
-export const getProducts = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const products = await Product.find();
-
-    res.status(200).json({
-      success: true,
-      numberOfProducts: products.length,
-      data: products,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
 // @desc    Get single product
 // @route   GET /api/v1/products/manage/:id
 // @access  Public
@@ -38,6 +17,27 @@ export const getProduct = async (
     const product = await Product.productExists(req.params.id);
 
     res.status(200).json({ sucess: true, data: product });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Get all products
+// @route   GET /api/v1/products
+// @access  Public
+export const getManyProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const products = await Product.find();
+
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      data: products,
+    });
   } catch (err) {
     next(err);
   }
@@ -154,7 +154,28 @@ export const deleteProduct = async (
 
     res.status(200).json({
       sucess: true,
-      data: `Deleted product with id of ${req.params.id}`,
+      data: `Deleted product with id of ${product.id}`,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Get merchant by product id
+// @route   GET /api/v1/products/:id/merchant
+// @access  Public
+
+export const getMerchantFromProductId = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const product = await Product.productExists(req.params.id);
+    const merchant = await User.userExists(product.addedById);
+    res.status(200).json({
+      success: true,
+      data: merchant,
     });
   } catch (err) {
     next(err);
@@ -203,7 +224,7 @@ export const productFileUpload = async (
       res.locals.user.role !== 'ADMIN'
     )
       throw new ErrorResponse(
-        `User with id of ${req.params.id} is not authorized to update this product`,
+        `User with id of ${res.locals.user.id} is not authorized to update this product`,
         401
       );
     // Check if there is a file to upload
@@ -246,27 +267,6 @@ export const productFileUpload = async (
         });
       }
     );
-  } catch (err) {
-    next(err);
-  }
-};
-
-// @desc    Get merchant by product id
-// @route   GET /api/v1/products/:id/merchant
-// @access  Public
-
-export const getMerchantFromProductId = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const product = await Product.productExists(req.params.id);
-    const merchant = await User.userExists(product.addedById);
-    res.status(200).json({
-      success: true,
-      data: merchant,
-    });
   } catch (err) {
     next(err);
   }

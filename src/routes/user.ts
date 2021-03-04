@@ -1,13 +1,13 @@
 import express from 'express';
 import {
-  getMe,
+  register,
   login,
   logout,
-  register,
+  getMyProfile,
   updateNameAndEmail,
+  updatePassword,
   forgotPassword,
   resetPassword,
-  updatePassword,
   userPhotoUpload,
   myCreatedProducts,
 } from '../controllers/user';
@@ -18,7 +18,7 @@ const userRouter = express.Router();
 userRouter.route('/register').post(register);
 userRouter.route('/login').post(login);
 userRouter.route('/logout').post(logout);
-userRouter.route('/profile').get(protect, getMe);
+userRouter.route('/profile').get(protect, getMyProfile);
 userRouter.route(`/profile/products`).get(protect, myCreatedProducts);
 userRouter.route('/profile/updatepassword').put(protect, updatePassword);
 userRouter.route('/profile/changedetails').put(protect, updateNameAndEmail);

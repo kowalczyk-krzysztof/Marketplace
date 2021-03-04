@@ -1,19 +1,19 @@
 import express from 'express';
 import {
-  getProducts,
   getProduct,
+  getManyProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
   getMerchantFromProductId,
   getProductsByMerchant,
-  createProduct,
-  deleteProduct,
-  updateProduct,
   productFileUpload,
 } from '../controllers/product';
 import { protect, authorize } from '../middleware/auth';
 
 const productRouter = express.Router();
 
-productRouter.route('/').get(getProducts);
+productRouter.route('/').get(getManyProducts);
 productRouter.route('/:id').get(getProduct);
 productRouter.route('/:id/merchant').get(getMerchantFromProductId);
 productRouter
