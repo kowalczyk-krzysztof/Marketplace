@@ -174,6 +174,7 @@ export const getMerchantFromProductId = async (
   try {
     const product = await Product.productExists(req.params.id);
     const merchant = await User.userExists(product.addedById);
+
     res.status(200).json({
       success: true,
       data: merchant,
@@ -202,7 +203,9 @@ export const getProductsByMerchant = async (
         404
       );
 
-    res.status(200).json({ success: true, products: products });
+    res
+      .status(200)
+      .json({ success: true, count: products.length, products: products });
   } catch (err) {
     next(err);
   }

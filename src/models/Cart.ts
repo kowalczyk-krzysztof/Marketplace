@@ -21,10 +21,7 @@ const CartSchema = new mongoose.Schema(
 );
 
 CartSchema.statics.cartExists = async function (id) {
-  let cart = await Cart.findOne({ owner: id }).populate(
-    'product',
-    'name pricePerUnit stock description addedBy photo'
-  );
+  let cart = await Cart.findOne({ owner: id });
   if (!cart) cart = await Cart.create({ owner: id });
   return cart;
 };

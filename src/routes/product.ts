@@ -13,21 +13,25 @@ import { protect, authorize } from '../middleware/auth';
 
 const productRouter = express.Router();
 
-productRouter.route('/').get(getManyProducts);
-productRouter.route('/:id').get(getProduct);
-productRouter.route('/:id/merchant').get(getMerchantFromProductId);
+productRouter.route('/find/allproducts').get(getManyProducts);
+productRouter.route('/find/product/:id').get(getProduct);
 productRouter
-  .route('/manage')
+  .route('/find/merchant/productid/:id')
+  .get(getMerchantFromProductId);
+productRouter
+  .route('/manage/create')
   .post(protect, authorize('MERCHANT', 'ADMIN'), createProduct);
 
 productRouter
-  .route('/manage/:id')
-  .put(protect, authorize('MERCHANT', 'ADMIN'), updateProduct)
+  .route('/manage/edit/:id')
+  .put(protect, authorize('MERCHANT', 'ADMIN'), updateProduct);
+productRouter
+  .route('/manage/delete/:id')
   .delete(protect, authorize('MERCHANT', 'ADMIN'), deleteProduct);
 
 productRouter
-  .route('/manage/:id/photo')
+  .route('/manage/photo/:id')
   .put(protect, authorize('MERCHANT', 'ADMIN'), productFileUpload);
-productRouter.route('/merchant/:id').get(getProductsByMerchant);
+productRouter.route('/find/merchant/products/:id').get(getProductsByMerchant);
 
 export default productRouter;
