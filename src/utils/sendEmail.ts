@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import colors from 'colors';
 interface EmailOptions {
   email: string;
   subject: string;
@@ -29,5 +30,5 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
 
   const info = await transporter.sendMail(message);
 
-  console.log('Message sent: %s', info.messageId);
+  console.log(colors.red.bold(`Message sent:${info.messageId}`));
 };

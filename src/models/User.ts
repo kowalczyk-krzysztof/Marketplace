@@ -6,9 +6,12 @@ import { ErrorResponse } from '../utils/ErrorResponse';
 interface User extends mongoose.Document {
   name: string;
   email: string;
+  verifiedEmail: string;
   photo: string;
   role: string;
   password: string;
+  verifyEmailToken: string | undefined | number;
+  verifyEmailTokenExpire: string | undefined | number;
   resetPasswordToken: string | undefined;
   resetPasswordExpire: number | undefined;
   createdAt: Date;
@@ -20,6 +23,7 @@ interface User extends mongoose.Document {
 // Interface UserModel is needed for static methods to work with TypeScript, instance methods go into User
 interface UserModel extends mongoose.Model<User> {
   userExists(id: string): Promise<User>;
+  getVerifyEmailToken(): (string | number)[];
 }
 
 const UserSchema = new mongoose.Schema(
@@ -39,6 +43,11 @@ const UserSchema = new mongoose.Schema(
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         'Please add a valid email',
       ],
+    },
+    verifiedEmail: {
+      type: String,
+      enum: ['VERIFIED', 'NOT VERIFIED'],
+      default: 'NOT VERIFIED',
     },
     photo: {
       type: String,
@@ -62,6 +71,8 @@ const UserSchema = new mongoose.Schema(
 
       select: false, // makes it so when getting the password from db, we won't see it
     },
+    verifyEmailToken: String,
+    verifyEmailTokenExpire: Date,
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     createdAt: { type: Date, immutable: true },
@@ -109,11 +120,31 @@ UserSchema.methods.getResetPasswordToken = function (): string {
     .digest('hex');
 
   // Set expire
-  user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 min
+  user.resetPasswordExpire = Date.now() + 1 * 24 * 60 * 60 * 1000; // 1 day
 
   return resetToken; // original token
 };
 
+// Generate and hash email verification token
+UserSchema.statics.getVerifyEmailToken = function (): (string | number)[] {
+  // Generate token
+  const verifyToken = crypto.randomBytes(20).toString('hex');
+
+  // Hash token
+  const verifiyTokenHashed = crypto
+    .createHash('sha256')
+    .update(verifyToken)
+    .digest('hex');
+
+  // Set expire
+  const verifyTokenExpire = Date.now() + 1 * 24 * 60 * 60 * 1000; // 1 day
+
+  const tokenData = [verifyToken, verifiyTokenHashed, verifyTokenExpire];
+
+  return tokenData;
+};
+
+// Checks if user exists
 UserSchema.statics.userExists = async function (id) {
   let user = await User.findById(id);
   if (!user)

@@ -21,14 +21,11 @@ export const getMyCart = async (
     let productCount;
     if ((await cart.product.length) === 0) cartStatus = 'Your cart is empty';
     else {
-      cartStatus = await cart.execPopulate(
-        'product',
-        'name pricePerUnit stock description addedBy photo'
-      );
+      cartStatus = cart;
+
       productCount = cart.product.length;
     }
 
-    // ATTENTION! For some reason populate() doesn't work inside an if statement - you need to use execPopulate
     res.status(200).json({
       success: true,
       count: productCount,
