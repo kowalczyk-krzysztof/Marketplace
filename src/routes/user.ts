@@ -13,18 +13,33 @@ import {
   verifyEmail,
   resendVerifyEmail,
 } from '../controllers/user';
-import { protect } from '../middleware/auth';
+import passport from 'passport';
+import '../config/passport'; // importing passport settings
 
 const userRouter = express.Router();
 
-userRouter.route('/register').post(register);
-userRouter.route('/login').post(login);
+userRouter
+  .route('/register')
+  .post(passport.authenticate('register', { session: false }), register);
+userRouter
+  .route('/login')
+  .post(passport.authenticate('login', { session: false }), login);
 userRouter.route('/logout').post(logout);
-userRouter.route('/profile').get(protect, getMyProfile);
-userRouter.route(`/profile/products`).get(protect, myCreatedProducts);
-userRouter.route('/profile/updatepassword').put(protect, updatePassword);
-userRouter.route('/profile/changedetails').put(protect, updateNameAndEmail);
-userRouter.route('/profile/photo').put(protect, userPhotoUpload);
+userRouter
+  .route('/profile')
+  .get(passport.authenticate('jwt', { session: false }), getMyProfile);
+userRouter
+  .route(`/profile/products`)
+  .get(passport.authenticate('jwt', { session: false }), myCreatedProducts);
+userRouter
+  .route('/profile/updatepassword')
+  .put(passport.authenticate('jwt', { session: false }), updatePassword);
+userRouter
+  .route('/profile/changedetails')
+  .put(passport.authenticate('jwt', { session: false }), updateNameAndEmail);
+userRouter
+  .route('/profile/photo')
+  .put(passport.authenticate('jwt', { session: false }), userPhotoUpload);
 userRouter.route('/forgotpassword').put(forgotPassword);
 userRouter.route('/resetpassword/:resettoken').put(resetPassword);
 userRouter.route('/verifyemail/:resettoken').put(verifyEmail);

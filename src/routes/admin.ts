@@ -6,18 +6,42 @@ import {
   deleteUser,
   getUserCart,
 } from '../controllers/admin';
-import { authorize, protect } from '../middleware/auth';
+import { roles } from '../middleware/roles';
+import passport from 'passport';
+import '../config/passport'; // importing passport settings
 
 const adminRouter = express.Router();
-// Protect and authorize middleware is necessary for admin routes to work properly
-adminRouter.route('/users/all').get(protect, authorize('ADMIN'), getAllUsers);
+
+adminRouter
+  .route('/users/all')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    roles('ADMIN'),
+    getAllUsers
+  );
 adminRouter
   .route('/users/user/:id')
-  .delete(protect, authorize('ADMIN'), deleteUser)
-  .get(protect, authorize('ADMIN'), getUser)
-  .put(protect, authorize('ADMIN'), updateUser);
+  .delete(
+    passport.authenticate('jwt', { session: false }),
+    roles('ADMIN'),
+    deleteUser
+  )
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    roles('ADMIN'),
+    getUser
+  )
+  .put(
+    passport.authenticate('jwt', { session: false }),
+    roles('ADMIN'),
+    updateUser
+  );
 adminRouter
   .route('/users/cart/:id')
-  .get(protect, authorize('ADMIN'), getUserCart);
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    roles('ADMIN'),
+    getUserCart
+  );
 
 export default adminRouter;

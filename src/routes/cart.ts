@@ -1,5 +1,4 @@
 import express from 'express';
-import { protect } from '../middleware/auth';
 import {
   getMyCart,
   addProductToCart,
@@ -8,14 +7,31 @@ import {
   deleteManyProductFromCart,
   emptyCart,
 } from '../controllers/cart';
+import passport from 'passport';
+import '../config/passport'; // importing passport settings
 
 const cartRouter = express.Router();
-// All cart functionality is based on protect and cartExists middleware, they're necessary for each and every route!
-cartRouter.route('/mycart/get').get(protect, getMyCart);
-cartRouter.route('/mycart/addmany').put(protect, addManyProductsToCart);
-cartRouter.route('/mycart/add/:id').put(protect, addProductToCart);
-cartRouter.route('/mycart/deletemany').put(protect, deleteManyProductFromCart);
-cartRouter.route('/mycart/delete/:id').put(protect, deleteProductFromCart);
-cartRouter.route('/mycart/empty').put(protect, emptyCart);
+
+cartRouter
+  .route('/mycart/get')
+  .get(passport.authenticate('jwt', { session: false }), getMyCart);
+cartRouter
+  .route('/mycart/addmany')
+  .put(passport.authenticate('jwt', { session: false }), addManyProductsToCart);
+cartRouter
+  .route('/mycart/add/:id')
+  .put(passport.authenticate('jwt', { session: false }), addProductToCart);
+cartRouter
+  .route('/mycart/deletemany')
+  .put(
+    passport.authenticate('jwt', { session: false }),
+    deleteManyProductFromCart
+  );
+cartRouter
+  .route('/mycart/delete/:id')
+  .put(passport.authenticate('jwt', { session: false }), deleteProductFromCart);
+cartRouter
+  .route('/mycart/empty')
+  .put(passport.authenticate('jwt', { session: false }), emptyCart);
 
 export default cartRouter;

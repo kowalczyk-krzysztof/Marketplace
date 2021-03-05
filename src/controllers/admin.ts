@@ -50,10 +50,11 @@ export const updateUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const userDetails = req.user as User;
     const user = await User.userExists(req.params.id);
 
     // Check if admin is trying to edit its own profile
-    if (user.id === res.locals.user.id)
+    if (user.id === userDetails.id)
       throw new ErrorResponse(
         `If you want to edit yourself go to your profile`,
         401
@@ -83,10 +84,11 @@ export const deleteUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const userDetails = req.user as User;
     const user = await User.userExists(req.params.id);
 
     // Check if user is trying to delete itself
-    if (user.id === res.locals.user.id) {
+    if (user.id === userDetails.id) {
       throw new ErrorResponse(`You can't delete yourself`, 401);
     }
 

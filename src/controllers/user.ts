@@ -18,33 +18,6 @@ export const register = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Check if user is trying to register as admin
-    if (req.body.role === 'ADMIN')
-      throw new ErrorResponse('You can not register as an ADMIN', 401);
-
-    const [token, hashedToken, tokenExpiration] = User.getVerifyEmailToken();
-
-    await User.create({
-      name: req.body.name,
-      email: req.body.email,
-      password: req.body.password,
-      role: req.body.role || 'USER',
-      verifyEmailToken: hashedToken,
-      verifyEmailTokenExpire: tokenExpiration,
-    });
-
-    const siteUrl = `${req.protocol}://${req.get(
-      'host'
-    )}/api/v1/user/verifyemail/${token}`;
-
-    const message = `You are receiving this email because you (or someone else) has created an account in Marketplace. Please verify your email at \n\n${siteUrl}\n\nLink expires in 24 hours`;
-    await sendEmail({
-      email: req.body.email,
-      subject: 'Welcome to Marketplace',
-      message,
-    });
-
-    // I dont want the user to get assigned a JWT token when registering
     res.status(201).json({
       success: true,
       message: 'Account created. Please verify your email',
@@ -63,24 +36,25 @@ export const login = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { email, password } = req.body;
+    const user = req.user as User;
 
-    // Check is email and password are provided in req.body
-    if (!email || !password)
-      throw new ErrorResponse('Please provide an email and password', 400);
+    const token: any = user.getSignedJwtToken(); // jsonwebtoken
+    const expireTime = (process.env.JWT_COOKIE_EXPIRE as unknown) as number;
+    const expiresIn = process.env.JWT_EXPIRE;
+    // Cookie options
+    const options = {
+      expires: new Date(Date.now() + expireTime * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      secure: false,
+    };
 
-    // Check for user
-    const user = await User.findOne({ email }).select('+password');
+    if (process.env.NODE_ENV === 'production') options.secure = true;
 
-    if (!user) throw new ErrorResponse('Invalid credentials', 401);
-
-    // Check if password matches
-
-    const isMatch = await user.matchPassword(password);
-
-    if (!isMatch) throw new ErrorResponse('Invalid credentials', 401);
-
-    sendTokenResponse(user, 200, res);
+    res.status(200).cookie('token', token, options).json({
+      success: true,
+      token: token,
+      expiresIn,
+    });
   } catch (err) {
     next(err);
   }
@@ -114,7 +88,7 @@ export const getMyProfile = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = await User.userExists(res.locals.user.id);
+    const user = req.user as User;
 
     res.status(200).json({
       success: true,
@@ -134,7 +108,8 @@ export const updateNameAndEmail = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = await User.userExists(res.locals.user.id);
+    const userDetails = req.user as User;
+    const user = await User.userExists(userDetails.id);
 
     // Without those || expressions fields could be empty and both email and name are required by schema
 
@@ -149,7 +124,7 @@ export const updateNameAndEmail = async (
       new ErrorResponse('You can not set role to ADMIN', 401);
 
     const updatedUser = await User.findByIdAndUpdate(
-      res.locals.user.id,
+      userDetails.id,
       fieldsToUpdate,
       {
         new: true,
@@ -172,7 +147,8 @@ export const updatePassword = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = await User.findById(res.locals.user.id).select('+password');
+    const userDetails = req.user as User;
+    const user = await User.findById(userDetails.id).select('+password');
 
     if (!user) throw new ErrorResponse(`User not found`, 404);
 
@@ -288,7 +264,8 @@ export const userPhotoUpload = async (
   next: NextFunction
 ) => {
   try {
-    const user = await User.userExists(res.locals.user.id);
+    const userDetails = req.user as User;
+    const user = await User.userExists(userDetails.id);
 
     // Check if there is a file to upload
     if (!req.files) throw new ErrorResponse(`Please upload a file`, 400);
@@ -322,7 +299,7 @@ export const userPhotoUpload = async (
           throw new ErrorResponse(`Problem with file upload`, 500);
         }
 
-        await User.findByIdAndUpdate(res.locals.user.id, {
+        await User.findByIdAndUpdate(userDetails.id, {
           photo: file.name,
         });
 
@@ -347,7 +324,8 @@ export const myCreatedProducts = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = res.locals.user.id;
+    const userDetails = req.user as User;
+    const user = userDetails.id;
     const products = await Product.find({ addedById: user });
 
     // Check if logged in user has any created products

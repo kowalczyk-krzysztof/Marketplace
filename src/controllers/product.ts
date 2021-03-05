@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { UploadedFile } from 'express-fileupload';
 import { ErrorResponse } from '../utils/ErrorResponse';
-import Product, { ProductSchema } from '../models/Product';
+import Product from '../models/Product';
 import User from '../models/User';
 
 // @desc    Get single product
@@ -54,15 +54,16 @@ export const createProduct = async (
 ): Promise<void> => {
   try {
     // Setting a limit so each user can have only one product with the same name, but other users can have products with that name
+    const userDetails = req.user as User;
     const nameUniqueForUser = await Product.findOne({
-      addedById: res.locals.user.id,
+      addedById: userDetails.id,
       name: req.body.name,
     });
 
     if (nameUniqueForUser) {
       return next(
         new ErrorResponse(
-          `${res.locals.user.id} already has a product with name of ${req.body.name}`,
+          `${userDetails.id} already has a product with name of ${req.body.name}`,
           400
         )
       );
@@ -71,12 +72,12 @@ export const createProduct = async (
     // Limiting the number of products a merchant can add
     const maxProducts: number = 5;
     const totalAddedProducts = await Product.find({
-      addedBy: res.locals.user.name,
+      addedBy: userDetails.name,
     });
 
     if (
       totalAddedProducts.length >= maxProducts &&
-      res.locals.user.role !== 'ADMIN'
+      userDetails.role !== 'ADMIN'
     )
       throw new ErrorResponse(
         `Maximum number of products a merchant can add is ${maxProducts}`,
@@ -88,7 +89,7 @@ export const createProduct = async (
       quantity: req.body.quantity,
       description: req.body.description,
       pricePerUnit: req.body.pricePerUnit,
-      addedById: res.locals.user.id,
+      addedById: userDetails.id,
     });
     res.status(201).json({ success: true, data: product });
   } catch (err) {
@@ -105,15 +106,13 @@ export const updateProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const userDetails = req.user as User;
     const product = await Product.productExists(req.params.id);
 
-    // Check if res.locals.user is the products owner or admin
-    if (
-      product.addedById !== res.locals.user.id &&
-      res.locals.user.role !== 'ADMIN'
-    )
+    // Check if user is the products owner or admin
+    if (product.addedById !== userDetails.id && userDetails.role !== 'ADMIN')
       throw new ErrorResponse(
-        `User with id ${res.locals.user.id} is not authorised to update this product`,
+        `User with id ${userDetails.id} is not authorised to update this product`,
         401
       );
 
@@ -141,14 +140,12 @@ export const deleteProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const userDetails = req.user as User;
     const product = await Product.productExists(req.params.id);
-    // Check if res.locals.user is the products owner or admin
-    if (
-      product.addedById !== res.locals.user.id &&
-      res.locals.user.role !== 'ADMIN'
-    )
+    // Check if user is the products owner or admin
+    if (product.addedById !== userDetails.id && userDetails.role !== 'ADMIN')
       throw new ErrorResponse(
-        `User with id of ${res.locals.user.id} is not authorised to delete this product`,
+        `User with id of ${userDetails.id} is not authorised to delete this product`,
         401
       );
     await Product.findByIdAndDelete(req.params.id);
@@ -220,15 +217,13 @@ export const productFileUpload = async (
   next: NextFunction
 ) => {
   try {
+    const userDetails = req.user as User;
     const product = await Product.productExists(req.params.id);
 
     // Check if user is product owner
-    if (
-      product.addedById !== res.locals.user.id &&
-      res.locals.user.role !== 'ADMIN'
-    )
+    if (product.addedById !== userDetails.id && userDetails.role !== 'ADMIN')
       throw new ErrorResponse(
-        `User with id of ${res.locals.user.id} is not authorized to update this product`,
+        `User with id of ${userDetails.id} is not authorized to update this product`,
         401
       );
     // Check if there is a file to upload
