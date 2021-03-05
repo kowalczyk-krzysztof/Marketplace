@@ -19,9 +19,12 @@ export const getMyCart = async (
     const cart = await Cart.cartExists(res.locals.user.id);
     let cartStatus;
     let productCount;
-    if ((await cart.product.length) === 0) cartStatus = 'Your cart is empty';
+    if (cart.product.length === 0) cartStatus = 'Your cart is empty';
     else {
-      cartStatus = cart;
+      cartStatus = await cart.execPopulate(
+        'product',
+        'name pricePerUnit stock description addedBy photo'
+      );
 
       productCount = cart.product.length;
     }
@@ -56,7 +59,7 @@ export const addProductToCart = async (
     // Check if product is duplicate
     if (cart.isModified('product') === false)
       res.status(400).json({
-        success: true,
+        success: false,
         data: `You already have product with id of ${req.params.id} in your cart`,
       });
     else
@@ -120,8 +123,8 @@ export const deleteProductFromCart = async (
 ): Promise<void> => {
   try {
     const cart = await Cart.cartExists(res.locals.user.id);
-    const product = req.params.id;
 
+    const product = req.params.id;
     if (!cart.product.includes(product))
       throw new ErrorResponse('Something went wrong', 400);
 
@@ -155,10 +158,10 @@ export const deleteManyProductFromCart = async (
 
     // User shouldn't have non existent elements in his cart
     for (const product of productsToDelete) {
-      if (!cart.product.includes(product))
-        throw new ErrorResponse('Something went wrong', 400);
-      cart.product.pull(product);
-      deletedProducts.push(product);
+      if (cart.product.includes(product)) {
+        cart.product.pull(product);
+        deletedProducts.push(product);
+      }
     }
 
     if (deletedProducts.length === 0)

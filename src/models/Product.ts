@@ -5,7 +5,7 @@ import { ErrorResponse } from '../utils/ErrorResponse';
 
 interface Product extends mongoose.Document {
   name: string;
-  photo: string;
+  photos: string[];
   quantity: number;
   stock: string;
   description: string;
@@ -25,10 +25,12 @@ export const ProductSchema: Schema = new mongoose.Schema(
       minlength: [3, 'Product name needs to be at least 4 characters'],
       maxlength: [30, 'Product name can not be more than 50 characters'],
     },
-    photo: {
-      type: String,
-      default: 'no_photo.jpg',
-    },
+    photos: [
+      {
+        type: String,
+        default: 'no_photo.jpg',
+      },
+    ],
     quantity: {
       type: Number,
       required: [true, 'Quantity can not be negative'],

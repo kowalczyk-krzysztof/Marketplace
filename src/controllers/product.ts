@@ -1,8 +1,9 @@
 import path from 'path';
+import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { UploadedFile } from 'express-fileupload';
 import { ErrorResponse } from '../utils/ErrorResponse';
-import Product from '../models/Product';
+import Product, { ProductSchema } from '../models/Product';
 import User from '../models/User';
 
 // @desc    Get single product
@@ -173,6 +174,7 @@ export const getMerchantFromProductId = async (
   try {
     const product = await Product.productExists(req.params.id);
     const merchant = await User.userExists(product.addedById);
+
     res.status(200).json({
       success: true,
       data: merchant,
@@ -201,7 +203,9 @@ export const getProductsByMerchant = async (
         404
       );
 
-    res.status(200).json({ success: true, products: products });
+    res
+      .status(200)
+      .json({ success: true, count: products.length, products: products });
   } catch (err) {
     next(err);
   }
@@ -247,19 +251,35 @@ export const productFileUpload = async (
         `Please upload an image less than ${maxFileSizeInMB}MB`,
         400
       );
+    // Dynamic directory
+    const dir = `${product.id}`;
+    // Generating random hash for product name
+    const hash = crypto.randomBytes(5).toString('hex');
 
     // Create custom filename
-    file.name = `product_${product.id}${path.parse(file.name).ext}`;
+    file.name = `product_${product.id}_${hash}${path.parse(file.name).ext}`;
+
+    // Checking if file already exists $addToSet already handles duplicates inside db but I don't want the file to get overriden. There's a very low chance of this happening with added hash, but it still can happen
+    if (product.photos.includes(file.name))
+      throw new ErrorResponse('File already exists', 400);
+
+    // Limiting how many images a product can have
+    const maxImages = 5;
+    if (product.photos.length >= maxImages)
+      throw new ErrorResponse(`You can only upload ${maxImages} images`, 400);
+
     // Moving file to folder
     file.mv(
-      `${process.env.FILE_UPLOAD_PATH}/products/${file.name}`,
+      `${process.env.FILE_UPLOAD_PATH}/products/${dir}/${file.name}`,
       async (err: Error) => {
         if (err) {
           console.error(err);
           throw new ErrorResponse(`Problem with file upload`, 500);
         }
 
-        await Product.findByIdAndUpdate(req.params.id, { photo: file.name });
+        await Product.findByIdAndUpdate(req.params.id, {
+          $addToSet: { photos: file.name },
+        });
 
         res.status(200).json({
           success: true,

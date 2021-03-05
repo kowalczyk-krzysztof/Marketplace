@@ -177,6 +177,7 @@ export const updatePassword = async (
     if (!user) throw new ErrorResponse(`User not found`, 404);
 
     // Check current password
+
     if (!(await user.matchPassword(req.body.currentPassword)))
       throw new ErrorResponse('Password is incorrect', 401);
 

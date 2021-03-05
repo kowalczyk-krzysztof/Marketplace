@@ -20,6 +20,11 @@ const errorHandler = (
     const message = `Invalid id format`;
     error = new ErrorResponse(message, 404);
   }
+  // If someone is trying to NoSQL inject
+  if (err.kind === 'string') {
+    const message = `Resource not found`;
+    error = new ErrorResponse(message, 404);
+  }
 
   // Mongoose duplicate key
   if (err.code === 11000) {
