@@ -135,17 +135,15 @@ export const updatePassword = async (
     const userDetails = req.user as User;
     const user = await User.findById(userDetails.id).select('+password');
 
-    if (!user) throw new ErrorResponse(`User not found`, 404);
-
     // Check current password
 
-    if (!(await user.matchPassword(req.body.currentPassword)))
+    if (!(await user?.matchPassword(req.body.currentPassword)))
       throw new ErrorResponse('Password is incorrect', 401);
 
-    user.password = req.body.newPassword;
-    await user.save();
+    userDetails.password = req.body.newPassword;
+    await userDetails.save();
 
-    res.send(201).json({ succcess: true });
+    res.status(201).json({ succcess: true });
   } catch (err) {
     next(err);
   }
@@ -232,9 +230,9 @@ export const resetPassword = async (
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
 
-    await user.save({ validateBeforeSave: false });
+    await user.save();
 
-    res.send(201).json({ succcess: true });
+    res.status(201).json({ succcess: true });
   } catch (err) {
     next(err);
   }
@@ -314,7 +312,9 @@ export const myCreatedProducts = async (
     if (products.length === 0)
       throw new ErrorResponse(`You have not added any products`, 404);
 
-    res.status(200).json({ success: true, data: products });
+    res
+      .status(200)
+      .json({ success: true, count: products.length, data: products });
   } catch (err) {
     next(err);
   }
