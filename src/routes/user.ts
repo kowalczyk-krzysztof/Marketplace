@@ -24,7 +24,7 @@ userRouter
 userRouter
   .route('/login')
   .post(passport.authenticate('login', { session: false }), login);
-userRouter.route('/logout').post(logout);
+userRouter.route('/logout').get(logout);
 userRouter
   .route('/profile')
   .get(passport.authenticate('jwt', { session: false }), getMyProfile);

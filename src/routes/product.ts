@@ -9,7 +9,6 @@ import {
   getProductsByMerchant,
   productFileUpload,
 } from '../controllers/product';
-import { roles } from '../middleware/roles';
 import passport from 'passport';
 import '../config/passport'; // importing passport settings
 
@@ -22,34 +21,19 @@ productRouter
   .get(getMerchantFromProductId);
 productRouter
   .route('/manage/create')
-  .post(
-    passport.authenticate('jwt', { session: false }),
-    roles('MERCHANT', 'ADMIN'),
-    createProduct
-  );
+  .post(passport.authenticate('jwt', { session: false }), createProduct);
 
 productRouter
   .route('/manage/edit/:id')
-  .put(
-    passport.authenticate('jwt', { session: false }),
-    roles('MERCHANT', 'ADMIN'),
-    updateProduct
-  );
+  .put(passport.authenticate('jwt', { session: false }), updateProduct);
 productRouter
   .route('/manage/delete/:id')
-  .delete(
-    passport.authenticate('jwt', { session: false }),
-    roles('MERCHANT', 'ADMIN'),
-    deleteProduct
-  );
+  .delete(passport.authenticate('jwt', { session: false }), deleteProduct);
 
 productRouter
   .route('/manage/photo/:id')
-  .put(
-    passport.authenticate('jwt', { session: false }),
-    roles('MERCHANT', 'ADMIN'),
-    productFileUpload
-  );
+  .put(passport.authenticate('jwt', { session: false }), productFileUpload);
+
 productRouter.route('/find/merchant/products/:id').get(getProductsByMerchant);
 
 export default productRouter;

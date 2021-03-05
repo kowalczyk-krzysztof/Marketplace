@@ -53,8 +53,15 @@ export const createProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Setting a limit so each user can have only one product with the same name, but other users can have products with that name
     const userDetails = req.user as User;
+
+    const allowedRoles = ['MERCHANT', 'ADMIN'];
+    if (!allowedRoles.includes(userDetails.role))
+      throw new ErrorResponse(
+        `User with role of ${userDetails.role} is unauthorized to access this route`,
+        403
+      );
+
     const nameUniqueForUser = await Product.findOne({
       addedById: userDetails.id,
       name: req.body.name,
@@ -107,6 +114,13 @@ export const updateProduct = async (
 ): Promise<void> => {
   try {
     const userDetails = req.user as User;
+    const allowedRoles = ['MERCHANT', 'ADMIN'];
+    if (!allowedRoles.includes(userDetails.role))
+      throw new ErrorResponse(
+        `User with role of ${userDetails.role} is unauthorized to access this route`,
+        403
+      );
+
     const product = await Product.productExists(req.params.id);
 
     // Check if user is the products owner or admin
@@ -141,6 +155,13 @@ export const deleteProduct = async (
 ): Promise<void> => {
   try {
     const userDetails = req.user as User;
+    const allowedRoles = ['MERCHANT', 'ADMIN'];
+    if (!allowedRoles.includes(userDetails.role))
+      throw new ErrorResponse(
+        `User with role of ${userDetails.role} is unauthorized to access this route`,
+        403
+      );
+
     const product = await Product.productExists(req.params.id);
     // Check if user is the products owner or admin
     if (product.addedById !== userDetails.id && userDetails.role !== 'ADMIN')
@@ -218,6 +239,12 @@ export const productFileUpload = async (
 ) => {
   try {
     const userDetails = req.user as User;
+    const allowedRoles = ['MERCHANT', 'ADMIN'];
+    if (!allowedRoles.includes(userDetails.role))
+      throw new ErrorResponse(
+        `User with role of ${userDetails.role} is unauthorized to access this route`,
+        403
+      );
     const product = await Product.productExists(req.params.id);
 
     // Check if user is product owner

@@ -12,12 +12,19 @@ export const getAllUsers = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = await User.find();
+    const user = req.user as User;
+    if (user.role !== 'ADMIN')
+      throw new ErrorResponse(
+        `User with role of ${user.role} is unauthorized to access this route`,
+        403
+      );
+
+    const findUser = await User.find();
 
     res.status(200).json({
       success: true,
-      count: user.length,
-      data: user,
+      count: findUser.length,
+      data: findUser,
     });
   } catch (err) {
     next(err);
@@ -33,9 +40,15 @@ export const getUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = await User.userExists(req.params.id);
+    const user = req.user as User;
+    if (user.role !== 'ADMIN')
+      throw new ErrorResponse(
+        `User with role of ${user.role} is unauthorized to access this route`,
+        403
+      );
+    const findUser = await User.userExists(req.params.id);
 
-    res.status(200).json({ sucess: true, data: user });
+    res.status(200).json({ sucess: true, data: findUser });
   } catch (err) {
     next(err);
   }
@@ -51,6 +64,11 @@ export const updateUser = async (
 ): Promise<void> => {
   try {
     const userDetails = req.user as User;
+    if (userDetails.role !== 'ADMIN')
+      throw new ErrorResponse(
+        `User with role of ${userDetails.role} is unauthorized to access this route`,
+        403
+      );
     const user = await User.userExists(req.params.id);
 
     // Check if admin is trying to edit its own profile
@@ -85,6 +103,12 @@ export const deleteUser = async (
 ): Promise<void> => {
   try {
     const userDetails = req.user as User;
+
+    if (userDetails.role !== 'ADMIN')
+      throw new ErrorResponse(
+        `User with role of ${userDetails.role} is unauthorized to access this route`,
+        403
+      );
     const user = await User.userExists(req.params.id);
 
     // Check if user is trying to delete itself
@@ -117,6 +141,12 @@ export const getUserCart = async (
   next: NextFunction
 ) => {
   try {
+    const userDetails = req.user as User;
+    if (userDetails.role !== 'ADMIN')
+      throw new ErrorResponse(
+        `User with role of ${userDetails.role} is unauthorized to access this route`,
+        403
+      );
     const cart = await Cart.cartExists(req.params.id);
     let cartStatus;
     let productCount;

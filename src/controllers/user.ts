@@ -4,7 +4,6 @@ import { Request, Response, NextFunction } from 'express';
 import { UploadedFile } from 'express-fileupload';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { sendEmail } from '../utils/sendEmail';
-import { sendTokenResponse } from '../utils/sendTokenResponse';
 import User from '../models/User';
 import Product from '../models/Product';
 
@@ -61,19 +60,10 @@ export const login = async (
 };
 
 // @desc    Log user out / clear cookie
-// @route   POST /api/v1/user/logout
+// @route   GET /api/v1/user/logout
 // @access  Private
-// TODO Add cookie blacklisting
-export const logout = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  res.cookie('token', 'none', {
-    expires: new Date(Date.now() + 5 * 1000),
-    httpOnly: true,
-  });
-
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  req.logout();
   res.status(200).json({
     success: true,
   });
@@ -108,9 +98,7 @@ export const updateNameAndEmail = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails = req.user as User;
-    const user = await User.userExists(userDetails.id);
-
+    const user = req.user as User;
     // Without those || expressions fields could be empty and both email and name are required by schema
 
     const fieldsToUpdate = {
@@ -123,16 +111,12 @@ export const updateNameAndEmail = async (
     if (req.body.role === 'ADMIN')
       new ErrorResponse('You can not set role to ADMIN', 401);
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userDetails.id,
-      fieldsToUpdate,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.role = req.body.role || user.role;
+    await user.save();
 
-    res.status(201).json({ sucess: true, data: updatedUser });
+    res.status(201).json({ sucess: true, data: user });
   } catch (err) {
     next(err);
   }
@@ -160,7 +144,7 @@ export const updatePassword = async (
     user.password = req.body.newPassword;
     await user.save();
 
-    sendTokenResponse(user, 201, res);
+    res.send(201).json({ succcess: true });
   } catch (err) {
     next(err);
   }
@@ -194,7 +178,7 @@ export const forgotPassword = async (
     )}/api/v1/user/resetpassword/${resetToken}`;
     // Create message to pass, in actual frontend you want to put an actual link inside
 
-    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please visit: \n\n ${resetUrl}`;
+    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please visit: \n\n${resetUrl}`;
     // Sending email
     try {
       // Passing options
@@ -249,7 +233,7 @@ export const resetPassword = async (
 
     await user.save({ validateBeforeSave: false });
 
-    sendTokenResponse(user, 201, res);
+    res.send(201).json({ succcess: true });
   } catch (err) {
     next(err);
   }
@@ -264,8 +248,7 @@ export const userPhotoUpload = async (
   next: NextFunction
 ) => {
   try {
-    const userDetails = req.user as User;
-    const user = await User.userExists(userDetails.id);
+    const user = req.user as User;
 
     // Check if there is a file to upload
     if (!req.files) throw new ErrorResponse(`Please upload a file`, 400);
@@ -298,10 +281,8 @@ export const userPhotoUpload = async (
           console.error(err);
           throw new ErrorResponse(`Problem with file upload`, 500);
         }
-
-        await User.findByIdAndUpdate(userDetails.id, {
-          photo: file.name,
-        });
+        user.photo = file.name;
+        await user.save();
 
         res.status(200).json({
           success: true,
