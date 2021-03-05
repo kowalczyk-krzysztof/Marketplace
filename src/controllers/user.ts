@@ -51,6 +51,7 @@ export const login = async (
 
     res.status(200).cookie('token', token, options).json({
       success: true,
+      message: 'Successfully logged in',
       token: token,
       expiresIn,
     });
@@ -366,15 +367,11 @@ export const resendVerifyEmail = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = await User.findOne({ email: req.body.email });
-    if (user?.verifiedEmail === 'VERIFIED')
-      throw new ErrorResponse('Email is already verified for this user', 400);
-    // Check is user exists
-    if (!user)
-      throw new ErrorResponse(
-        `There is no user with email ${req.body.email}`,
-        404
-      );
+    const user = req.user as User;
+
+    if (user.verifiedEmail === 'VERIFIED')
+      throw new ErrorResponse('Email is already verified', 400);
+
     // Get reset token
     const [token, hashedToken, tokenExpiration] = User.getVerifyEmailToken();
 

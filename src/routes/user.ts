@@ -43,6 +43,8 @@ userRouter
 userRouter.route('/forgotpassword').put(forgotPassword);
 userRouter.route('/resetpassword/:resettoken').put(resetPassword);
 userRouter.route('/verifyemail/:resettoken').put(verifyEmail);
-userRouter.route('/resendverifyemail').put(resendVerifyEmail);
+userRouter
+  .route('/profile/resendverifyemail')
+  .get(passport.authenticate('jwt', { session: false }), resendVerifyEmail);
 
 export default userRouter;

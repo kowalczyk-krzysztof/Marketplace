@@ -28,7 +28,7 @@ passport.use(
         return done(new ErrorResponse(`User not found`, 404), false);
       }
 
-      return done(null, user, { message: 'Succesfully logged in' }); // sets user to req.user
+      return done(null, user); // sets user to req.user
     }
   )
 );
