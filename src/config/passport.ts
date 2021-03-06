@@ -10,7 +10,7 @@ dotenv.config({ path: 'config.env' }); // THIS IS REQUIRED OTHERWISE TypeError: 
 const jwtStrategy = passportjwt.Strategy;
 const localStrategy = passportlocal.Strategy;
 const ExtractJwt = passportjwt.ExtractJwt;
-const secret = process.env.JWT_SECRET;
+const secret: string = process.env.JWT_SECRET as string;
 
 // Authenticating user from jwt token
 passport.use(
@@ -52,7 +52,9 @@ passport.use(
     },
     async (email, password, done) => {
       try {
-        const user = await User.findOne({ email }).select('+password');
+        const user: User | null = await User.findOne({ email }).select(
+          '+password'
+        );
 
         if (!user) {
           return done(
@@ -61,7 +63,7 @@ passport.use(
           );
         }
 
-        const validate = await user.matchPassword(password);
+        const validate: string = await user.matchPassword(password);
 
         if (!validate) {
           return done(new ErrorResponse(`Invalid credentials`, 401), false);
@@ -105,11 +107,11 @@ passport.use(
           verifyEmailTokenExpire: tokenExpiration,
         });
 
-        const siteUrl = `${req.protocol}://${req.get(
+        const siteUrl: string = `${req.protocol}://${req.get(
           'host'
         )}/api/v1/user/verifyemail/${token}`;
 
-        const message = `You are receiving this email because you (or someone else) has created an account in Marketplace. Please verify your email at \n\n${siteUrl}\n\nLink expires in 24 hours`;
+        const message: string = `You are receiving this email because you (or someone else) has created an account in Marketplace. Please verify your email at \n\n${siteUrl}\n\nLink expires in 24 hours`;
         await sendEmail({
           email,
           subject: 'Welcome to Marketplace',

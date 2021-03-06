@@ -86,7 +86,7 @@ UserSchema.pre<User>('save', async function (next): Promise<void> {
   if (!this.isModified('password')) {
     next();
   }
-  let user = this;
+  let user: User = this;
   const salt: string = await bcryptjs.genSalt(10);
   user.password = await bcryptjs.hash(user.password, salt);
 });
@@ -102,17 +102,17 @@ UserSchema.methods.getSignedJwtToken = function (): string {
 UserSchema.methods.matchPassword = async function (
   enteredPassword: string
 ): Promise<boolean> {
-  let user = this as User;
+  let user: User = this as User;
   return await bcryptjs.compare(enteredPassword, user.password);
 };
 
 // Generate and hash password reset token
 UserSchema.methods.getResetPasswordToken = function (): string {
   // Generate token
-  const resetToken = crypto.randomBytes(20).toString('hex');
+  const resetToken: string = crypto.randomBytes(20).toString('hex');
 
   // Hash token and set to resetPasswordToken field
-  let user = this as User; // need to do this otherwise error: Property 'resetPasswordToken' does not exist on type 'Document<any>'
+  let user: User = this as User; // need to do this otherwise error: Property 'resetPasswordToken' does not exist on type 'Document<any>'
 
   user.resetPasswordToken = crypto
     .createHash('sha256')
@@ -128,10 +128,10 @@ UserSchema.methods.getResetPasswordToken = function (): string {
 // Generate and hash email verification token
 UserSchema.statics.getVerifyEmailToken = function (): (string | number)[] {
   // Generate token
-  const verifyToken = crypto.randomBytes(20).toString('hex');
+  const verifyToken: string = crypto.randomBytes(20).toString('hex');
 
   // Hash token
-  const verifiyTokenHashed = crypto
+  const verifiyTokenHashed: string = crypto
     .createHash('sha256')
     .update(verifyToken)
     .digest('hex');
@@ -139,19 +139,23 @@ UserSchema.statics.getVerifyEmailToken = function (): (string | number)[] {
   // Set expire
   const verifyTokenExpire = Date.now() + 1 * 24 * 60 * 60 * 1000; // 1 day
 
-  const tokenData = [verifyToken, verifiyTokenHashed, verifyTokenExpire];
+  const tokenData: (string | number)[] = [
+    verifyToken,
+    verifiyTokenHashed,
+    verifyTokenExpire,
+  ];
 
   return tokenData;
 };
 
 // Checks if user exists
 UserSchema.statics.userExists = async function (id) {
-  let user = await User.findById(id);
+  let user: User | null = await User.findById(id);
   if (!user)
     throw new ErrorResponse(`User with id of ${id} does not exist`, 404);
   return user;
 };
 
 // Exporting the model with an interface applied
-const User = mongoose.model<User, UserModel>('User', UserSchema);
+const User: UserModel = mongoose.model<User, UserModel>('User', UserSchema);
 export default User;

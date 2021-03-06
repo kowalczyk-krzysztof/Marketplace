@@ -1,7 +1,7 @@
 import mongoose, { ObjectId } from 'mongoose';
 interface Cart extends mongoose.Document {
   owner: mongoose.Types.Array<ObjectId>;
-  product: mongoose.Types.Array<ObjectId>;
+  products: mongoose.Types.Array<ObjectId>;
 }
 interface CartModel extends mongoose.Model<Cart> {
   cartExists(id: string): Promise<any>;
@@ -10,7 +10,7 @@ interface CartModel extends mongoose.Model<Cart> {
 const CartSchema = new mongoose.Schema(
   {
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    product: [
+    products: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product',
@@ -21,10 +21,10 @@ const CartSchema = new mongoose.Schema(
 );
 
 CartSchema.statics.cartExists = async function (id) {
-  let cart = await Cart.findOne({ owner: id });
+  let cart: Cart | null = await Cart.findOne({ owner: id });
   if (!cart) cart = await Cart.create({ owner: id });
   return cart;
 };
 
-const Cart = mongoose.model<Cart, CartModel>('Cart', CartSchema);
+const Cart: CartModel = mongoose.model<Cart, CartModel>('Cart', CartSchema);
 export default Cart;

@@ -12,6 +12,7 @@ import productRouter from './routes/product';
 import userRouter from './routes/user';
 import adminRouter from './routes/admin';
 import cartRouter from './routes/cart';
+import categoryRouter from './routes/categories';
 import colors from 'colors';
 import rateLimit from 'express-rate-limit';
 import hpp from 'hpp';
@@ -50,9 +51,10 @@ app.use('/api/v1/products', productRouter);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/cart', cartRouter);
+app.use('/api/v1/categories', categoryRouter);
 app.use(errorHandler); // errorHandler has to be after routers
 
-const PORT = process.env.PORT || 3000;
+const PORT = ((process.env.PORT as unknown) as number) || 3000;
 
 app.listen(PORT, (): void => {
   console.log(

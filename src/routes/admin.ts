@@ -1,15 +1,16 @@
-import express from 'express';
+import express, { Router } from 'express';
 import {
   getAllUsers,
   getUser,
   updateUser,
   deleteUser,
   getUserCart,
+  addCategory,
 } from '../controllers/admin';
 import passport from 'passport';
 import '../config/passport'; // importing passport settings
 
-const adminRouter = express.Router();
+const adminRouter: Router = express.Router();
 
 adminRouter
   .route('/users/all')
@@ -22,5 +23,8 @@ adminRouter
 adminRouter
   .route('/users/cart/:id')
   .get(passport.authenticate('jwt', { session: false }), getUserCart);
+adminRouter
+  .route('/categories/add')
+  .post(passport.authenticate('jwt', { session: false }), addCategory);
 
 export default adminRouter;
