@@ -1,7 +1,9 @@
+import mongoose from 'mongoose';
 import { Request, Response, NextFunction } from 'express';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import User from '../models/User';
 import Cart from '../models/Cart';
+import Category from '../models/Category';
 
 // @desc    Get all users
 // @route   GET /api/v1/admin/users/
@@ -12,14 +14,14 @@ export const getAllUsers = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = req.user as User;
+    const user: User = req.user as User;
     if (user.role !== 'ADMIN')
       throw new ErrorResponse(
         `User with role of ${user.role} is unauthorized to access this route`,
         403
       );
 
-    const findUser = await User.find();
+    const findUser: User[] = await User.find();
 
     res.status(200).json({
       success: true,
@@ -40,13 +42,13 @@ export const getUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = req.user as User;
+    const user: User = req.user as User;
     if (user.role !== 'ADMIN')
       throw new ErrorResponse(
         `User with role of ${user.role} is unauthorized to access this route`,
         403
       );
-    const findUser = await User.userExists(req.params.id);
+    const findUser: User = await User.userExists(req.params.id);
 
     res.status(200).json({ sucess: true, data: findUser });
   } catch (err) {
@@ -63,13 +65,13 @@ export const updateUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails = req.user as User;
+    const userDetails: User = req.user as User;
     if (userDetails.role !== 'ADMIN')
       throw new ErrorResponse(
         `User with role of ${userDetails.role} is unauthorized to access this route`,
         403
       );
-    const user = await User.userExists(req.params.id);
+    const user: User = await User.userExists(req.params.id);
 
     // Check if admin is trying to edit its own profile
     if (user.id === userDetails.id)
@@ -102,14 +104,14 @@ export const deleteUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails = req.user as User;
+    const userDetails: User = req.user as User;
 
     if (userDetails.role !== 'ADMIN')
       throw new ErrorResponse(
         `User with role of ${userDetails.role} is unauthorized to access this route`,
         403
       );
-    const user = await User.userExists(req.params.id);
+    const user: User = await User.userExists(req.params.id);
 
     // Check if user is trying to delete itself
     if (user.id === userDetails.id) {
@@ -141,23 +143,25 @@ export const getUserCart = async (
   next: NextFunction
 ) => {
   try {
-    const userDetails = req.user as User;
+    const userDetails: User = req.user as User;
     if (userDetails.role !== 'ADMIN')
       throw new ErrorResponse(
         `User with role of ${userDetails.role} is unauthorized to access this route`,
         403
       );
-    const cart = await Cart.cartExists(req.params.id);
-    let cartStatus;
+    const cart: Cart = await Cart.cartExists(req.params.id);
+    let cartStatus: Cart | string;
     let productCount;
 
-    if (cart.product.length === 0) cartStatus = 'Cart is empty';
+    if (cart.products.length === 0) cartStatus = 'Cart is empty';
     else {
-      (cartStatus = await cart.execPopulate(
-        'product',
-        'name pricePerUnit stock description addedBy photo'
-      )),
-        (productCount = cart.product.length);
+      (cartStatus = await cart
+        .populate(
+          'products',
+          'name pricePerUnit stock description addedBy photo'
+        )
+        .execPopulate()),
+        (productCount = cart.products.length);
     }
 
     res.status(200).json({
@@ -165,6 +169,28 @@ export const getUserCart = async (
       count: productCount,
       data: cartStatus,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Adds a new category
+// @route   GET /api/v1/admin/categories/add
+// @access  Admin
+export const addCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userDetails: User = req.user as User;
+    if (userDetails.role !== 'ADMIN')
+      throw new ErrorResponse(
+        `User with role of ${userDetails.role} is unauthorized to access this route`,
+        403
+      );
+    const category: Category = await Category.create({ name: req.body.name });
+    res.status(201).json({ success: true, data: category });
   } catch (err) {
     next(err);
   }

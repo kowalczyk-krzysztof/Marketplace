@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import colors from 'colors';
+import Mail from 'nodemailer/lib/mailer';
 interface EmailOptions {
   email: string;
   subject: string;
@@ -7,12 +8,12 @@ interface EmailOptions {
 }
 // Method for sending emails
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
-  const port = (process.env.SMTP_PORT as unknown) as number;
+  const port: number = (process.env.SMTP_PORT as unknown) as number;
 
   // Create reusable transporter object using the default SMTP transport
-  const transporter = nodemailer.createTransport({
+  const transporter: Mail = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: port,
+    port,
 
     auth: {
       user: process.env.SMTP_LOGIN,

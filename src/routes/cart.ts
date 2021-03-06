@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import {
   getMyCart,
   addProductToCart,
@@ -10,7 +10,7 @@ import {
 import passport from 'passport';
 import '../config/passport'; // importing passport settings
 
-const cartRouter = express.Router();
+const cartRouter: Router = express.Router();
 
 cartRouter
   .route('/mycart/get')

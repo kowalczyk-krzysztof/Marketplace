@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import {
   register,
   login,
@@ -16,7 +16,7 @@ import {
 import passport from 'passport';
 import '../config/passport'; // importing passport settings
 
-const userRouter = express.Router();
+const userRouter: Router = express.Router();
 
 userRouter
   .route('/register')

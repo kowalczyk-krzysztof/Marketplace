@@ -3,7 +3,7 @@ import Cart from '../models/Cart';
 import Product from '../models/Product';
 import User from '../models/User';
 import { ErrorResponse } from '../utils/ErrorResponse';
-import mongoose from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 
 // @desc    Get cart of logged in user
 // @route   GET /api/v1/cart/mycart
@@ -17,19 +17,21 @@ export const getMyCart = async (
     // This is called REFERENCING documents - it queries for every single document, there's an another approach called EMBEDDED documents but I don't think it's a good approach for a cart
 
     // Check if cart has no products
-    const userDetails = req.user as User;
+    const userDetails: User = req.user as User;
 
-    const cart = await Cart.cartExists(userDetails.id);
-    let cartStatus;
+    const cart: Cart = await Cart.cartExists(userDetails.id);
+    let cartStatus: Cart | string;
     let productCount;
-    if (cart.product.length === 0) cartStatus = 'Your cart is empty';
+    if (cart.products.length === 0) cartStatus = 'Your cart is empty';
     else {
-      cartStatus = await cart.execPopulate(
-        'product',
-        'name pricePerUnit stock description addedBy photo'
-      );
+      cartStatus = await cart
+        .populate(
+          'products',
+          'name pricePerUnit stock description addedBy photo'
+        )
+        .execPopulate();
 
-      productCount = cart.product.length;
+      productCount = cart.products.length;
     }
 
     res.status(200).json({
@@ -51,13 +53,13 @@ export const addProductToCart = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails = req.user as User;
-    const cart = await Cart.cartExists(userDetails.id);
+    const userDetails: User = req.user as User;
+    const cart: Cart = await Cart.cartExists(userDetails.id);
 
     // Check if product exists
     await Product.productExists(req.params.id);
 
-    cart.product.addToSet(req.params.id);
+    cart.products.addToSet(req.params.id);
     cart.save();
 
     // Check if product is duplicate
@@ -85,24 +87,24 @@ export const addManyProductsToCart = async (
   next: NextFunction
 ) => {
   try {
-    const userDetails = req.user as User;
-    const cart = await Cart.cartExists(userDetails.id);
-    const productsToAdd = req.body.products;
-    const addedProducts: string[] = [];
+    const userDetails: User = req.user as User;
+    const cart: Cart = await Cart.cartExists(userDetails.id);
+    const productsToAdd: mongoose.Schema.Types.ObjectId[] = req.body.products;
+    const addedProducts: mongoose.Schema.Types.ObjectId[] = [];
 
     // Adding products
     for (const product of productsToAdd) {
       if (!mongoose.isValidObjectId(product))
         throw new ErrorResponse('One or more products has an invalid id', 400);
 
-      const productExists = await Product.findById(product);
-      if (productExists && !cart.product.includes(product)) {
-        cart.product.push(product);
+      const productExists: Product | null = await Product.findById(product);
+      if (productExists && !cart.products.includes(product)) {
+        cart.products.push(product);
         addedProducts.push(product);
       }
     }
 
-    let message;
+    let message: string;
     if (addedProducts.length === 0)
       message = `No products were added. Some might be already in your cart`;
     else
@@ -127,14 +129,14 @@ export const deleteProductFromCart = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails = req.user as User;
+    const userDetails: User = req.user as User;
     const cart = await Cart.cartExists(userDetails.id);
 
-    const product = req.params.id;
-    if (!cart.product.includes(product))
+    const product: string = req.params.id;
+    if (!cart.products.includes(product))
       throw new ErrorResponse('Something went wrong', 400);
 
-    cart.product.pull(product);
+    cart.products.pull(product);
     cart.save();
 
     res.status(201).json({
@@ -156,17 +158,18 @@ export const deleteManyProductFromCart = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails = req.user as User;
-    const cart = await Cart.cartExists(userDetails.id);
-    const productsToDelete: string[] = req.body.products;
-    const deletedProducts: string[] = [];
+    const userDetails: User = req.user as User;
+    const cart: Cart = await Cart.cartExists(userDetails.id);
+    const productsToDelete: mongoose.Schema.Types.ObjectId[] =
+      req.body.products;
+    const deletedProducts: mongoose.Schema.Types.ObjectId[] = [];
 
     //  .forEach expects a synchronous function and won't do anything with the return value. It just calls the function and on to the next. for...of will actually await on the result of the execution of the function.
 
     // User shouldn't have non existent elements in his cart
     for (const product of productsToDelete) {
-      if (cart.product.includes(product)) {
-        cart.product.pull(product);
+      if (cart.products.includes(product)) {
+        cart.products.pull(product);
         deletedProducts.push(product);
       }
     }
@@ -194,12 +197,12 @@ export const emptyCart = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails = req.user as User;
-    const cart = await Cart.cartExists(userDetails.id);
-    if (cart.product.length === 0)
+    const userDetails: User = req.user as User;
+    const cart: Cart = await Cart.cartExists(userDetails.id);
+    if (cart.products.length === 0)
       throw new ErrorResponse(`Your cart is already empty`, 400);
 
-    cart.product.splice(0, cart.product.length);
+    cart.products.splice(0, cart.products.length);
     cart.save();
 
     res.status(200).json({

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import {
   getProduct,
   getManyProducts,
@@ -12,7 +12,7 @@ import {
 import passport from 'passport';
 import '../config/passport'; // importing passport settings
 
-const productRouter = express.Router();
+const productRouter: Router = express.Router();
 
 productRouter.route('/find/allproducts').get(getManyProducts);
 productRouter.route('/find/product/:id').get(getProduct);

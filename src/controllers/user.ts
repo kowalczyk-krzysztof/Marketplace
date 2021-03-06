@@ -6,6 +6,7 @@ import { ErrorResponse } from '../utils/ErrorResponse';
 import { sendEmail } from '../utils/sendEmail';
 import User from '../models/User';
 import Product from '../models/Product';
+import { JwtHeader } from 'jsonwebtoken';
 
 // @desc    Register user
 // @route   POST /api/v1/user/register
@@ -35,11 +36,12 @@ export const login = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = req.user as User;
+    const user: User = req.user as User;
 
-    const token: any = user.getSignedJwtToken(); // jsonwebtoken
-    const expireTime = (process.env.JWT_COOKIE_EXPIRE as unknown) as number;
-    const expiresIn = process.env.JWT_EXPIRE;
+    const token: string = user.getSignedJwtToken(); // jsonwebtoken
+    const expireTime: number = (process.env
+      .JWT_COOKIE_EXPIRE as unknown) as number;
+    const expiresIn: string = process.env.JWT_EXPIRE as string;
     // Cookie options
     const options = {
       expires: new Date(Date.now() + expireTime * 24 * 60 * 60 * 1000),
@@ -79,7 +81,7 @@ export const getMyProfile = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = req.user as User;
+    const user: User = req.user as User;
 
     res.status(200).json({
       success: true,
@@ -100,13 +102,6 @@ export const updateNameAndEmail = async (
 ): Promise<void> => {
   try {
     const user = req.user as User;
-    // Without those || expressions fields could be empty and both email and name are required by schema
-
-    const fieldsToUpdate = {
-      name: req.body.name || user.name,
-      email: req.body.email || user.email,
-      role: req.body.role || user.role,
-    };
 
     // Check if user is trying to register as admin
     if (req.body.role === 'ADMIN')
@@ -132,8 +127,10 @@ export const updatePassword = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails = req.user as User;
-    const user = await User.findById(userDetails.id).select('+password');
+    const userDetails: User = req.user as User;
+    const user: User | null = await User.findById(userDetails.id).select(
+      '+password'
+    );
 
     // Check current password
 
@@ -158,7 +155,7 @@ export const forgotPassword = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const user: User | null = await User.findOne({ email: req.body.email });
 
     // Check is user exists
     if (!user)
@@ -167,17 +164,17 @@ export const forgotPassword = async (
         404
       );
     // Get reset token
-    let resetToken = user.getResetPasswordToken();
+    let resetToken: string = user.getResetPasswordToken();
 
     await user.save({ validateBeforeSave: false });
 
     // Create reset url
-    const resetUrl = `${req.protocol}://${req.get(
+    const resetUrl: string = `${req.protocol}://${req.get(
       'host'
     )}/api/v1/user/resetpassword/${resetToken}`;
     // Create message to pass, in actual frontend you want to put an actual link inside
 
-    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please visit: \n\n${resetUrl}`;
+    const message: string = `You are receiving this email because you (or someone else) has requested the reset of a password. Please visit: \n\n${resetUrl}`;
     // Sending email
     try {
       // Passing options
@@ -213,12 +210,12 @@ export const resetPassword = async (
 ): Promise<void> => {
   try {
     // Get hashed token from unhashed req.params.resettoken
-    const resetPasswordToken = crypto
+    const resetPasswordToken: string = crypto
       .createHash('sha256')
       .update(req.params.resettoken)
       .digest('hex');
 
-    const user = await User.findOne({
+    const user: User | null = await User.findOne({
       resetPasswordToken,
       resetPasswordExpire: { $gt: Date.now() }, // is greater than Date.now()
     });
@@ -247,12 +244,12 @@ export const userPhotoUpload = async (
   next: NextFunction
 ) => {
   try {
-    const user = req.user as User;
+    const user: User = req.user as User;
 
     // Check if there is a file to upload
     if (!req.files) throw new ErrorResponse(`Please upload a file`, 400);
 
-    const file = req.files.file as UploadedFile;
+    const file: UploadedFile = req.files.file as UploadedFile;
 
     // Check if uploaded image is a photo
 
@@ -260,9 +257,9 @@ export const userPhotoUpload = async (
       throw new ErrorResponse(`Please upload an image file`, 400);
 
     // Check file size
-    const maxFileSizeInBytes = (process.env
+    const maxFileSizeInBytes: number = (process.env
       .MAX_FILE_UPLOAD_BYTES as unknown) as number;
-    const maxFileSizeInMB = maxFileSizeInBytes / 1048576; // 1 mb = 1048576 bytes
+    const maxFileSizeInMB: number = maxFileSizeInBytes / 1048576; // 1 mb = 1048576 bytes
 
     if (file.size > maxFileSizeInBytes)
       throw new ErrorResponse(
@@ -304,9 +301,9 @@ export const myCreatedProducts = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails = req.user as User;
-    const user = userDetails.id;
-    const products = await Product.find({ addedById: user });
+    const userDetails: User = req.user as User;
+    const user: string = userDetails.id;
+    const products: Product[] = await Product.find({ addedById: user });
 
     // Check if logged in user has any created products
     if (products.length === 0)
@@ -331,12 +328,12 @@ export const verifyEmail = async (
 ): Promise<void> => {
   try {
     // Get hashed token from unhashed req.params.resettoken
-    const verifyEmailToken = crypto
+    const verifyEmailToken: string = crypto
       .createHash('sha256')
       .update(req.params.resettoken)
       .digest('hex');
 
-    const user = await User.findOne({
+    const user: User | null = await User.findOne({
       verifyEmailToken,
       verifyEmailTokenExpire: { $gt: Date.now() }, // is greater than Date.now()
     });
@@ -367,7 +364,7 @@ export const resendVerifyEmail = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = req.user as User;
+    const user: User = req.user as User;
 
     if (user.verifiedEmail === 'VERIFIED')
       throw new ErrorResponse('Email is already verified', 400);
@@ -381,10 +378,10 @@ export const resendVerifyEmail = async (
     await user.save({ validateBeforeSave: false });
 
     // Create reset url
-    const resetUrl = `${req.protocol}://${req.get(
+    const resetUrl: string = `${req.protocol}://${req.get(
       'host'
     )}/api/v1/user/verifyemail/${token}`;
-    const message = `Your email verification link\n\n${resetUrl}\n\nExpires in 24 hours`;
+    const message: string = `Your email verification link\n\n${resetUrl}\n\nExpires in 24 hours`;
     try {
       // Passing options
       await sendEmail({

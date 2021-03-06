@@ -5,6 +5,7 @@ import { UploadedFile } from 'express-fileupload';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import Product from '../models/Product';
 import User from '../models/User';
+import Category from '../models/Category';
 
 // @desc    Get single product
 // @route   GET /api/v1/products/manage/:id
@@ -15,7 +16,7 @@ export const getProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const product = await Product.productExists(req.params.id);
+    const product: Product = await Product.productExists(req.params.id);
 
     res.status(200).json({ sucess: true, data: product });
   } catch (err) {
@@ -32,7 +33,7 @@ export const getManyProducts = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const products = await Product.find();
+    const products: Product[] = await Product.find();
 
     res.status(200).json({
       success: true,
@@ -53,32 +54,39 @@ export const createProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails = req.user as User;
+    const userDetails: User = req.user as User;
 
-    const allowedRoles = ['MERCHANT', 'ADMIN'];
+    const allowedRoles: string[] = ['MERCHANT', 'ADMIN'];
     if (!allowedRoles.includes(userDetails.role))
       throw new ErrorResponse(
         `User with role of ${userDetails.role} is unauthorized to access this route`,
         403
       );
-
-    const nameUniqueForUser = await Product.findOne({
+    // Check is user already has a product with provided name
+    const nameUniqueForUser: Product | null = await Product.findOne({
       addedById: userDetails.id,
       name: req.body.name,
     });
-
     if (nameUniqueForUser) {
-      return next(
-        new ErrorResponse(
-          `${userDetails.id} already has a product with name of ${req.body.name}`,
-          400
-        )
+      throw new ErrorResponse(
+        `${userDetails.id} already has a product with name of ${req.body.name}`,
+        400
       );
     }
 
+    // Check if categories exist
+    const categoriesToCheck: string[] = req.body.categories;
+    const categories: Category[] = await Category.find({
+      name: { $in: categoriesToCheck },
+    });
+
+    // Checking if user is trying to add to a non existent category
+    if (categories.length !== categoriesToCheck.length)
+      throw new ErrorResponse('One ore more category does not exist', 404);
+
     // Limiting the number of products a merchant can add
     const maxProducts: number = 5;
-    const totalAddedProducts = await Product.find({
+    const totalAddedProducts: Product[] = await Product.find({
       addedBy: userDetails.name,
     });
 
@@ -97,7 +105,15 @@ export const createProduct = async (
       description: req.body.description,
       pricePerUnit: req.body.pricePerUnit,
       addedById: userDetails.id,
+      categories: req.body.categories,
     });
+
+    // Adding product to categories
+    for (const category of categories) {
+      category.products.addToSet(product.id);
+      category.save();
+    }
+
     res.status(201).json({ success: true, data: product });
   } catch (err) {
     next(err);
@@ -113,15 +129,15 @@ export const updateProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails = req.user as User;
-    const allowedRoles = ['MERCHANT', 'ADMIN'];
+    const userDetails: User = req.user as User;
+    const allowedRoles: string[] = ['MERCHANT', 'ADMIN'];
     if (!allowedRoles.includes(userDetails.role))
       throw new ErrorResponse(
         `User with role of ${userDetails.role} is unauthorized to access this route`,
         403
       );
 
-    const product = await Product.productExists(req.params.id);
+    const product: Product = await Product.productExists(req.params.id);
 
     // Check if user is the products owner or admin
     if (product.addedById !== userDetails.id && userDetails.role !== 'ADMIN')
@@ -130,7 +146,7 @@ export const updateProduct = async (
         401
       );
 
-    const updatedProduct = await Product.findByIdAndUpdate(
+    const updatedProduct: Product | null = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,
       {
@@ -154,15 +170,15 @@ export const deleteProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails = req.user as User;
-    const allowedRoles = ['MERCHANT', 'ADMIN'];
+    const userDetails: User = req.user as User;
+    const allowedRoles: string[] = ['MERCHANT', 'ADMIN'];
     if (!allowedRoles.includes(userDetails.role))
       throw new ErrorResponse(
         `User with role of ${userDetails.role} is unauthorized to access this route`,
         403
       );
 
-    const product = await Product.productExists(req.params.id);
+    const product: Product = await Product.productExists(req.params.id);
     // Check if user is the products owner or admin
     if (product.addedById !== userDetails.id && userDetails.role !== 'ADMIN')
       throw new ErrorResponse(
@@ -190,8 +206,8 @@ export const getMerchantFromProductId = async (
   next: NextFunction
 ) => {
   try {
-    const product = await Product.productExists(req.params.id);
-    const merchant = await User.userExists(product.addedById);
+    const product: Product = await Product.productExists(req.params.id);
+    const merchant: User = await User.userExists(product.addedById);
 
     res.status(200).json({
       success: true,
@@ -212,7 +228,9 @@ export const getProductsByMerchant = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const products = await Product.find({ addedById: req.params.id });
+    const products: Product[] = await Product.find({
+      addedById: req.params.id,
+    });
 
     // Check if merchant has any products
     if (products.length === 0)
@@ -238,14 +256,14 @@ export const productFileUpload = async (
   next: NextFunction
 ) => {
   try {
-    const userDetails = req.user as User;
-    const allowedRoles = ['MERCHANT', 'ADMIN'];
+    const userDetails: User = req.user as User;
+    const allowedRoles: string[] = ['MERCHANT', 'ADMIN'];
     if (!allowedRoles.includes(userDetails.role))
       throw new ErrorResponse(
         `User with role of ${userDetails.role} is unauthorized to access this route`,
         403
       );
-    const product = await Product.productExists(req.params.id);
+    const product: Product = await Product.productExists(req.params.id);
 
     // Check if user is product owner
     if (product.addedById !== userDetails.id && userDetails.role !== 'ADMIN')
@@ -256,7 +274,7 @@ export const productFileUpload = async (
     // Check if there is a file to upload
     if (!req.files) throw new ErrorResponse(`Please upload a file`, 400);
 
-    const file = req.files.file as UploadedFile;
+    const file: UploadedFile = req.files.file as UploadedFile;
 
     // Check if uploaded image is a photo
 
@@ -264,9 +282,9 @@ export const productFileUpload = async (
       throw new ErrorResponse(`Please upload an image file`, 400);
 
     // Check file size
-    const maxFileSizeInBytes = (process.env
+    const maxFileSizeInBytes: number = (process.env
       .MAX_FILE_UPLOAD_BYTES as unknown) as number;
-    const maxFileSizeInMB = maxFileSizeInBytes / 1048576; // 1 mb = 1048576 bytes
+    const maxFileSizeInMB: number = maxFileSizeInBytes / 1048576; // 1 mb = 1048576 bytes
 
     if (file.size > maxFileSizeInBytes)
       throw new ErrorResponse(
@@ -274,9 +292,9 @@ export const productFileUpload = async (
         400
       );
     // Dynamic directory
-    const dir = `${product.id}`;
+    const dir: string = `${product.id}`;
     // Generating random hash for product name
-    const hash = crypto.randomBytes(5).toString('hex');
+    const hash: string = crypto.randomBytes(5).toString('hex');
 
     // Create custom filename
     file.name = `product_${product.id}_${hash}${path.parse(file.name).ext}`;
@@ -286,7 +304,7 @@ export const productFileUpload = async (
       throw new ErrorResponse('File already exists', 400);
 
     // Limiting how many images a product can have
-    const maxImages = 5;
+    const maxImages: number = 5;
     if (product.photos.length >= maxImages)
       throw new ErrorResponse(`You can only upload ${maxImages} images`, 400);
 
