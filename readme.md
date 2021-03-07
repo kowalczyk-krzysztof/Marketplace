@@ -89,7 +89,7 @@ URL: http://localhost:3000/api/v1/admin/categories/add
 ***Body:***
 
 ```js        
-{"name": "Testing3"}
+{"name": "CategoryName"}
 ```
 
 
@@ -670,7 +670,8 @@ URL: http://localhost:3000/api/v1/user/login
 ***Body:***
 
 ```js        
-{{Admin}}
+{"email": "email@domain.com",
+"password": "12345aB@"}
 ```
 
 
