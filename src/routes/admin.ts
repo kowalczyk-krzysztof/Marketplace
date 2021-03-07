@@ -6,6 +6,7 @@ import {
   deleteUser,
   getUserCart,
   addCategory,
+  deleteCategory,
 } from '../controllers/admin';
 import passport from 'passport';
 import '../config/passport'; // importing passport settings
@@ -26,5 +27,8 @@ adminRouter
 adminRouter
   .route('/categories/add')
   .post(passport.authenticate('jwt', { session: false }), addCategory);
+adminRouter
+  .route('/categories/delete/:id')
+  .delete(passport.authenticate('jwt', { session: false }), deleteCategory);
 
 export default adminRouter;

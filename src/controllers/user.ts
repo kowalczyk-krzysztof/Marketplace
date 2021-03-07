@@ -1,12 +1,12 @@
 import path from 'path';
 import crypto from 'crypto';
+import { ObjectId } from 'mongoose';
 import { Request, Response, NextFunction } from 'express';
 import { UploadedFile } from 'express-fileupload';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { sendEmail } from '../utils/sendEmail';
 import User from '../models/User';
 import Product from '../models/Product';
-import { JwtHeader } from 'jsonwebtoken';
 
 // @desc    Register user
 // @route   POST /api/v1/user/register
@@ -127,8 +127,8 @@ export const updatePassword = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails: User = req.user as User;
-    const user: User | null = await User.findById(userDetails.id).select(
+    const loggedInUser: User = req.user as User;
+    const user: User | null = await User.findById(loggedInUser.id).select(
       '+password'
     );
 
@@ -137,8 +137,8 @@ export const updatePassword = async (
     if (!(await user?.matchPassword(req.body.currentPassword)))
       throw new ErrorResponse('Password is incorrect', 401);
 
-    userDetails.password = req.body.newPassword;
-    await userDetails.save();
+    loggedInUser.password = req.body.newPassword;
+    await loggedInUser.save();
 
     res.status(201).json({ succcess: true });
   } catch (err) {
@@ -301,17 +301,16 @@ export const myCreatedProducts = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails: User = req.user as User;
-    const user: string = userDetails.id;
-    const products: Product[] = await Product.find({ addedById: user });
+    const user: User = req.user as User;
+    const myProducts: ObjectId[] = user.addedProducts;
 
     // Check if logged in user has any created products
-    if (products.length === 0)
+    if (myProducts.length === 0)
       throw new ErrorResponse(`You have not added any products`, 404);
 
     res
       .status(200)
-      .json({ success: true, count: products.length, data: products });
+      .json({ success: true, count: myProducts.length, data: myProducts });
   } catch (err) {
     next(err);
   }

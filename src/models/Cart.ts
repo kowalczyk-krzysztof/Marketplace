@@ -1,6 +1,6 @@
 import mongoose, { ObjectId } from 'mongoose';
 interface Cart extends mongoose.Document {
-  owner: mongoose.Types.Array<ObjectId>;
+  owner: mongoose.Schema.Types.ObjectId;
   products: mongoose.Types.Array<ObjectId>;
 }
 interface CartModel extends mongoose.Model<Cart> {

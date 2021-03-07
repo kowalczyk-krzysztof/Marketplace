@@ -91,13 +91,13 @@ passport.use(
         // Check if user is trying to register as admin
         if (req.body.role === 'ADMIN')
           throw new ErrorResponse('You can not register as an ADMIN', 401);
-
+        // Getting email verification token
         const [
           token,
           hashedToken,
           tokenExpiration,
         ] = User.getVerifyEmailToken();
-
+        // Creating new user
         const newUser = await User.create({
           name: req.body.name,
           email,
@@ -106,11 +106,11 @@ passport.use(
           verifyEmailToken: hashedToken,
           verifyEmailTokenExpire: tokenExpiration,
         });
-
+        // Verify email url
         const siteUrl: string = `${req.protocol}://${req.get(
           'host'
         )}/api/v1/user/verifyemail/${token}`;
-
+        // Sending email with message to newUser.email
         const message: string = `You are receiving this email because you (or someone else) has created an account in Marketplace. Please verify your email at \n\n${siteUrl}\n\nLink expires in 24 hours`;
         await sendEmail({
           email,

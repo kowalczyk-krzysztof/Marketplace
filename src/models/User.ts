@@ -1,8 +1,10 @@
-import mongoose from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 import bcryptjs from 'bcryptjs';
 import jsonwebtoken from 'jsonwebtoken';
 import crypto from 'crypto';
 import { ErrorResponse } from '../utils/ErrorResponse';
+import Product from '../models/Product';
+
 interface User extends mongoose.Document {
   name: string;
   email: string;
@@ -10,6 +12,7 @@ interface User extends mongoose.Document {
   photo: string;
   role: string;
   password: string;
+  addedProducts: mongoose.Types.Array<ObjectId>;
   verifyEmailToken: string | undefined | number;
   verifyEmailTokenExpire: string | undefined | number;
   resetPasswordToken: string | undefined;
@@ -71,6 +74,12 @@ const UserSchema = new mongoose.Schema(
 
       select: false, // makes it so when getting the password from db, we won't see it
     },
+    addedProducts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product',
+      },
+    ],
     verifyEmailToken: String,
     verifyEmailTokenExpire: Date,
     resetPasswordToken: String,
@@ -90,6 +99,20 @@ UserSchema.pre<User>('save', async function (next): Promise<void> {
   const salt: string = await bcryptjs.genSalt(10);
   user.password = await bcryptjs.hash(user.password, salt);
 });
+// Deletes all products created by user - this has to be a pre hook or it will only delete one product
+UserSchema.pre<User>(
+  'deleteOne',
+  { document: true, query: false },
+  async function () {
+    const products: Product[] = await Product.find({
+      addedById: this.id,
+    });
+
+    for (const product of products) {
+      await product.deleteOne();
+    }
+  }
+);
 
 // Sign JWT and return
 UserSchema.methods.getSignedJwtToken = function (): string {
@@ -149,8 +172,8 @@ UserSchema.statics.getVerifyEmailToken = function (): (string | number)[] {
 };
 
 // Checks if user exists
-UserSchema.statics.userExists = async function (id) {
-  let user: User | null = await User.findById(id);
+UserSchema.statics.userExists = async function (id: ObjectId) {
+  let user: User | null = await User.findOne({ _id: id });
   if (!user)
     throw new ErrorResponse(`User with id of ${id} does not exist`, 404);
   return user;
