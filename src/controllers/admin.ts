@@ -3,9 +3,38 @@ import { ErrorResponse } from '../utils/ErrorResponse';
 import User from '../models/User';
 import Cart from '../models/Cart';
 import Category from '../models/Category';
+import Product from '../models/Product';
+
+// @desc    Get all products
+// @route   GET /api/v1/admin/products
+// @access  Admin
+export const getAllProducts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    // Checks if req.user has required role
+    const user: User = req.user as User;
+    if (user.role !== 'ADMIN')
+      throw new ErrorResponse(
+        `User with role of ${user.role} is unauthorized to access this route`,
+        403
+      );
+    const products: Product[] = await Product.find();
+
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      data: products,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 // @desc    Get all users
-// @route   GET /api/v1/admin/users/
+// @route   GET /api/v1/admin/users
 // @access  Admin
 export const getAllUsers = async (
   req: Request,
