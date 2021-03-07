@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import path from 'path';
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
@@ -18,29 +17,8 @@ export const getProduct = async (
 ): Promise<void> => {
   try {
     const product: Product = await Product.productExists(req.params.id);
-
+    await product.populate('categories', 'name').execPopulate();
     res.status(200).json({ sucess: true, data: product });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// @desc    Get all products
-// @route   GET /api/v1/products
-// @access  Public
-export const getManyProducts = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const products: Product[] = await Product.find();
-
-    res.status(200).json({
-      success: true,
-      count: products.length,
-      data: products,
-    });
   } catch (err) {
     next(err);
   }
@@ -77,6 +55,7 @@ export const createProduct = async (
 
     // Check if categories exist
     const categoriesToCheck: string[] = req.body.categories;
+    // CARE! This is so you can add categories by name not by id
     const categories: Category[] = await Category.find({
       name: { $in: categoriesToCheck },
     });

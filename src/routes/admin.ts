@@ -1,5 +1,6 @@
 import express, { Router } from 'express';
 import {
+  getAllProducts,
   getAllUsers,
   getUser,
   updateUser,
@@ -13,6 +14,9 @@ import '../config/passport'; // importing passport settings
 
 const adminRouter: Router = express.Router();
 
+adminRouter
+  .route('/products')
+  .get(passport.authenticate('jwt', { session: false }), getAllProducts);
 adminRouter
   .route('/users/all')
   .get(passport.authenticate('jwt', { session: false }), getAllUsers);
