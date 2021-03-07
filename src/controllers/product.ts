@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import path from 'path';
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
@@ -54,22 +55,22 @@ export const createProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails: User = req.user as User;
+    const user: User = req.user as User;
 
     const allowedRoles: string[] = ['MERCHANT', 'ADMIN'];
-    if (!allowedRoles.includes(userDetails.role))
+    if (!allowedRoles.includes(user.role))
       throw new ErrorResponse(
-        `User with role of ${userDetails.role} is unauthorized to access this route`,
+        `User with role of ${user.role} is unauthorized to access this route`,
         403
       );
     // Check is user already has a product with provided name
     const nameUniqueForUser: Product | null = await Product.findOne({
-      addedById: userDetails.id,
+      addedById: user.id,
       name: req.body.name,
     });
     if (nameUniqueForUser) {
       throw new ErrorResponse(
-        `${userDetails.id} already has a product with name of ${req.body.name}`,
+        `${user.id} already has a product with name of ${req.body.name}`,
         400
       );
     }
@@ -80,20 +81,34 @@ export const createProduct = async (
       name: { $in: categoriesToCheck },
     });
 
+    const validCategories: string[] = [];
+    const notValidCategories: string[] = [];
+    const validCategoriesById = [];
+
+    for (const category of categories) {
+      validCategories.push(category.name);
+      validCategoriesById.push(category._id);
+    }
+
     // Checking if user is trying to add to a non existent category
-    if (categories.length !== categoriesToCheck.length)
-      throw new ErrorResponse('One ore more category does not exist', 404);
+    for (const category of categoriesToCheck) {
+      if (!validCategories.includes(category))
+        notValidCategories.push(category);
+    }
+
+    if (notValidCategories.length > 0)
+      throw new ErrorResponse(
+        `Categories ${notValidCategories} do not exist`,
+        404
+      );
 
     // Limiting the number of products a merchant can add
     const maxProducts: number = 5;
     const totalAddedProducts: Product[] = await Product.find({
-      addedBy: userDetails.name,
+      addedById: user.id,
     });
 
-    if (
-      totalAddedProducts.length >= maxProducts &&
-      userDetails.role !== 'ADMIN'
-    )
+    if (totalAddedProducts.length >= maxProducts && user.role !== 'ADMIN')
       throw new ErrorResponse(
         `Maximum number of products a merchant can add is ${maxProducts}`,
         400
@@ -104,9 +119,13 @@ export const createProduct = async (
       quantity: req.body.quantity,
       description: req.body.description,
       pricePerUnit: req.body.pricePerUnit,
-      addedById: userDetails.id,
-      categories: req.body.categories,
+      addedById: user.id,
+      categories: validCategoriesById,
     });
+
+    // Adding product to addedProducts in user who created the product
+    user.addedProducts.push(product.id);
+    user.save();
 
     // Adding product to categories
     for (const category of categories) {
@@ -129,20 +148,20 @@ export const updateProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails: User = req.user as User;
+    const user: User = req.user as User;
     const allowedRoles: string[] = ['MERCHANT', 'ADMIN'];
-    if (!allowedRoles.includes(userDetails.role))
+    if (!allowedRoles.includes(user.role))
       throw new ErrorResponse(
-        `User with role of ${userDetails.role} is unauthorized to access this route`,
+        `User with role of ${user.role} is unauthorized to access this route`,
         403
       );
 
     const product: Product = await Product.productExists(req.params.id);
 
     // Check if user is the products owner or admin
-    if (product.addedById !== userDetails.id && userDetails.role !== 'ADMIN')
+    if (product.addedById !== user.id && user.role !== 'ADMIN')
       throw new ErrorResponse(
-        `User with id ${userDetails.id} is not authorised to update this product`,
+        `User with id ${user.id} is not authorised to update this product`,
         401
       );
 
@@ -170,22 +189,24 @@ export const deleteProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userDetails: User = req.user as User;
+    const user: User = req.user as User;
     const allowedRoles: string[] = ['MERCHANT', 'ADMIN'];
-    if (!allowedRoles.includes(userDetails.role))
+    if (!allowedRoles.includes(user.role))
       throw new ErrorResponse(
-        `User with role of ${userDetails.role} is unauthorized to access this route`,
+        `User with role of ${user.role} is unauthorized to access this route`,
         403
       );
 
     const product: Product = await Product.productExists(req.params.id);
     // Check if user is the products owner or admin
-    if (product.addedById !== userDetails.id && userDetails.role !== 'ADMIN')
+    if (product.addedById !== user.id && user.role !== 'ADMIN')
       throw new ErrorResponse(
-        `User with id of ${userDetails.id} is not authorised to delete this product`,
+        `User with id of ${user.id} is not authorised to delete this product`,
         401
       );
-    await Product.findByIdAndDelete(req.params.id);
+
+    // For some reason, to use 'deleteOne' hook you have to use deleteOne, findOneAndDelete doesn't work, neither does findByIdAndDelete
+    await product.deleteOne();
 
     res.status(200).json({
       sucess: true,
@@ -256,19 +277,19 @@ export const productFileUpload = async (
   next: NextFunction
 ) => {
   try {
-    const userDetails: User = req.user as User;
+    const user: User = req.user as User;
     const allowedRoles: string[] = ['MERCHANT', 'ADMIN'];
-    if (!allowedRoles.includes(userDetails.role))
+    if (!allowedRoles.includes(user.role))
       throw new ErrorResponse(
-        `User with role of ${userDetails.role} is unauthorized to access this route`,
+        `User with role of ${user.role} is unauthorized to access this route`,
         403
       );
     const product: Product = await Product.productExists(req.params.id);
 
     // Check if user is product owner
-    if (product.addedById !== userDetails.id && userDetails.role !== 'ADMIN')
+    if (product.addedById !== user.id && user.role !== 'ADMIN')
       throw new ErrorResponse(
-        `User with id of ${userDetails.id} is not authorized to update this product`,
+        `User with id of ${user.id} is not authorized to update this product`,
         401
       );
     // Check if there is a file to upload

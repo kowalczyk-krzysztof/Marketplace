@@ -30,7 +30,7 @@ export const getCategories = async (
 };
 
 // @desc    Get all products in a category
-// @route   GET /api/v1/category/:id
+// @route   GET /api/v1/category/find/:id
 // @access  Public
 export const getProductsFromCategory = async (
   req: Request,

@@ -7,5 +7,5 @@ import {
 const categoryRouter: Router = express.Router();
 
 categoryRouter.route('/list').get(getCategories);
-categoryRouter.route('/category/:id').get(getProductsFromCategory);
+categoryRouter.route('/category/find/:id').get(getProductsFromCategory);
 export default categoryRouter;

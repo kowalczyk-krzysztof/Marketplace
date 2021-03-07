@@ -1,6 +1,8 @@
-import mongoose from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 import { Schema } from 'mongoose';
 import { ErrorResponse } from '../utils/ErrorResponse';
+import Category from '../models/Category';
+import User from './User';
 
 interface Product extends mongoose.Document {
   name: string;
@@ -10,7 +12,7 @@ interface Product extends mongoose.Document {
   description: string;
   addedById: string;
   // slug: string;
-  categories: string;
+  categories: mongoose.Types.Array<ObjectId>;
 }
 
 // Interface ProductModel is needed for static methods to work with TypeScript
@@ -56,7 +58,12 @@ export const ProductSchema: Schema = new mongoose.Schema(
     addedById: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     // slug: String,
     // A slug is a human-readable, unique identifier, used to identify a resource instead of a less human-readable identifier like an id
-    categories: [String],
+    categories: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+      },
+    ],
   },
 
   { timestamps: true } // this has to be passed to constructor, so after the object with all properties
@@ -66,9 +73,29 @@ ProductSchema.pre<Product>('save', function (next) {
   // this.slug = slugify(this.name, { lower: true });
   next();
 });
+// For some reason for this hook to work you need to use deleteOne - findByIdAndDelete and findOneAndDelete won't work. You also need to pass in options { document: true, query: false } to access "this"
+ProductSchema.post<Product>(
+  'deleteOne',
+  { document: true, query: false },
+  async function () {
+    // Removing product from categories it belongs to
+    const categoriesToRemoveFrom: ObjectId[] = this.categories;
+    const categories: Category[] = await Category.find({
+      _id: { $in: categoriesToRemoveFrom },
+    });
+    for (const category of categories) {
+      category.products.pull(this.id);
+      category.save();
+    }
+    // Remove product from user who created it
+    const user = await User.userExists(this.addedById);
+    user.addedProducts.pull(this.id);
+    user.save();
+  }
+);
 
 ProductSchema.statics.productExists = async function (id) {
-  let product: Product | null = await Product.findById(id);
+  let product: Product | null = await Product.findOne({ _id: id });
   if (!product)
     throw new ErrorResponse(`Product with id of ${id} does not exist`, 404);
   return product;

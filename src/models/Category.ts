@@ -1,8 +1,9 @@
 import mongoose, { ObjectId } from 'mongoose';
 import { ErrorResponse } from '../utils/ErrorResponse';
+import Product from './Product';
 
 interface Category extends mongoose.Document {
-  name: mongoose.Types.Array<ObjectId>;
+  name: string;
   products: mongoose.Types.Array<ObjectId>;
 }
 
@@ -26,8 +27,24 @@ const CategorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+CategorySchema.pre<Category>(
+  'deleteOne',
+  { document: true, query: false },
+  async function () {
+    // Deleting category from all products in this category
+    const products: Product[] = await Product.find({
+      categories: this._id,
+    });
+
+    for (const product of products) {
+      product.categories.pull(this._id);
+      product.save();
+    }
+  }
+);
+
 CategorySchema.statics.categoryExists = async function (id) {
-  let category: Category | null = await Category.findById(id);
+  let category: Category | null = await Category.findOne({ _id: id });
   if (!category)
     throw new ErrorResponse(`Category with id of ${id} does not exist`, 404);
   return category;

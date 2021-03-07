@@ -7,13 +7,13 @@ My first API. Trying out many different things to make sure I understand Express
 
 * [ADMIN](#admin)
 
-  * [Add New Category](#1-add-new-category)
-  * [Delete User](#2-delete-user)
-  * [Get All Users](#3-get-all-users)
-  * [Get Single User](#4-get-single-user)
-  * [Get User's Cart](#5-get-user's-cart)
-  * [Update User](#6-update-user)
-  * [Update User Copy](#7-update-user-copy)
+  * [Create New Category](#1-create-new-category)
+  * [Delete Category](#2-delete-category)
+  * [Delete User](#3-delete-user)
+  * [Get All Users](#4-get-all-users)
+  * [Get Single User](#5-get-single-user)
+  * [Get User's Cart](#6-get-user's-cart)
+  * [Update User](#7-update-user)
 
 * [Cart](#cart)
 
@@ -63,7 +63,7 @@ My first API. Trying out many different things to make sure I understand Express
 
 
 
-### 1. Add New Category
+### 1. Create New Category
 
 
 Creates a new category. Requires being logged in a role of ADMIN.
@@ -94,7 +94,23 @@ URL: http://localhost:3000/api/v1/admin/categories/add
 
 
 
-### 2. Delete User
+### 2. Delete Category
+
+
+Deletes a category. Requires being logged in a role of ADMIN.
+
+
+***Endpoint:***
+
+```bash
+Method: DELETE
+Type: RAW
+URL: http://localhost:3000/api/v1/admin/categories/delete/6044e6cdde10060b5803f516
+```
+
+
+
+### 3. Delete User
 
 
 Deletes user by user id. Requires being logged in a role of ADMIN.
@@ -110,7 +126,7 @@ URL: http://localhost:3000/api/v1/admin/users/user/604022eb69114234787e27e3
 
 
 
-### 3. Get All Users
+### 4. Get All Users
 
 
 Gets a list of all users. Requires being logged in a role of ADMIN.
@@ -126,7 +142,7 @@ URL: http://localhost:3000/api/v1/admin/users/all
 
 
 
-### 4. Get Single User
+### 5. Get Single User
 
 
 Gets user's profile by user id. Requires being logged in a role of ADMIN.
@@ -142,7 +158,7 @@ URL: http://localhost:3000/api/v1/admin/users/user/60402299aa2f0c1584af8164
 
 
 
-### 5. Get User's Cart
+### 6. Get User's Cart
 
 
 Gets user's cart by user id. Requires being logged in a role of ADMIN.
@@ -158,41 +174,7 @@ URL: http://localhost:3000/api/v1/admin/users/cart/60429af6c09f585534046c18
 
 
 
-### 6. Update User
-
-
-Updates user by user id. Requires being logged in a role of ADMIN.
-
-
-***Endpoint:***
-
-```bash
-Method: PUT
-Type: RAW
-URL: http://localhost:3000/api/v1/admin/users/user/60429af6c09f585534046c18
-```
-
-
-***Headers:***
-
-| Key | Value | Description |
-| --- | ------|-------------|
-| Content-Type | application/json | jSON Type |
-
-
-
-***Body:***
-
-```js        
-{"name": "Name",
-"email": "newemail@admin.com",
-"role": "USER"
-}
-```
-
-
-
-### 7. Update User Copy
+### 7. Update User
 
 
 Updates user by user id. Requires being logged in a role of ADMIN.
@@ -385,7 +367,7 @@ Gets a list of all categories
 ```bash
 Method: GET
 Type: 
-URL: http://localhost:3000/api/v1/categories/list 
+URL: http://localhost:3000/api/v1/categories/list
 ```
 
 
@@ -401,7 +383,7 @@ Gets all products in a category.
 ```bash
 Method: GET
 Type: 
-URL: http://localhost:3000/api/v1/categories/category/6043a9683d7b9245e8b5eba2
+URL: http://localhost:3000/api/v1/categories/category/find/6043a9683d7b9245e8b5eba2
 ```
 
 
@@ -440,7 +422,8 @@ URL: http://localhost:3000/api/v1/products/manage/create
 {"name": "Product_Name",
 "quantity": 0,
 "description": "Description",
-"pricePerUnit": 1
+"pricePerUnit": 1,
+"categories": ["CategoryName"]
 }
 ```
 
@@ -906,4 +889,4 @@ URL: http://localhost:3000/api/v1/user/verifyemail/3ccf71d84943c2f7a432a02059b52
 
 ---
 [Back to top](#marketplace-api-prod)
-> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-06 21:24:49 by [docgen](https://github.com/thedevsaddam/docgen)
+> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-07 17:55:47 by [docgen](https://github.com/thedevsaddam/docgen)
