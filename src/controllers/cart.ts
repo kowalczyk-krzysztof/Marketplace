@@ -91,7 +91,7 @@ export const addManyProductsToCart = async (
 
     // Adding products
     const productsToAdd: ObjectId[] = req.body.products;
-    // Checking if products exists
+    // Checking if products exist
     const productsExists = await Product.find({
       _id: { $in: productsToAdd },
     });

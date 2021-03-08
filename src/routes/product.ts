@@ -1,5 +1,6 @@
 import express, { Router } from 'express';
 import {
+  fuzzySearch,
   getProduct,
   createProduct,
   updateProduct,
@@ -12,7 +13,7 @@ import passport from 'passport';
 import '../config/passport'; // importing passport settings
 
 const productRouter: Router = express.Router();
-
+productRouter.route('/find/search').get(fuzzySearch);
 productRouter.route('/find/product/:id').get(getProduct);
 productRouter
   .route('/find/merchant/productid/:id')

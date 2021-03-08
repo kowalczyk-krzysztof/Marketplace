@@ -21,9 +21,10 @@ interface User extends mongoose.Document {
   getSignedJwtToken(): string;
   matchPassword(enteredPassword: string): string;
   getResetPasswordToken(): string;
+  roleCheck(...roles: string[]): void;
 }
 
-// Interface UserModel is needed for static methods to work with TypeScript, instance methods go into User
+// Interface UserModel is needed for static methods to work with TypeScript, instance methods go into UserModel
 interface UserModel extends mongoose.Model<User> {
   userExists(id: string): Promise<User>;
   getVerifyEmailToken(): (string | number)[];
@@ -177,6 +178,17 @@ UserSchema.statics.userExists = async function (id: ObjectId) {
   if (!user)
     throw new ErrorResponse(`User with id of ${id} does not exist`, 404);
   return user;
+};
+
+// Role check
+UserSchema.methods.roleCheck = function (...roles) {
+  const allowedRoles: string[] = roles;
+  const user = this as User;
+  if (!allowedRoles.includes(user.role))
+    throw new ErrorResponse(
+      `User with role of ${user.role} is unauthorized to access this route`,
+      403
+    );
 };
 
 // Exporting the model with an interface applied

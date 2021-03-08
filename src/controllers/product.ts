@@ -7,6 +7,81 @@ import Product from '../models/Product';
 import User from '../models/User';
 import Category from '../models/Category';
 
+// @desc      Fuzzy search for products
+// @route     GET /api/v1/products/find/search?term=
+// @access    Public
+export const fuzzySearch = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // Regex solution
+    const escapeRegex = (text: any) => {
+      return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    };
+    const regex = new RegExp(escapeRegex(req.query.term), 'gi');
+    const result = await Product.find({
+      $or: [
+        {
+          description: regex,
+        },
+        {
+          name: regex,
+        },
+      ],
+    })
+      .limit(15)
+      .sort({ name: 1 })
+      .select({ name: 1, description: 1, _id: 0 });
+
+    /**
+     * Below is atlas search solution - for this to work you need to create a search index
+     * 
+     * Example: {
+  "mappings": {
+    "dynamic": false,
+    "fields": {
+      "description": [
+        {
+          "foldDiacritics": true,
+          "maxGrams": 15,
+          "minGrams": 2,
+          "tokenization": "edgeGram",
+          "type": "autocomplete"
+        }
+      ],
+      "name": [
+        {
+          "foldDiacritics": true,
+          "maxGrams": 15,
+          "minGrams": 2,
+          "tokenization": "edgeGram",
+          "type": "autocomplete"
+        }
+      ]
+    }
+  }
+}
+     */
+    // const result = await Product.aggregate([
+    //   {
+    //     $search: {
+    //       index: 'index', // optional, defaults to "default"
+    //       autocomplete: {
+    //         query: `${req.query.term}`,
+    //         path: 'description',
+    //         fuzzy: { maxEdits: 1 },
+    //       },
+    //     },
+    //   },
+    // ]);
+
+    res.status(200).json({ sucess: true, count: result.length, data: result });
+  } catch (err) {
+    next(err);
+  }
+};
 // @desc    Get single product
 // @route   GET /api/v1/products/manage/:id
 // @access  Public
@@ -35,12 +110,7 @@ export const createProduct = async (
   try {
     const user: User = req.user as User;
 
-    const allowedRoles: string[] = ['MERCHANT', 'ADMIN'];
-    if (!allowedRoles.includes(user.role))
-      throw new ErrorResponse(
-        `User with role of ${user.role} is unauthorized to access this route`,
-        403
-      );
+    user.roleCheck('MERCHANT', 'ADMIN');
     // Check is user already has a product with provided name
     const nameUniqueForUser: Product | null = await Product.findOne({
       addedById: user.id,
@@ -128,12 +198,7 @@ export const updateProduct = async (
 ): Promise<void> => {
   try {
     const user: User = req.user as User;
-    const allowedRoles: string[] = ['MERCHANT', 'ADMIN'];
-    if (!allowedRoles.includes(user.role))
-      throw new ErrorResponse(
-        `User with role of ${user.role} is unauthorized to access this route`,
-        403
-      );
+    user.roleCheck('MERCHANT', 'ADMIN');
 
     const product: Product = await Product.productExists(req.params.id);
 
@@ -169,12 +234,7 @@ export const deleteProduct = async (
 ): Promise<void> => {
   try {
     const user: User = req.user as User;
-    const allowedRoles: string[] = ['MERCHANT', 'ADMIN'];
-    if (!allowedRoles.includes(user.role))
-      throw new ErrorResponse(
-        `User with role of ${user.role} is unauthorized to access this route`,
-        403
-      );
+    user.roleCheck('MERCHANT', 'ADMIN');
 
     const product: Product = await Product.productExists(req.params.id);
     // Check if user is the products owner or admin
@@ -257,12 +317,7 @@ export const productFileUpload = async (
 ) => {
   try {
     const user: User = req.user as User;
-    const allowedRoles: string[] = ['MERCHANT', 'ADMIN'];
-    if (!allowedRoles.includes(user.role))
-      throw new ErrorResponse(
-        `User with role of ${user.role} is unauthorized to access this route`,
-        403
-      );
+    user.roleCheck('MERCHANT', 'ADMIN');
     const product: Product = await Product.productExists(req.params.id);
 
     // Check if user is product owner
@@ -330,4 +385,8 @@ export const productFileUpload = async (
   } catch (err) {
     next(err);
   }
+};
+// Fuzzy search regex
+const escapeRegex = (text: string) => {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 };

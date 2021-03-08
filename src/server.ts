@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { urlencoded } from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import mongoSanitize from 'express-mongo-sanitize';
@@ -24,6 +24,7 @@ connectDB(); // connecting to mongoDB
 const app = express();
 // Set body parser
 app.use(express.json());
+app.use(urlencoded({ extended: true }));
 // Prevent xss - needs to be after body parser
 app.use(xssAdvanced());
 // Rate limiting

@@ -6,7 +6,6 @@ import { UploadedFile } from 'express-fileupload';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { sendEmail } from '../utils/sendEmail';
 import User from '../models/User';
-import Product from '../models/Product';
 
 // @desc    Register user
 // @route   POST /api/v1/user/register
@@ -39,6 +38,7 @@ export const login = async (
     const user: User = req.user as User;
 
     const token: string = user.getSignedJwtToken(); // jsonwebtoken
+
     const expireTime: number = (process.env
       .JWT_COOKIE_EXPIRE as unknown) as number;
     const expiresIn: string = process.env.JWT_EXPIRE as string;
@@ -53,7 +53,6 @@ export const login = async (
 
     res.status(200).cookie('token', token, options).json({
       success: true,
-      message: 'Successfully logged in',
       token: token,
       expiresIn,
     });
@@ -302,15 +301,18 @@ export const myCreatedProducts = async (
 ): Promise<void> => {
   try {
     const user: User = req.user as User;
+    await user.populate('addedProducts').execPopulate();
     const myProducts: ObjectId[] = user.addedProducts;
 
     // Check if logged in user has any created products
     if (myProducts.length === 0)
       throw new ErrorResponse(`You have not added any products`, 404);
 
-    res
-      .status(200)
-      .json({ success: true, count: myProducts.length, data: myProducts });
+    res.status(200).json({
+      success: true,
+      count: myProducts.length,
+      data: user.addedProducts,
+    });
   } catch (err) {
     next(err);
   }

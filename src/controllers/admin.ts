@@ -15,12 +15,9 @@ export const getAllProducts = async (
 ): Promise<void> => {
   try {
     // Checks if req.user has required role
-    const user: User = req.user as User;
-    if (user.role !== 'ADMIN')
-      throw new ErrorResponse(
-        `User with role of ${user.role} is unauthorized to access this route`,
-        403
-      );
+    const loggedInUser: User = req.user as User;
+    loggedInUser.roleCheck('ADMIN');
+    // Gets all products
     const products: Product[] = await Product.find();
 
     res.status(200).json({
@@ -43,12 +40,8 @@ export const getAllUsers = async (
 ): Promise<void> => {
   try {
     // Checks if req.user has required role
-    const user: User = req.user as User;
-    if (user.role !== 'ADMIN')
-      throw new ErrorResponse(
-        `User with role of ${user.role} is unauthorized to access this route`,
-        403
-      );
+    const loggedInUser: User = req.user as User;
+    loggedInUser.roleCheck('ADMIN');
     // Gets a list of all users
     const findUser: User[] = await User.find();
 
@@ -72,12 +65,8 @@ export const getUser = async (
 ): Promise<void> => {
   try {
     // Checks if req.user has required role
-    const user: User = req.user as User;
-    if (user.role !== 'ADMIN')
-      throw new ErrorResponse(
-        `User with role of ${user.role} is unauthorized to access this route`,
-        403
-      );
+    const loggedInUser: User = req.user as User;
+    loggedInUser.roleCheck('ADMIN');
     // Finds a single user
     const findUser: User = await User.userExists(req.params.id);
 
@@ -98,11 +87,7 @@ export const updateUser = async (
   try {
     // Checks if req.user has required role
     const loggedInUser: User = req.user as User;
-    if (loggedInUser.role !== 'ADMIN')
-      throw new ErrorResponse(
-        `User with role of ${loggedInUser.role} is unauthorized to access this route`,
-        403
-      );
+    loggedInUser.roleCheck('ADMIN');
     // Checks if user you want to update exists
     const user: User = await User.userExists(req.params.id);
 
@@ -139,11 +124,7 @@ export const deleteUser = async (
   try {
     // Checks if req.user has required role
     const loggedInUser: User = req.user as User;
-    if (loggedInUser.role !== 'ADMIN')
-      throw new ErrorResponse(
-        `User with role of ${loggedInUser.role} is unauthorized to access this route`,
-        403
-      );
+    loggedInUser.roleCheck('ADMIN');
     // Checks if user you want to delete exists
     const user: User = await User.userExists(req.params.id);
 
@@ -179,11 +160,7 @@ export const getUserCart = async (
   try {
     // Checks if req.user has required role
     const loggedInUser: User = req.user as User;
-    if (loggedInUser.role !== 'ADMIN')
-      throw new ErrorResponse(
-        `User with role of ${loggedInUser.role} is unauthorized to access this route`,
-        403
-      );
+    loggedInUser.roleCheck('ADMIN');
     // Checks if cart exists, if not it will create a new one
     const cart: Cart = await Cart.cartExists(req.params.id);
     let cartStatus: Cart | string;
@@ -219,11 +196,7 @@ export const addCategory = async (
   try {
     // Checks if req.user has required role
     const loggedInUser: User = req.user as User;
-    if (loggedInUser.role !== 'ADMIN')
-      throw new ErrorResponse(
-        `User with role of ${loggedInUser.role} is unauthorized to access this route`,
-        403
-      );
+    loggedInUser.roleCheck('ADMIN');
     // Adds a new category
     const category: Category = await Category.create({ name: req.body.name });
     res.status(201).json({ success: true, data: category });
@@ -243,11 +216,7 @@ export const deleteCategory = async (
   try {
     // Checks if req.user has required role
     const loggedInUser: User = req.user as User;
-    if (loggedInUser.role !== 'ADMIN')
-      throw new ErrorResponse(
-        `User with role of ${loggedInUser.role} is unauthorized to access this route`,
-        403
-      );
+    loggedInUser.roleCheck('ADMIN');
     const category: Category = await Category.categoryExists(req.params.id);
     await category.deleteOne();
 
