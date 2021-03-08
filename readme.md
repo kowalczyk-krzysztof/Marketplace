@@ -39,8 +39,9 @@ NOTE: Registering as ADMIN is not possible. ADMIN role has to be manually given 
   * [Get Merchant By Product ID](#3-get-merchant-by-product-id)
   * [Get Products By Merchant](#4-get-products-by-merchant)
   * [Get Single Product](#5-get-single-product)
-  * [Update Product](#6-update-product)
-  * [Upload Product Photos](#7-upload-product-photos)
+  * [Product Fuzzy Search](#6-product-fuzzy-search)
+  * [Update Product](#7-update-product)
+  * [Upload Product Photos](#8-upload-product-photos)
 
 * [User](#user)
 
@@ -442,9 +443,9 @@ URL: {{URL}}/api/v1/products/manage/create
 ```js        
 {"name": "Name",
 "quantity": 0,
-"description": "Description",
+"description": "description",
 "pricePerUnit": 20,
-"categories": ["Name", "Name2"]
+"categories": ["Name1", "Name2"]
 }
 ```
 
@@ -461,7 +462,7 @@ Deletes product. Requires being logged in, role ADMIN or MERCHANT and being the 
 ```bash
 Method: DELETE
 Type: 
-URL: {{URL}}/api/v1/products/manage/delete/6044e7daf018854290056318
+URL: {{URL}}/api/v1/products/manage/delete/60455ee8869ec6326c9784e9
 ```
 
 
@@ -514,7 +515,31 @@ URL: {{URL}}/api/v1/products/find/product/6045004ae37bb9115cb95e09
 
 
 
-### 6. Update Product
+### 6. Product Fuzzy Search
+
+
+Basic regex fuzzy search on "desription" and "name" fields.
+
+
+***Endpoint:***
+
+```bash
+Method: GET
+Type: 
+URL: {{URL}}/api/v1/products/find/search
+```
+
+
+
+***Query params:***
+
+| Key | Value | Description |
+| --- | ------|-------------|
+| term | dok |  |
+
+
+
+### 7. Update Product
 
 
 Updates product. Requires being logged in, role ADMIN or MERCHANT and being the product's owner.
@@ -549,7 +574,7 @@ URL: {{URL}}/api/v1/products/manage/edit/60426e69fa85b4444c9c7f1a
 
 
 
-### 7. Upload Product Photos
+### 8. Upload Product Photos
 
 
 Uploads product's photos. Requires being logged in, role ADMIN or MERCHANT and being the product's owner.
@@ -674,8 +699,7 @@ URL: {{URL}}/api/v1/user/login
 ***Body:***
 
 ```js        
-{"email": "email@domain.com",
-"password": "123456aB@a"}
+{{Admin}}
 ```
 
 
@@ -725,7 +749,7 @@ URL: {{URL}}/api/v1/user/register
 {"name": "Name", 
 "email": "email@domain.com",
 "password": "123456aB@a",
-"role": "MERCHANT"
+"role": "USER"
 }
 ```
 
@@ -808,7 +832,7 @@ URL: {{URL}}/api/v1/user/profile/changedetails
 ```js        
 {"name": "",
 "email": "",
-"role": ""
+"role": "MERCHANT"
 }
 ```
 
@@ -895,4 +919,4 @@ URL: {{VerifyEmail}}7107bc166a7637e78c958405d32d4c25e6e83f06
 
 ---
 [Back to top](#marketplace-api)
-> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-07 19:40:31 by [docgen](https://github.com/thedevsaddam/docgen)
+> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-08 16:03:20 by [docgen](https://github.com/thedevsaddam/docgen)
