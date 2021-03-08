@@ -1,7 +1,7 @@
 import mongoose, { ObjectId } from 'mongoose';
 import { Schema } from 'mongoose';
 import { ErrorResponse } from '../utils/ErrorResponse';
-import Category from '../models/Category';
+import Category from './Category';
 import User from './User';
 
 interface Product extends mongoose.Document {

@@ -3,7 +3,7 @@ import bcryptjs from 'bcryptjs';
 import jsonwebtoken from 'jsonwebtoken';
 import crypto from 'crypto';
 import { ErrorResponse } from '../utils/ErrorResponse';
-import Product from '../models/Product';
+import Product from './Product';
 
 interface User extends mongoose.Document {
   name: string;

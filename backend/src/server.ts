@@ -35,7 +35,7 @@ const limiter = rateLimit({
 app.use(limiter);
 // Prevent http param pollution
 app.use(hpp());
-// Enable CORS
+// Enable CORS - this is needed so I can connect with frontend
 app.use(cors());
 // Sanitize data
 app.use(mongoSanitize());
@@ -55,7 +55,7 @@ app.use('/api/v1/cart', cartRouter);
 app.use('/api/v1/categories', categoryRouter);
 app.use(errorHandler); // errorHandler has to be after routers
 
-const PORT = ((process.env.PORT as unknown) as number) || 3000;
+const PORT = ((process.env.PORT as unknown) as number) || 5000;
 
 app.listen(PORT, (): void => {
   console.log(
