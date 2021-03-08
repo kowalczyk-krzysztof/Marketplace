@@ -57,10 +57,7 @@ passport.use(
         );
 
         if (!user) {
-          return done(
-            new ErrorResponse(`User with email ${email} not found`, 404),
-            false
-          );
+          return done(new ErrorResponse(`Invalid credentials`, 404), false);
         }
 
         const validate: string = await user.matchPassword(password);

@@ -19,7 +19,7 @@ const CartSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
+// Check if cart exists
 CartSchema.statics.cartExists = async function (id) {
   let cart: Cart | null = await Cart.findOne({ owner: id });
   if (!cart) cart = await Cart.create({ owner: id });

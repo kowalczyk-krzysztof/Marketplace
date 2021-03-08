@@ -42,7 +42,7 @@ CategorySchema.pre<Category>(
     }
   }
 );
-
+// Check if category exists
 CategorySchema.statics.categoryExists = async function (id) {
   let category: Category | null = await Category.findOne({ _id: id });
   if (!category)

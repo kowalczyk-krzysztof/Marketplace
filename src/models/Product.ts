@@ -26,6 +26,7 @@ export const ProductSchema: Schema = new mongoose.Schema(
       required: [true, 'Product name is required'],
       minlength: [2, 'Product name needs to be at least 2 characters'],
       maxlength: [30, 'Product name can not be more than 50 characters'],
+      index: { type: 'text' },
     },
     photos: [
       {
@@ -53,6 +54,7 @@ export const ProductSchema: Schema = new mongoose.Schema(
       required: [true, 'Please add a description'],
       minlength: [4, 'Description needs to be at least 4 characters'],
       maxlength: [500, 'Description can not be more than 500 characters'],
+      index: { type: 'text' },
     },
     createdAt: { type: Date, immutable: true },
     addedById: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -93,7 +95,7 @@ ProductSchema.post<Product>(
     user.save();
   }
 );
-
+// Check if products exists
 ProductSchema.statics.productExists = async function (id) {
   let product: Product | null = await Product.findOne({ _id: id });
   if (!product)
@@ -106,5 +108,3 @@ const Product: ProductModel = mongoose.model<Product, ProductModel>(
   ProductSchema
 );
 export default Product;
-
-// TODO: On remove
