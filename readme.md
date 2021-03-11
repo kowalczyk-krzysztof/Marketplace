@@ -699,7 +699,9 @@ URL: {{URL}}/api/v1/user/login
 ***Body:***
 
 ```js        
-{{Admin}}
+{"email": "admin@admin.com",
+"password": "123456aB@a"
+}
 ```
 
 
@@ -919,4 +921,4 @@ URL: {{VerifyEmail}}7107bc166a7637e78c958405d32d4c25e6e83f06
 
 ---
 [Back to top](#marketplace-api)
-> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-08 16:03:20 by [docgen](https://github.com/thedevsaddam/docgen)
+> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-11 08:49:54 by [docgen](https://github.com/thedevsaddam/docgen)
