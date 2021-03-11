@@ -14,7 +14,7 @@ export const fuzzySearch = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     // Regex solution
     const escapeRegex = (text: any) => {
@@ -264,7 +264,7 @@ export const getMerchantFromProductId = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const product: Product = await Product.productExists(req.params.id);
     const merchant: User = await User.userExists(product.addedById);
@@ -314,7 +314,7 @@ export const productFileUpload = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const user: User = req.user as User;
     user.roleCheck('MERCHANT', 'ADMIN');
@@ -385,8 +385,4 @@ export const productFileUpload = async (
   } catch (err) {
     next(err);
   }
-};
-// Fuzzy search regex
-const escapeRegex = (text: string) => {
-  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 };
