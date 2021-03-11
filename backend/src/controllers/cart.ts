@@ -83,7 +83,7 @@ export const addManyProductsToCart = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     // Check if cart exists for req.user
     const user: User = req.user as User;

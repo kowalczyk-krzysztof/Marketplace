@@ -8,7 +8,7 @@ export const getCategories = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     // 1 = show field, 0 = hide
     const products: Category[] = await Category.find(
@@ -36,7 +36,7 @@ export const getProductsFromCategory = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const category: Category = await Category.categoryExists(req.params.id);
 

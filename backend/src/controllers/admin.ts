@@ -156,7 +156,7 @@ export const getUserCart = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     // Checks if req.user has required role
     const loggedInUser: User = req.user as User;
@@ -192,7 +192,7 @@ export const addCategory = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     // Checks if req.user has required role
     const loggedInUser: User = req.user as User;
@@ -212,7 +212,7 @@ export const deleteCategory = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     // Checks if req.user has required role
     const loggedInUser: User = req.user as User;
