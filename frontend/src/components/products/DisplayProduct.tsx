@@ -48,7 +48,7 @@ const DisplayProduct: FC<RouteComponentProps<DisplayProductProps>> = (
             key={photo}
             style={{ width: 200, height: 200 }}
             alt={photo}
-            src={`http://localhost:5000/uploads/products/604b5f6aa8b25715f45ad40a/${photo}`}
+            src={`${URL}/uploads/products/${product._id}/${photo}`}
           />
         );
       })}
