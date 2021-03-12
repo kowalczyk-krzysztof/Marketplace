@@ -1,5 +1,5 @@
 {
-  "name": "basic-shop-api",
+  "name": "marketplace-api",
   "version": "1.0.0",
   "description": "Learning how to make a basic API",
   "main": "server.js",

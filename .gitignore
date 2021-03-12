@@ -1,6 +1,7 @@
 node_modules
 config.env
-dist
+.env.local
+backend/dist
 backend/views/uploads/products
 backend/views/uploads/users
-build
+fronted/build
