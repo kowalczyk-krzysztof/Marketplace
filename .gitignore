@@ -4,4 +4,4 @@ config.env
 backend/dist
 backend/views/uploads/products
 backend/views/uploads/users
-fronted/build
+frontend/build
