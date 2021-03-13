@@ -203,22 +203,56 @@ export const updateProduct = async (
     const product: Product = await Product.productExists(req.params.id);
 
     // Check if user is the products owner or admin
-    if (product.addedById !== user.id && user.role !== 'ADMIN')
+    if (
+      product.addedById.toString() === user.id.toString() ||
+      user.role === 'ADMIN'
+    ) {
+      product.name = req.body.name || product.name;
+      product.quantity = req.body.quantity || product.quantity;
+      product.description = req.body.description || product.description;
+      product.pricePerUnit = req.body.pricePerUnit || product.pricePerUnit;
+      product.stock = req.body.stock || product.stock;
+
+      // Updating categories
+      // Check if categories exist
+      const categoriesToCheck: string[] = req.body.categories;
+      // CARE! This is so you can add categories by name not by id
+      const categories: Category[] = await Category.find({
+        name: { $in: categoriesToCheck },
+      });
+
+      const validCategories: string[] = [];
+      const notValidCategories: string[] = [];
+      const validCategoriesById = [];
+
+      for (const category of categories) {
+        validCategories.push(category.name);
+        validCategoriesById.push(category._id);
+      }
+
+      // Checking if user is trying to add to a non existent category
+      for (const category of categoriesToCheck) {
+        if (!validCategories.includes(category))
+          notValidCategories.push(category);
+      }
+
+      if (notValidCategories.length > 0)
+        throw new ErrorResponse(
+          `Categories ${notValidCategories} do not exist`,
+          404
+        );
+      validCategoriesById.map((category: string) => {
+        product.categories.addToSet(category);
+      });
+
+      await product.save();
+
+      res.status(201).json({ sucess: true, data: product });
+    } else
       throw new ErrorResponse(
-        `User with id ${user.id} is not authorised to update this product`,
+        `User with id ${user._id} is not authorised to update this product`,
         401
       );
-
-    const updatedProduct: Product | null = await Product.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-
-    res.status(201).json({ sucess: true, data: updatedProduct });
   } catch (err) {
     next(err);
   }
@@ -238,19 +272,22 @@ export const deleteProduct = async (
 
     const product: Product = await Product.productExists(req.params.id);
     // Check if user is the products owner or admin
-    if (product.addedById !== user.id && user.role !== 'ADMIN')
+    if (
+      product.addedById.toString() === user.id.toString() ||
+      user.role === 'ADMIN'
+    ) {
+      await product.deleteOne();
+
+      res.status(200).json({
+        sucess: true,
+        data: `Deleted product with id of ${product.id}`,
+      });
+    } else
       throw new ErrorResponse(
         `User with id of ${user.id} is not authorised to delete this product`,
         401
       );
-
     // For some reason, to use 'deleteOne' hook you have to use deleteOne, findOneAndDelete doesn't work, neither does findByIdAndDelete
-    await product.deleteOne();
-
-    res.status(200).json({
-      sucess: true,
-      data: `Deleted product with id of ${product.id}`,
-    });
   } catch (err) {
     next(err);
   }
@@ -321,67 +358,72 @@ export const productFileUpload = async (
     const product: Product = await Product.productExists(req.params.id);
 
     // Check if user is product owner
-    if (product.addedById !== user.id && user.role !== 'ADMIN')
+    if (
+      product.addedById.toString() === user.id.toString() ||
+      user.role === 'ADMIN'
+    ) {
+      if (!req.files)
+        // Check if there is a file to upload
+        throw new ErrorResponse(`Please upload a file`, 400);
+
+      const file: UploadedFile = req.files.file as UploadedFile;
+
+      // Check if uploaded image is a photo
+
+      if (!file.mimetype.startsWith('image'))
+        throw new ErrorResponse(`Please upload an image file`, 400);
+
+      // Check file size
+      const maxFileSizeInBytes: number = (process.env
+        .MAX_FILE_UPLOAD_BYTES as unknown) as number;
+      const maxFileSizeInMB: number = maxFileSizeInBytes / 1048576; // 1 mb = 1048576 bytes
+
+      if (file.size > maxFileSizeInBytes)
+        throw new ErrorResponse(
+          `Please upload an image less than ${maxFileSizeInMB}MB`,
+          400
+        );
+      // Dynamic directory
+      const dir: string = `${product.id}`;
+      // Generating random hash for product name
+      const hash: string = crypto.randomBytes(5).toString('hex');
+
+      // Create custom filename
+      file.name = `product_${product.id}_${hash}${path.parse(file.name).ext}`;
+
+      // Checking if file already exists $addToSet already handles duplicates inside db but I don't want the file to get overriden. There's a very low chance of this happening with added hash, but it still can happen
+      if (product.photos.includes(file.name))
+        throw new ErrorResponse('File already exists', 400);
+
+      // Limiting how many images a product can have
+      const maxImages: number = 5;
+      if (product.photos.length >= maxImages)
+        throw new ErrorResponse(`You can only upload ${maxImages} images`, 400);
+
+      // Moving file to folder
+      file.mv(
+        `${process.env.FILE_UPLOAD_PATH}/products/${dir}/${file.name}`,
+        async (err: Error) => {
+          if (err) {
+            console.error(err);
+            throw new ErrorResponse(`Problem with file upload`, 500);
+          }
+
+          await Product.findByIdAndUpdate(req.params.id, {
+            $addToSet: { photos: file.name },
+          });
+
+          res.status(200).json({
+            success: true,
+            data: file.name,
+          });
+        }
+      );
+    } else
       throw new ErrorResponse(
         `User with id of ${user.id} is not authorized to update this product`,
         401
       );
-    // Check if there is a file to upload
-    if (!req.files) throw new ErrorResponse(`Please upload a file`, 400);
-
-    const file: UploadedFile = req.files.file as UploadedFile;
-
-    // Check if uploaded image is a photo
-
-    if (!file.mimetype.startsWith('image'))
-      throw new ErrorResponse(`Please upload an image file`, 400);
-
-    // Check file size
-    const maxFileSizeInBytes: number = (process.env
-      .MAX_FILE_UPLOAD_BYTES as unknown) as number;
-    const maxFileSizeInMB: number = maxFileSizeInBytes / 1048576; // 1 mb = 1048576 bytes
-
-    if (file.size > maxFileSizeInBytes)
-      throw new ErrorResponse(
-        `Please upload an image less than ${maxFileSizeInMB}MB`,
-        400
-      );
-    // Dynamic directory
-    const dir: string = `${product.id}`;
-    // Generating random hash for product name
-    const hash: string = crypto.randomBytes(5).toString('hex');
-
-    // Create custom filename
-    file.name = `product_${product.id}_${hash}${path.parse(file.name).ext}`;
-
-    // Checking if file already exists $addToSet already handles duplicates inside db but I don't want the file to get overriden. There's a very low chance of this happening with added hash, but it still can happen
-    if (product.photos.includes(file.name))
-      throw new ErrorResponse('File already exists', 400);
-
-    // Limiting how many images a product can have
-    const maxImages: number = 5;
-    if (product.photos.length >= maxImages)
-      throw new ErrorResponse(`You can only upload ${maxImages} images`, 400);
-
-    // Moving file to folder
-    file.mv(
-      `${process.env.FILE_UPLOAD_PATH}/products/${dir}/${file.name}`,
-      async (err: Error) => {
-        if (err) {
-          console.error(err);
-          throw new ErrorResponse(`Problem with file upload`, 500);
-        }
-
-        await Product.findByIdAndUpdate(req.params.id, {
-          $addToSet: { photos: file.name },
-        });
-
-        res.status(200).json({
-          success: true,
-          data: file.name,
-        });
-      }
-    );
   } catch (err) {
     next(err);
   }
