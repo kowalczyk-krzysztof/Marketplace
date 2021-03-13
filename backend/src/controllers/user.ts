@@ -405,3 +405,24 @@ export const resendVerifyEmail = async (
     next(err);
   }
 };
+
+// @desc    Get single user
+// @route   GET /api/v1/user/:id
+// @access  Public
+export const getUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    // Finds a single user
+    const findUser: User = await User.userExists(req.params.id);
+    await findUser
+      .populate('addedProducts', '_id name description')
+      .execPopulate();
+
+    res.status(200).json({ sucess: true, data: findUser });
+  } catch (err) {
+    next(err);
+  }
+};

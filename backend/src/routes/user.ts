@@ -12,6 +12,7 @@ import {
   myCreatedProducts,
   verifyEmail,
   resendVerifyEmail,
+  getUser,
 } from '../controllers/user';
 import passport from 'passport';
 import '../config/passport'; // importing passport settings
@@ -46,5 +47,6 @@ userRouter.route('/verifyemail/:resettoken').put(verifyEmail);
 userRouter
   .route('/profile/resendverifyemail')
   .get(passport.authenticate('jwt', { session: false }), resendVerifyEmail);
+userRouter.route('/user/:id').get(getUser);
 
 export default userRouter;

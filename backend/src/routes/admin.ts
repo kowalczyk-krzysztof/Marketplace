@@ -2,7 +2,6 @@ import express, { Router } from 'express';
 import {
   getAllProducts,
   getAllUsers,
-  getUser,
   updateUser,
   deleteUser,
   getUserCart,
@@ -23,7 +22,6 @@ adminRouter
 adminRouter
   .route('/users/user/:id')
   .delete(passport.authenticate('jwt', { session: false }), deleteUser)
-  .get(passport.authenticate('jwt', { session: false }), getUser)
   .put(passport.authenticate('jwt', { session: false }), updateUser);
 adminRouter
   .route('/users/cart/:id')

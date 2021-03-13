@@ -168,6 +168,7 @@ export const createProduct = async (
       quantity: req.body.quantity,
       description: req.body.description,
       pricePerUnit: req.body.pricePerUnit,
+      stock: req.body.stock,
       addedById: user.id,
       categories: validCategoriesById,
     });

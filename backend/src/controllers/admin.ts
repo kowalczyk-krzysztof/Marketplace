@@ -55,27 +55,6 @@ export const getAllUsers = async (
   }
 };
 
-// @desc    Get single user
-// @route   GET /api/v1/admin/users/:id
-// @access  Admin
-export const getUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    // Checks if req.user has required role
-    const loggedInUser: User = req.user as User;
-    loggedInUser.roleCheck('ADMIN');
-    // Finds a single user
-    const findUser: User = await User.userExists(req.params.id);
-
-    res.status(200).json({ sucess: true, data: findUser });
-  } catch (err) {
-    next(err);
-  }
-};
-
 // @desc    Edit user
 // @route   PUT /api/v1/users/:id
 // @access  Admin

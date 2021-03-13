@@ -7,6 +7,7 @@ import Search from './components/products/search/Search';
 import DisplayProduct from './components/products/DisplayProduct';
 import Navbar from './components/layout/Navbar';
 import SearchProducts from './components/products/search/SearchProducts';
+import DisplayUser from './components/users/DisplayUser';
 
 const App = () => {
   axios.interceptors.response.use(
@@ -44,6 +45,7 @@ const App = () => {
           </Route>
           <Route exact path="/not-found"></Route>
           <Route exact path={`/product/:id`} component={DisplayProduct}></Route>
+          <Route exact path={`/merchant/:id`} component={DisplayUser}></Route>
         </Switch>
       </div>
     </BrowserRouter>
