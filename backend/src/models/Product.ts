@@ -11,7 +11,7 @@ interface Product extends mongoose.Document {
   stock: string;
   description: string;
   addedById: string;
-  // slug: string;
+  pricePerUnit: number;
   categories: mongoose.Types.Array<ObjectId>;
 }
 

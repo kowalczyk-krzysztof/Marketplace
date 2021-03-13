@@ -4,8 +4,6 @@ import axios from 'axios';
 // Components
 import ProductItem from './ProductItem';
 
-const URL = process.env.REACT_APP_URL;
-
 interface DisplayProductProps {
   id: string;
 }
@@ -15,46 +13,40 @@ const DisplayProduct: FC<RouteComponentProps<DisplayProductProps>> = (
   props
 ) => {
   const { id } = props.match.params; // This is how I get /:id from <Route exact path={`/product/:id`}/>
-
-  const [product, setProduct] = useState({
-    // How to make this null?
+  const workaround = {
     name: '',
     photos: [],
     stock: '',
     categories: [],
-    quantity: 10,
-    pricePerUnit: 50,
+    quantity: 0,
+    pricePerUnit: 0,
     addedById: '',
     description: '',
     _id: '',
-  });
+  };
+
+  const [product, setProduct] = useState(workaround);
+
   // Fetching product data from database
   const getProduct = async (_id: string): Promise<void> => {
-    const res = await axios.get(`${URL}/api/v1/products/find/product/${_id}`);
+    const res = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/products/find/product/${_id}`
+    );
+
     setProduct(res.data.data);
   };
 
-  // Rendering the product, how to make it render once without using []?
   useEffect(() => {
     getProduct(id);
-  }, []);
+  }, [id]);
 
-  return (
-    <div>
-      <h1>{product.name}</h1>
-      {product.photos.map((photo) => {
-        return (
-          <img
-            key={photo}
-            style={{ width: 200, height: 200 }}
-            alt={photo}
-            src={`${URL}/uploads/products/${product._id}/${photo}`}
-          />
-        );
-      })}
-      <ProductItem product={product} />
-    </div>
-  );
+  if (product._id === '') return null;
+  else
+    return (
+      <>
+        <ProductItem product={product} />
+      </>
+    );
 };
 
 export default DisplayProduct;
