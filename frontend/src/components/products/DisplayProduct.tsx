@@ -13,6 +13,7 @@ const DisplayProduct: FC<RouteComponentProps<DisplayProductProps>> = (
   props
 ) => {
   const { id } = props.match.params; // This is how I get /:id from <Route exact path={`/product/:id`}/>
+
   const workaround = {
     name: '',
     photos: [],

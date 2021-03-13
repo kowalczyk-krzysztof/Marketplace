@@ -1,17 +1,14 @@
 import { FC } from 'react';
 import { Link } from 'react-router-dom';
 // Components
-import DisplayProductPhotos from '../layout/DisplayProductPhotos';
+import DisplayProductPhotos from './DisplayProductPhotos';
+import DisplayProductCategories from './DisplayProductCategories';
+import { Category } from './DisplayProductCategories';
 
 export interface ProductSummary {
   _id: string;
   name: string;
   description: string;
-}
-
-export interface Category {
-  name: string;
-  _id: string;
 }
 
 export interface ProductFull extends ProductSummary {
@@ -45,23 +42,12 @@ const ProductItem: FC<ProductItemProps> = ({
     <div>
       <h1>{name}</h1>
       <DisplayProductPhotos photos={photos} _id={_id} />
+      <DisplayProductCategories categories={categories} />
       <p>Description: {description}</p>
       <p>Stock: {stock}</p>
-      {categories.length !== 0 ? (
-        <p>
-          Categories:{' '}
-          {categories.map((category) => {
-            const names = [];
-            names.push(category.name);
-            return names;
-          })}
-        </p>
-      ) : (
-        <p>Categories: none</p>
-      )}
       <p>Quantity: {quantity}</p>
       <p>Price: ${pricePerUnit} each</p>
-      <Link to="/">Seller Profile</Link>
+      <Link to={`/merchant/${addedById}`}>Seller Profile</Link>
     </div>
   );
 };

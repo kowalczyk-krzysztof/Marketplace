@@ -25,7 +25,7 @@ const DisplayUserPhoto: FC<DisplayUserPhotoProps> = ({ photo, _id }) => {
           key={photo}
           style={{ width: 200, height: 200 }}
           alt={photo}
-          src={`${process.env.REACT_APP_API_URL}/uploads/user/${photo}`}
+          src={`${process.env.REACT_APP_API_URL}/uploads/users/${photo}`}
         />
       </>
     );
