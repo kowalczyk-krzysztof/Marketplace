@@ -20,7 +20,7 @@ export interface ProductFull extends ProductSummary {
   addedById: string;
 }
 
-export interface ProductItemProps {
+interface ProductItemProps {
   product: ProductFull;
 }
 
@@ -37,7 +37,7 @@ const ProductItem: FC<ProductItemProps> = ({
     pricePerUnit,
     addedById,
   },
-}) => {
+}): JSX.Element => {
   return (
     <div>
       <h1>{name}</h1>

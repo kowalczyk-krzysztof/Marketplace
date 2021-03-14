@@ -4,7 +4,7 @@ import DisplayUserPhoto from './DisplayUserPhoto';
 import DisplayUserProducts from './DisplayUserProducts';
 import { ProductSummary } from '../products/ProductItem';
 
-interface User {
+export interface User {
   _id: string;
   photo: string;
   name: string;
@@ -18,12 +18,11 @@ interface UserItemProps {
 
 const UserItem: FC<UserItemProps> = ({
   user: { _id, photo, name, role, addedProducts },
-}) => {
-  console.log(addedProducts.length);
+}): JSX.Element => {
   return (
     <div>
       <h1>{name}</h1>
-      <DisplayUserPhoto photo={photo} _id={_id}></DisplayUserPhoto>
+      <DisplayUserPhoto photo={photo}></DisplayUserPhoto>
       <p>Role: {role}</p>
       <DisplayUserProducts addedProducts={addedProducts}></DisplayUserProducts>
     </div>

@@ -1,9 +1,11 @@
-import mongoose, { ObjectId } from 'mongoose';
+import mongoose from 'mongoose';
+import { ObjectID } from 'mongodb';
 import bcryptjs from 'bcryptjs';
 import jsonwebtoken from 'jsonwebtoken';
 import crypto from 'crypto';
-import { ErrorResponse } from '../utils/ErrorResponse';
 import Product from './Product';
+
+import { ErrorResponse } from '../utils/ErrorResponse';
 
 interface User extends mongoose.Document {
   name: string;
@@ -12,7 +14,7 @@ interface User extends mongoose.Document {
   photo: string;
   role: string;
   password: string;
-  addedProducts: mongoose.Types.Array<ObjectId>;
+  addedProducts: mongoose.Types.Array<ObjectID>;
   verifyEmailToken: string | undefined | number;
   verifyEmailTokenExpire: string | undefined | number;
   resetPasswordToken: string | undefined;
@@ -173,7 +175,7 @@ UserSchema.statics.getVerifyEmailToken = function (): (string | number)[] {
 };
 
 // Checks if user exists
-UserSchema.statics.userExists = async function (id: ObjectId) {
+UserSchema.statics.userExists = async function (id: ObjectID) {
   let user: User | null = await User.findOne({ _id: id });
   if (!user)
     throw new ErrorResponse(`User with id of ${id} does not exist`, 404);

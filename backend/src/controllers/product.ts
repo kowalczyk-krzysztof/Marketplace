@@ -1,12 +1,12 @@
+import { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import crypto from 'crypto';
-import { Request, Response, NextFunction } from 'express';
-import { UploadedFile } from 'express-fileupload';
-import { ErrorResponse } from '../utils/ErrorResponse';
+
 import Product from '../models/Product';
 import User from '../models/User';
 import Category from '../models/Category';
-
+import { UploadedFile } from 'express-fileupload';
+import { ErrorResponse } from '../utils/ErrorResponse';
 // @desc      Fuzzy search for products
 // @route     GET /api/v1/products/find/search?term=
 // @access    Public
@@ -17,10 +17,10 @@ export const fuzzySearch = async (
 ): Promise<void> => {
   try {
     // Regex solution
-    const escapeRegex = (text: any) => {
+    const escapeRegex = (text: string) => {
       return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     };
-    const regex = new RegExp(escapeRegex(req.query.term), 'gi');
+    const regex = new RegExp(escapeRegex(req.query.term as string), 'gi');
     const result = await Product.find({
       $or: [
         {

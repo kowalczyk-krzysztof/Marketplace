@@ -12,7 +12,7 @@ interface DisplayProductCategoriesProps {
 
 const DisplayProductCategories: FC<DisplayProductCategoriesProps> = ({
   categories,
-}) => {
+}): JSX.Element => {
   if (categories.length === 0) return <p>Categories: none</p>;
   else
     return (

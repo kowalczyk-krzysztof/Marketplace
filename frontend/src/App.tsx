@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Route, BrowserRouter, Switch } from 'react-router-dom';
 import axios from 'axios';
-
 // Components
 import Search from './components/products/search/Search';
 import DisplayProduct from './components/products/DisplayProduct';
@@ -9,7 +8,7 @@ import Navbar from './components/layout/Navbar';
 import SearchProducts from './components/products/search/SearchProducts';
 import DisplayUser from './components/users/DisplayUser';
 
-const App = () => {
+const App = (): JSX.Element => {
   axios.interceptors.response.use(
     (response) => {
       return response;
@@ -25,7 +24,7 @@ const App = () => {
   const [products, setProducts] = useState([]);
   const [productCount, setproductCount] = useState(0);
 
-  const searchProducts = async (text: string) => {
+  const searchProducts = async (text: string): Promise<void> => {
     const res = await axios.get(
       `${process.env.REACT_APP_API_URL}/api/v1/products/find/search?term=${text}`
     );

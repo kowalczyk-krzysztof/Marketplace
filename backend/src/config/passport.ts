@@ -1,7 +1,8 @@
+import dotenv from 'dotenv';
 import passport from 'passport';
 import passportjwt from 'passport-jwt';
 import passportlocal from 'passport-local';
-import dotenv from 'dotenv';
+
 import User from '../models/User';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { sendEmail } from '../utils/sendEmail';

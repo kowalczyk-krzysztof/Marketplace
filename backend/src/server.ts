@@ -1,22 +1,23 @@
 import express, { urlencoded } from 'express';
-import dotenv from 'dotenv';
 import path from 'path';
+import dotenv from 'dotenv';
+import xssAdvanced from 'xss-advanced';
+import rateLimit from 'express-rate-limit';
+import hpp from 'hpp';
+import cors from 'cors';
 import mongoSanitize from 'express-mongo-sanitize';
 import helmet from 'helmet';
-import xssAdvanced from 'xss-advanced';
 import cookieParser from 'cookie-parser';
 import fileupload from 'express-fileupload';
-import { connectDB } from './config/db';
+import colors from 'colors';
+
 import errorHandler from './middleware/error';
 import productRouter from './routes/product';
 import userRouter from './routes/user';
 import adminRouter from './routes/admin';
 import cartRouter from './routes/cart';
 import categoryRouter from './routes/categories';
-import colors from 'colors';
-import rateLimit from 'express-rate-limit';
-import hpp from 'hpp';
-import cors from 'cors';
+import { connectDB } from './config/db';
 
 dotenv.config({ path: 'config.env' }); // exporting environment variables
 connectDB(); // connecting to mongoDB

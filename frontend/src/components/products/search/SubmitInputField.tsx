@@ -19,7 +19,7 @@ const SubmitInputField: FC<SubmitInputFieldProps> = ({
   buttonValue,
   onChange,
   onSubmit,
-}) => {
+}): JSX.Element => {
   return (
     <div>
       <form onSubmit={onSubmit}>

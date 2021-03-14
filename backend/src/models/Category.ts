@@ -1,10 +1,11 @@
-import mongoose, { ObjectId } from 'mongoose';
-import { ErrorResponse } from '../utils/ErrorResponse';
-import Product from './Product';
+import mongoose from 'mongoose';
+import { ObjectID } from 'mongodb';
 
+import Product from './Product';
+import { ErrorResponse } from '../utils/ErrorResponse';
 interface Category extends mongoose.Document {
   name: string;
-  products: mongoose.Types.Array<ObjectId>;
+  products: mongoose.Types.Array<ObjectID>;
 }
 
 interface CategoryModel extends mongoose.Model<Category> {

@@ -1,8 +1,9 @@
-import mongoose, { ObjectId } from 'mongoose';
-import { Schema } from 'mongoose';
-import { ErrorResponse } from '../utils/ErrorResponse';
+import mongoose, { Schema } from 'mongoose';
+import { ObjectID } from 'mongodb';
+
 import Category from './Category';
 import User from './User';
+import { ErrorResponse } from '../utils/ErrorResponse';
 
 interface Product extends mongoose.Document {
   name: string;
@@ -12,7 +13,7 @@ interface Product extends mongoose.Document {
   description: string;
   addedById: string;
   pricePerUnit: number;
-  categories: mongoose.Types.Array<ObjectId>;
+  categories: mongoose.Types.Array<ObjectID>;
 }
 
 // Interface ProductModel is needed for static methods to work with TypeScript
@@ -81,7 +82,7 @@ ProductSchema.post<Product>(
   { document: true, query: false },
   async function () {
     // Removing product from categories it belongs to
-    const categoriesToRemoveFrom: ObjectId[] = this.categories;
+    const categoriesToRemoveFrom: ObjectID[] = this.categories;
     const categories: Category[] = await Category.find({
       _id: { $in: categoriesToRemoveFrom },
     });

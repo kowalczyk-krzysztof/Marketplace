@@ -8,7 +8,7 @@ interface DisplayProductPhotosProps {
 const DisplayProductPhotos: FC<DisplayProductPhotosProps> = ({
   photos,
   _id,
-}) => {
+}): JSX.Element => {
   if (photos.length === 0)
     return (
       <>

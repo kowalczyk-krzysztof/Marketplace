@@ -1,11 +1,12 @@
+import { Request, Response, NextFunction } from 'express';
+import { ObjectID } from 'mongodb';
 import path from 'path';
 import crypto from 'crypto';
-import { ObjectId } from 'mongoose';
-import { Request, Response, NextFunction } from 'express';
+
+import User from '../models/User';
 import { UploadedFile } from 'express-fileupload';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { sendEmail } from '../utils/sendEmail';
-import User from '../models/User';
 
 // @desc    Register user
 // @route   POST /api/v1/user/register
@@ -302,7 +303,7 @@ export const myCreatedProducts = async (
   try {
     const user: User = req.user as User;
     await user.populate('addedProducts').execPopulate();
-    const myProducts: ObjectId[] = user.addedProducts;
+    const myProducts: ObjectID[] = user.addedProducts;
 
     // Check if logged in user has any created products
     if (myProducts.length === 0)

@@ -1,4 +1,6 @@
 import express, { Router } from 'express';
+import passport from 'passport';
+
 import {
   register,
   login,
@@ -14,7 +16,6 @@ import {
   resendVerifyEmail,
   getUser,
 } from '../controllers/user';
-import passport from 'passport';
 import '../config/passport'; // importing passport settings
 
 const userRouter: Router = express.Router();

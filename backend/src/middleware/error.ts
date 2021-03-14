@@ -1,13 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { ErrorResponse } from '../utils/ErrorResponse';
+import { Request, Response } from 'express';
 import colors from 'colors';
 
-const errorHandler = (
-  err: any,
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
+import { ErrorResponse } from '../utils/ErrorResponse';
+
+const errorHandler = (err: any, req: Request, res: Response): void => {
   let error = { ...err };
   error.message = err._message;
   error.next = err.message; // Uses the message passed to next() in the controller, for example `Product not found with id of ${req.params.id}`
