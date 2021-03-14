@@ -1,8 +1,7 @@
 import { FC } from 'react';
-
 // Components
-import { ProductSummary } from '../ProductItem';
 import SearchProductItem from './SearchProductItem';
+import { ProductSummary } from '../ProductItem';
 
 interface SearchProductsProps {
   products: ProductSummary[];
@@ -13,7 +12,7 @@ interface SearchProductsProps {
 const SearchProducts: FC<SearchProductsProps> = ({
   products,
   productCount,
-}) => {
+}): JSX.Element | null => {
   if (productCount > 0)
     return (
       <>

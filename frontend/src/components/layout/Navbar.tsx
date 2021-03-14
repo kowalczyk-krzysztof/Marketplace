@@ -1,9 +1,9 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 import { Link } from 'react-router-dom';
 
 interface NavbarProps {}
 
-const Navbar: FC<NavbarProps> = () => {
+const Navbar: FC<NavbarProps> = (): JSX.Element => {
   return (
     <nav>
       <ul>

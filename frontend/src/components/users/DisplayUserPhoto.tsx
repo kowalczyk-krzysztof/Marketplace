@@ -2,10 +2,11 @@ import { FC } from 'react';
 
 interface DisplayUserPhotoProps {
   photo: string;
-  _id: string;
 }
 
-const DisplayUserPhoto: FC<DisplayUserPhotoProps> = ({ photo, _id }) => {
+const DisplayUserPhoto: FC<DisplayUserPhotoProps> = ({
+  photo,
+}): JSX.Element => {
   // If user doesn't have photo then render default photo
   if (photo === process.env.REACT_APP_NO_PHOTO_FILE)
     return (

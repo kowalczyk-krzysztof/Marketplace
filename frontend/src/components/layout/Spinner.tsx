@@ -1,5 +1,6 @@
 import spinner from './Spinner.gif';
-const Spinner = () => (
+
+const Spinner = (): JSX.Element => (
   <>
     <img
       src={spinner}

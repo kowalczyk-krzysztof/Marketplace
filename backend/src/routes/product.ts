@@ -1,4 +1,6 @@
 import express, { Router } from 'express';
+import passport from 'passport';
+
 import {
   fuzzySearch,
   getProduct,
@@ -9,7 +11,6 @@ import {
   getProductsByMerchant,
   productFileUpload,
 } from '../controllers/product';
-import passport from 'passport';
 import '../config/passport'; // importing passport settings
 
 const productRouter: Router = express.Router();

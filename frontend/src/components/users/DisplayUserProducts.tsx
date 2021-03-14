@@ -6,9 +6,9 @@ interface DisplayUserProductsProps {
   addedProducts: ProductSummary[];
 }
 
-export const DisplayUserProducts: FC<DisplayUserProductsProps> = ({
+const DisplayUserProducts: FC<DisplayUserProductsProps> = ({
   addedProducts,
-}) => {
+}): JSX.Element | null => {
   console.log(addedProducts);
   if (addedProducts.length > 0)
     return (

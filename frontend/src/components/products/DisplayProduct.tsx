@@ -3,6 +3,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import axios from 'axios';
 // Components
 import ProductItem from './ProductItem';
+import { ProductFull } from './ProductItem';
 
 interface DisplayProductProps {
   id: string;
@@ -11,10 +12,10 @@ interface DisplayProductProps {
 // This is the interface needed to get access to match.params.id
 const DisplayProduct: FC<RouteComponentProps<DisplayProductProps>> = (
   props
-) => {
+): JSX.Element | null => {
   const { id } = props.match.params; // This is how I get /:id from <Route exact path={`/product/:id`}/>
 
-  const workaround = {
+  const workaround: ProductFull = {
     name: '',
     photos: [],
     stock: '',

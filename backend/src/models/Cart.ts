@@ -1,10 +1,11 @@
-import mongoose, { ObjectId } from 'mongoose';
+import mongoose from 'mongoose';
+import { ObjectID } from 'mongodb';
 interface Cart extends mongoose.Document {
   owner: mongoose.Schema.Types.ObjectId;
-  products: mongoose.Types.Array<ObjectId>;
+  products: mongoose.Types.Array<ObjectID | string>;
 }
 interface CartModel extends mongoose.Model<Cart> {
-  cartExists(id: string): Promise<any>;
+  cartExists(id: string): Promise<Cart>;
 }
 
 const CartSchema = new mongoose.Schema(

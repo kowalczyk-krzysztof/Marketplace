@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { ObjectId } from 'mongoose';
+import { ObjectID } from 'mongodb';
+
 import Cart from '../models/Cart';
 import Product from '../models/Product';
 import User from '../models/User';
@@ -90,7 +91,7 @@ export const addManyProductsToCart = async (
     const cart: Cart = await Cart.cartExists(user.id);
 
     // Adding products
-    const productsToAdd: ObjectId[] = req.body.products;
+    const productsToAdd: ObjectID[] = req.body.products;
     // Checking if products exist
     const productsExists = await Product.find({
       _id: { $in: productsToAdd },
@@ -102,8 +103,8 @@ export const addManyProductsToCart = async (
     }
 
     // Checks if products user is trying to add are both existing products and not already in cart
-    const addedProducts: ObjectId[] = [];
-    const notAdddedProducts: ObjectId[] = [];
+    const addedProducts: ObjectID[] = [];
+    const notAdddedProducts: ObjectID[] = [];
 
     for (const product of productsToAdd) {
       if (validProducts.includes(product) && !cart.products.includes(product)) {
@@ -145,7 +146,7 @@ export const deleteProductFromCart = async (
     const cart = await Cart.cartExists(user.id);
 
     // Check if user is trying to delete a product that is not in his cart
-    const product: string = req.params.id;
+    const product: ObjectID | string = req.params.id;
     if (!cart.products.includes(product))
       throw new ErrorResponse('Something went wrong', 400);
 
@@ -179,8 +180,8 @@ export const deleteManyProductFromCart = async (
     //  .forEach expects a synchronous function and won't do anything with the return value. It just calls the function and on to the next. for...of will actually await on the result of the execution of the function.
 
     // Deleting products from cart
-    const productsToDelete: ObjectId[] = req.body.products;
-    const deletedProducts: ObjectId[] = [];
+    const productsToDelete: ObjectID[] = req.body.products;
+    const deletedProducts: ObjectID[] = [];
 
     // User shouldn't have non existent elements in his cart
     for (const product of productsToDelete) {

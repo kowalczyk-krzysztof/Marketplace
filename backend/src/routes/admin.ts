@@ -1,4 +1,6 @@
 import express, { Router } from 'express';
+import passport from 'passport';
+
 import {
   getAllProducts,
   getAllUsers,
@@ -8,7 +10,6 @@ import {
   addCategory,
   deleteCategory,
 } from '../controllers/admin';
-import passport from 'passport';
 import '../config/passport'; // importing passport settings
 
 const adminRouter: Router = express.Router();

@@ -3,6 +3,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import axios from 'axios';
 // Components
 import UserItem from './UserItem';
+import { User } from './UserItem';
 
 interface DisplayUserProps {
   id: string;
@@ -23,10 +24,12 @@ interface DisplayUserProps {
 //   };
 // }
 
-const DisplayUser: FC<RouteComponentProps<DisplayUserProps>> = (props) => {
+const DisplayUser: FC<RouteComponentProps<DisplayUserProps>> = (
+  props
+): JSX.Element | null => {
   const { id } = props.match.params;
 
-  const workaround = {
+  const workaround: User = {
     _id: '',
     photo: '',
     name: '',

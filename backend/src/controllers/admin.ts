@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import { ErrorResponse } from '../utils/ErrorResponse';
+
 import User from '../models/User';
 import Cart from '../models/Cart';
 import Category from '../models/Category';
 import Product from '../models/Product';
+import { ErrorResponse } from '../utils/ErrorResponse';
 
 // @desc    Get all products
 // @route   GET /api/v1/admin/products

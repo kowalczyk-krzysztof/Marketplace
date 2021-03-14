@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import Category from '../models/Category';
 
 // @desc    Get all categories
