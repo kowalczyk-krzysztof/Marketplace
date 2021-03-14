@@ -21,9 +21,6 @@ const errorHandler = (
 
   // Log to console for dev
   console.log(colors.white.bgRed.bold(err));
-  // console.log(Object.getOwnPropertyNames(err));
-  // console.log(Object.getPrototypeOf(err));
-  // console.log(Object.getPrototypeOf(error));
 
   // Mongoose invalid ObjectId
   if (err.kind === 'ObjectId') {

@@ -417,7 +417,8 @@ export const getUser = async (
 ): Promise<void> => {
   try {
     // Finds a single user
-    const findUser: User = await User.userExists(req.params.id);
+    const userID: ObjectID = (req.params.id as unknown) as ObjectID;
+    const findUser: User = await User.userExists(userID);
     await findUser
       .populate('addedProducts', '_id name description')
       .execPopulate();

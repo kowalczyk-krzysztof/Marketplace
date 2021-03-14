@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { ObjectID } from 'mongodb';
 
 import User from '../models/User';
 import Cart from '../models/Cart';
@@ -69,7 +70,8 @@ export const updateUser = async (
     const loggedInUser: User = req.user as User;
     loggedInUser.roleCheck('ADMIN');
     // Checks if user you want to update exists
-    const user: User = await User.userExists(req.params.id);
+    const userId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const user: User = await User.userExists(userId);
 
     // Check if admin is trying to edit its own profile
     if (user.id === loggedInUser.id)
@@ -106,7 +108,9 @@ export const deleteUser = async (
     const loggedInUser: User = req.user as User;
     loggedInUser.roleCheck('ADMIN');
     // Checks if user you want to delete exists
-    const user: User = await User.userExists(req.params.id);
+
+    const userId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const user: User = await User.userExists(userId);
 
     // Check if user is trying to delete itself
     if (user.id === loggedInUser.id) {
@@ -142,7 +146,8 @@ export const getUserCart = async (
     const loggedInUser: User = req.user as User;
     loggedInUser.roleCheck('ADMIN');
     // Checks if cart exists, if not it will create a new one
-    const cart: Cart = await Cart.cartExists(req.params.id);
+    const cartId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const cart: Cart = await Cart.cartExists(cartId);
     let cartStatus: Cart | string;
     let productCount: number = cart.products.length;
 
@@ -197,7 +202,8 @@ export const deleteCategory = async (
     // Checks if req.user has required role
     const loggedInUser: User = req.user as User;
     loggedInUser.roleCheck('ADMIN');
-    const category: Category = await Category.categoryExists(req.params.id);
+    const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const category: Category = await Category.categoryExists(categoryId);
     await category.deleteOne();
 
     res.status(200).json({

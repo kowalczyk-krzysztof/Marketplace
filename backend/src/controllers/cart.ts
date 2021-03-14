@@ -56,7 +56,8 @@ export const addProductToCart = async (
     const cart: Cart = await Cart.cartExists(user.id);
 
     // Check if product exists
-    await Product.productExists(req.params.id);
+    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    await Product.productExists(productId);
     // Adds new product to cart, since it's addToSet, it will only add non duplicates
     cart.products.addToSet(req.params.id);
     cart.save();
