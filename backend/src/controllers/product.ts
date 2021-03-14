@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import crypto from 'crypto';
+import { ObjectID } from 'mongodb';
 
 import Product from '../models/Product';
 import User from '../models/User';
@@ -124,32 +125,9 @@ export const createProduct = async (
     }
 
     // Check if categories exist
-    const categoriesToCheck: string[] = req.body.categories;
-    // CARE! This is so you can add categories by name not by id
-    const categories: Category[] = await Category.find({
-      name: { $in: categoriesToCheck },
-    });
-
-    const validCategories: string[] = [];
-    const notValidCategories: string[] = [];
-    const validCategoriesById = [];
-
-    for (const category of categories) {
-      validCategories.push(category.name);
-      validCategoriesById.push(category._id);
-    }
-
-    // Checking if user is trying to add to a non existent category
-    for (const category of categoriesToCheck) {
-      if (!validCategories.includes(category))
-        notValidCategories.push(category);
-    }
-
-    if (notValidCategories.length > 0)
-      throw new ErrorResponse(
-        `Categories ${notValidCategories} do not exist`,
-        404
-      );
+    const [categoryIds, categoryObject] = await Product.categoryValidation(
+      req.body.categories
+    );
 
     // Limiting the number of products a merchant can add
     const maxProducts: number = 5;
@@ -170,7 +148,7 @@ export const createProduct = async (
       pricePerUnit: req.body.pricePerUnit,
       stock: req.body.stock,
       addedById: user.id,
-      categories: validCategoriesById,
+      categories: categoryIds,
     });
 
     // Adding product to addedProducts in user who created the product
@@ -178,7 +156,7 @@ export const createProduct = async (
     user.save();
 
     // Adding product to categories
-    for (const category of categories) {
+    for (const category of categoryObject) {
       category.products.addToSet(product.id);
       category.save();
     }
@@ -208,45 +186,42 @@ export const updateProduct = async (
       product.addedById.toString() === user.id.toString() ||
       user.role === 'ADMIN'
     ) {
+      // Check is user already has a product with provided name and if the product user wants to update isn't that product
+      const nameUniqueForUser: Product | null = await Product.findOne({
+        addedById: user.id,
+        name: req.body.name,
+      });
+      if (nameUniqueForUser && product.name !== req.body.name) {
+        throw new ErrorResponse(
+          `${user.id} already has a product with name of ${req.body.name}`,
+          400
+        );
+      }
       product.name = req.body.name || product.name;
       product.quantity = req.body.quantity || product.quantity;
       product.description = req.body.description || product.description;
       product.pricePerUnit = req.body.pricePerUnit || product.pricePerUnit;
       product.stock = req.body.stock || product.stock;
 
-      // Updating categories
       // Check if categories exist
-      const categoriesToCheck: string[] = req.body.categories;
-      // CARE! This is so you can add categories by name not by id
-      const categories: Category[] = await Category.find({
-        name: { $in: categoriesToCheck },
-      });
+      const validCategories = await Product.categoryValidation(
+        req.body.categories
+      );
+      // This is how you get the correct types from a tuple
+      const categoryIds: string[] = validCategories[0];
+      const categoryObject: Category[] = validCategories[1];
 
-      const validCategories: string[] = [];
-      const notValidCategories: string[] = [];
-      const validCategoriesById = [];
-
-      for (const category of categories) {
-        validCategories.push(category.name);
-        validCategoriesById.push(category._id);
-      }
-
-      // Checking if user is trying to add to a non existent category
-      for (const category of categoriesToCheck) {
-        if (!validCategories.includes(category))
-          notValidCategories.push(category);
-      }
-
-      if (notValidCategories.length > 0)
-        throw new ErrorResponse(
-          `Categories ${notValidCategories} do not exist`,
-          404
-        );
-      validCategoriesById.map((category: string) => {
+      // Adding valid categories to product
+      categoryIds.map((category: string) => {
         product.categories.addToSet(category);
       });
-
       await product.save();
+
+      // Adding product to categories
+      for (const category of categoryObject) {
+        category.products.addToSet(product.id);
+        category.save();
+      }
 
       res.status(201).json({ sucess: true, data: product });
     } else
@@ -423,6 +398,67 @@ export const productFileUpload = async (
     } else
       throw new ErrorResponse(
         `User with id of ${user.id} is not authorized to update this product`,
+        401
+      );
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Update product categories
+// @route   PUT /api/v1/products/manage/edit/categories/:id
+// @access  Private
+export const updateProductCategories = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const user: User = req.user as User;
+    user.roleCheck('MERCHANT', 'ADMIN');
+
+    const product: Product = await Product.productExists(req.params.id);
+
+    // Check if user is the products owner or admin
+    if (
+      product.addedById.toString() === user.id.toString() ||
+      user.role === 'ADMIN'
+    ) {
+      // Check if categories exist
+      const validCategories = await Product.categoryValidation(
+        req.body.categories
+      );
+      // This is how you get the correct types from a tuple
+      const newCategoryIds: string[] = validCategories[0];
+      const newCategoryObjects: Category[] = validCategories[1];
+
+      // Removing product from categories it belongs to then emptying the product.categories array. This is done to so user can delete categories from product when updating. Product is deleted from categories it belongs to first and then the product.categories array is emptied - this might lead to some issues but as of now I couldn't think of anything better.
+      const currentCategories: ObjectID[] = product.categories;
+      const currentCategoriesObjects: Category[] = await Category.find({
+        _id: { $in: currentCategories },
+      });
+      for (const category of currentCategoriesObjects) {
+        category.products.pull(product.id);
+        category.save();
+      }
+      currentCategories.splice(0, currentCategories.length); // This empties the product categories array
+
+      // Adding valid categories to product
+      newCategoryIds.map((category: string) => {
+        product.categories.addToSet(category);
+      });
+      await product.save();
+
+      // Adding product to categories
+      for (const category of newCategoryObjects) {
+        category.products.addToSet(product.id);
+        category.save();
+      }
+
+      res.status(201).json({ sucess: true, data: product });
+    } else
+      throw new ErrorResponse(
+        `User with id ${user._id} is not authorised to update this product`,
         401
       );
   } catch (err) {
