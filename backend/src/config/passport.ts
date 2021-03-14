@@ -23,7 +23,7 @@ passport.use(
     async (payload, done) => {
       // Paylod is extracted jwt
 
-      const user = await User.findById(payload.id);
+      const user: User | null = await User.findById(payload.id);
 
       if (!user) {
         return done(new ErrorResponse(`User not found`, 404), false);
@@ -96,7 +96,7 @@ passport.use(
           tokenExpiration,
         ] = User.getVerifyEmailToken();
         // Creating new user
-        const newUser = await User.create({
+        const newUser: User = await User.create({
           name: req.body.name,
           email,
           password,

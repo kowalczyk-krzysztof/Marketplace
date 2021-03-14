@@ -11,15 +11,15 @@ interface Product extends mongoose.Document {
   quantity: number;
   stock: string;
   description: string;
-  addedById: string;
+  addedById: ObjectID;
   pricePerUnit: number;
   categories: mongoose.Types.Array<ObjectID>;
 }
 
 // Interface ProductModel is needed for static methods to work with TypeScript
 interface ProductModel extends mongoose.Model<Product> {
-  productExists(id: string): Promise<Product>;
-  categoryValidation(categories: string[]): [string[], Category[]]; // This is called a tuple
+  productExists(id: ObjectID): Promise<Product>;
+  categoryValidation(categories: ObjectID[]): Promise<[ObjectID[], Category[]]>; // This is called a tuple
 }
 export const ProductSchema: Schema = new mongoose.Schema(
   {
@@ -60,8 +60,6 @@ export const ProductSchema: Schema = new mongoose.Schema(
     },
     createdAt: { type: Date, immutable: true },
     addedById: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    // slug: String,
-    // A slug is a human-readable, unique identifier, used to identify a resource instead of a less human-readable identifier like an id
     categories: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -73,10 +71,6 @@ export const ProductSchema: Schema = new mongoose.Schema(
   { timestamps: true } // this has to be passed to constructor, so after the object with all properties
 );
 
-ProductSchema.pre<Product>('save', function (next) {
-  // this.slug = slugify(this.name, { lower: true });
-  next();
-});
 // For some reason for this hook to work you need to use deleteOne - findByIdAndDelete and findOneAndDelete won't work. You also need to pass in options { document: true, query: false } to access "this"
 ProductSchema.post<Product>(
   'deleteOne',
@@ -92,13 +86,16 @@ ProductSchema.post<Product>(
       category.save();
     }
     // Remove product from user who created it
-    const user = await User.userExists(this.addedById);
+    const owner: ObjectID = this.addedById;
+    const user = await User.userExists(owner);
     user.addedProducts.pull(this.id);
     user.save();
   }
 );
 // Check if products exists
-ProductSchema.statics.productExists = async function (id) {
+ProductSchema.statics.productExists = async function (
+  id: ObjectID
+): Promise<Product> {
   let product: Product | null = await Product.findOne({ _id: id });
   if (!product)
     throw new ErrorResponse(`Product with id of ${id} does not exist`, 404);
@@ -107,7 +104,9 @@ ProductSchema.statics.productExists = async function (id) {
 
 // Check if categories are valid
 // ATTENTION: This mathod makes it so you add/update categories by name not id
-ProductSchema.statics.categoryValidation = async function (categories) {
+ProductSchema.statics.categoryValidation = async function (
+  categories: string[]
+): Promise<[ObjectID[], Category[]]> {
   const categoryNamesToCheck: string[] = categories; // Array of category names from req.body.categories
 
   // Finds categories with names provided in req.body.categories.
@@ -117,7 +116,7 @@ ProductSchema.statics.categoryValidation = async function (categories) {
 
   const validCategoriesByName: string[] = []; // This array will contain names of valid categories
   const invalidCategoriesByName: string[] = []; // This array will contain names of invalid categories
-  const validCategoriesById: string[] = []; // This array will contain IDs of valid categories
+  const validCategoriesById: ObjectID[] = []; // This array will contain IDs of valid categories
 
   // After fetching valid categories (objects), push their names and IDs to arrays
   for (const category of categoryObjects) {

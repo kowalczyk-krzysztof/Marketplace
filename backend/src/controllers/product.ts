@@ -8,6 +8,7 @@ import User from '../models/User';
 import Category from '../models/Category';
 import { UploadedFile } from 'express-fileupload';
 import { ErrorResponse } from '../utils/ErrorResponse';
+
 // @desc      Fuzzy search for products
 // @route     GET /api/v1/products/find/search?term=
 // @access    Public
@@ -92,7 +93,8 @@ export const getProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const product: Product = await Product.productExists(req.params.id);
+    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const product: Product = await Product.productExists(productId);
     await product.populate('categories', 'name').execPopulate();
     res.status(200).json({ sucess: true, data: product });
   } catch (err) {
@@ -179,7 +181,8 @@ export const updateProduct = async (
     const user: User = req.user as User;
     user.roleCheck('MERCHANT', 'ADMIN');
 
-    const product: Product = await Product.productExists(req.params.id);
+    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const product: Product = await Product.productExists(productId);
 
     // Check if user is the products owner or admin
     if (
@@ -208,11 +211,11 @@ export const updateProduct = async (
         req.body.categories
       );
       // This is how you get the correct types from a tuple
-      const categoryIds: string[] = validCategories[0];
+      const categoryIds: ObjectID[] = validCategories[0];
       const categoryObject: Category[] = validCategories[1];
 
       // Adding valid categories to product
-      categoryIds.map((category: string) => {
+      categoryIds.map((category: ObjectID) => {
         product.categories.addToSet(category);
       });
       await product.save();
@@ -246,7 +249,8 @@ export const deleteProduct = async (
     const user: User = req.user as User;
     user.roleCheck('MERCHANT', 'ADMIN');
 
-    const product: Product = await Product.productExists(req.params.id);
+    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const product: Product = await Product.productExists(productId);
     // Check if user is the products owner or admin
     if (
       product.addedById.toString() === user.id.toString() ||
@@ -279,7 +283,8 @@ export const getMerchantFromProductId = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const product: Product = await Product.productExists(req.params.id);
+    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const product: Product = await Product.productExists(productId);
     const merchant: User = await User.userExists(product.addedById);
 
     res.status(200).json({
@@ -331,7 +336,8 @@ export const productFileUpload = async (
   try {
     const user: User = req.user as User;
     user.roleCheck('MERCHANT', 'ADMIN');
-    const product: Product = await Product.productExists(req.params.id);
+    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const product: Product = await Product.productExists(productId);
 
     // Check if user is product owner
     if (
@@ -417,7 +423,8 @@ export const updateProductCategories = async (
     const user: User = req.user as User;
     user.roleCheck('MERCHANT', 'ADMIN');
 
-    const product: Product = await Product.productExists(req.params.id);
+    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const product: Product = await Product.productExists(productId);
 
     // Check if user is the products owner or admin
     if (
@@ -429,7 +436,7 @@ export const updateProductCategories = async (
         req.body.categories
       );
       // This is how you get the correct types from a tuple
-      const newCategoryIds: string[] = validCategories[0];
+      const newCategoryIds: ObjectID[] = validCategories[0];
       const newCategoryObjects: Category[] = validCategories[1];
 
       // Removing product from categories it belongs to then emptying the product.categories array. This is done to so user can delete categories from product when updating. Product is deleted from categories it belongs to first and then the product.categories array is emptied - this might lead to some issues but as of now I couldn't think of anything better.
@@ -444,7 +451,7 @@ export const updateProductCategories = async (
       currentCategories.splice(0, currentCategories.length); // This empties the product categories array
 
       // Adding valid categories to product
-      newCategoryIds.map((category: string) => {
+      newCategoryIds.map((category: ObjectID) => {
         product.categories.addToSet(category);
       });
       await product.save();

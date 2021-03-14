@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { ObjectID } from 'mongodb';
 
 import Category from '../models/Category';
 
@@ -39,7 +40,8 @@ export const getProductsFromCategory = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const category: Category = await Category.categoryExists(req.params.id);
+    const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const category: Category = await Category.categoryExists(categoryId);
 
     const categoryProducts: Category = await category
       .populate('products', 'name pricePerUnit stock description addedBy photo')

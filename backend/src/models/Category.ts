@@ -9,7 +9,7 @@ interface Category extends mongoose.Document {
 }
 
 interface CategoryModel extends mongoose.Model<Category> {
-  categoryExists(id: string): Promise<Category>;
+  categoryExists(id: ObjectID): Promise<Category>;
 }
 
 const CategorySchema = new mongoose.Schema(
@@ -31,6 +31,7 @@ const CategorySchema = new mongoose.Schema(
 CategorySchema.pre<Category>(
   'deleteOne',
   { document: true, query: false },
+  // document: true makes it so the hook works on document, not the query
   async function () {
     // Deleting category from all products in this category
     const products: Product[] = await Product.find({
@@ -44,7 +45,9 @@ CategorySchema.pre<Category>(
   }
 );
 // Check if category exists
-CategorySchema.statics.categoryExists = async function (id) {
+CategorySchema.statics.categoryExists = async function (
+  id: ObjectID
+): Promise<Category> {
   let category: Category | null = await Category.findOne({ _id: id });
   if (!category)
     throw new ErrorResponse(`Category with id of ${id} does not exist`, 404);
