@@ -1,15 +1,29 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import colors from 'colors';
 
 import { ErrorResponse } from '../utils/ErrorResponse';
 
-const errorHandler = (err: any, req: Request, res: Response): void => {
+interface Test {
+  stack: string;
+  message: string;
+}
+
+const errorHandler = (
+  err: any,
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
   let error = { ...err };
-  error.message = err._message;
-  error.next = err.message; // Uses the message passed to next() in the controller, for example `Product not found with id of ${req.params.id}`
+  // console.log(err.next);
+  error.message = err.message;
+  // Uses the message passed to next() in the controller, for example `Product not found with id of ${req.params.id}`
 
   // Log to console for dev
   console.log(colors.white.bgRed.bold(err));
+  // console.log(Object.getOwnPropertyNames(err));
+  // console.log(Object.getPrototypeOf(err));
+  // console.log(Object.getPrototypeOf(error));
 
   // Mongoose invalid ObjectId
   if (err.kind === 'ObjectId') {
@@ -40,7 +54,7 @@ const errorHandler = (err: any, req: Request, res: Response): void => {
 
   res.status(error.statusCode || 500).json({
     success: false,
-    error: error.message || error.next || 'Server error',
+    error: error.message || err._message || 'Server error',
   });
 };
 

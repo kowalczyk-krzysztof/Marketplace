@@ -19,6 +19,7 @@ interface Product extends mongoose.Document {
 // Interface ProductModel is needed for static methods to work with TypeScript
 interface ProductModel extends mongoose.Model<Product> {
   productExists(id: string): Promise<Product>;
+  categoryValidation(categories: string[]): [string[], Category[]]; // This is called a tuple
 }
 export const ProductSchema: Schema = new mongoose.Schema(
   {
@@ -102,6 +103,41 @@ ProductSchema.statics.productExists = async function (id) {
   if (!product)
     throw new ErrorResponse(`Product with id of ${id} does not exist`, 404);
   return product;
+};
+
+// Check if categories are valid
+// ATTENTION: This mathod makes it so you add/update categories by name not id
+ProductSchema.statics.categoryValidation = async function (categories) {
+  const categoryNamesToCheck: string[] = categories; // Array of category names from req.body.categories
+
+  // Finds categories with names provided in req.body.categories.
+  const categoryObjects: Category[] = await Category.find({
+    name: { $in: categoryNamesToCheck },
+  });
+
+  const validCategoriesByName: string[] = []; // This array will contain names of valid categories
+  const invalidCategoriesByName: string[] = []; // This array will contain names of invalid categories
+  const validCategoriesById: string[] = []; // This array will contain IDs of valid categories
+
+  // After fetching valid categories (objects), push their names and IDs to arrays
+  for (const category of categoryObjects) {
+    validCategoriesByName.push(category.name);
+    validCategoriesById.push(category._id);
+  }
+
+  // This loop is here so you can send an error with names of categories that don't exist
+  for (const categoryName of categoryNamesToCheck) {
+    if (!validCategoriesByName.includes(categoryName))
+      invalidCategoriesByName.push(categoryName);
+  }
+  // If any categories were invalid, send error with their names
+  if (invalidCategoriesByName.length > 0)
+    throw new ErrorResponse(
+      `Categories ${invalidCategoriesByName} do not exist`,
+      404
+    );
+  // Return array with valid category IDs and an aray of valid category objects
+  return [validCategoriesById, categoryObjects];
 };
 
 const Product: ProductModel = mongoose.model<Product, ProductModel>(

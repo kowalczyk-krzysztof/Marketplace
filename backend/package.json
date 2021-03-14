@@ -1,7 +1,7 @@
 {
   "name": "marketplace-api",
   "version": "1.0.0",
-  "description": "Learning how to make a basic API",
+  "description": "Learning how to make a basic REST API",
   "main": "server.js",
   "scripts": {
     "build": "tsc -w",
@@ -9,7 +9,7 @@
     "dev": "nodemon --no-warnings dist/server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Krzysztof Kowalczyk",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -29,7 +29,6 @@
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
-    "slugify": "^1.4.7",
     "xss-advanced": "^1.0.2"
   },
   "devDependencies": {
