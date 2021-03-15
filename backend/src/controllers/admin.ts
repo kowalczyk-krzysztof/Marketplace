@@ -182,8 +182,17 @@ export const addCategory = async (
     // Checks if req.user has required role
     const loggedInUser: User = req.user as User;
     loggedInUser.roleCheck('ADMIN');
+    // Check for parent category
+    const parentCategory = await Category.findOne({ name: req.body.parent });
+    let parent: ObjectID | null;
+    if (parentCategory) parent = parentCategory._id;
+    else parent = null;
     // Adds a new category
-    const category: Category = await Category.create({ name: req.body.name });
+    const category: Category = await Category.create({
+      name: req.body.name,
+      description: req.body.description,
+      parent: parent, // If parent category doesn't exist then this means the new category is a new root category
+    });
     res.status(201).json({ success: true, data: category });
   } catch (err) {
     next(err);
@@ -202,13 +211,44 @@ export const deleteCategory = async (
     // Checks if req.user has required role
     const loggedInUser: User = req.user as User;
     loggedInUser.roleCheck('ADMIN');
+
     const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
     const category: Category = await Category.categoryExists(categoryId);
+
+    // Recursive search with $graphLookup to find all children and their children in category tree
+    const subcategories = await Category.aggregate([
+      {
+        $match: {
+          name: category.name, // starts with the category we want to delete
+        },
+      },
+      {
+        $graphLookup: {
+          from: 'categories', // the collection we operate in
+          startWith: '$_id', // what value we search for starts with, $_id is for ObjectID
+          connectFromField: '_id', //  field name whose value $graphLookup uses to recursively match against the connectToField
+          connectToField: 'parent', // field name in other documents against which to match the value of the field specified by the connectFromField parameter.
+          as: 'categoriesToDelete', // name of the array field added to each output document. Contains the documents traversed in the $graphLookup stage to reach the document.
+        },
+      },
+      {
+        $project: {
+          categoriesToDelete: '$categoriesToDelete._id', // makes it so categoriesToDelete array will only contain ids
+        },
+      },
+    ]);
+    // Delete root category
     await category.deleteOne();
+
+    // Delete subcategories
+    const categoriesToDelete = subcategories[0].categoriesToDelete;
+    for (const categoryId of categoriesToDelete) {
+      await Category.deleteOne({ _id: categoryId });
+    }
 
     res.status(200).json({
       success: true,
-      data: `Deleted category with with id of: ${category._id}`,
+      data: `Deleted category with with id of: ${category._id} and its subcategories: ${categoriesToDelete}`,
     });
   } catch (err) {
     next(err);

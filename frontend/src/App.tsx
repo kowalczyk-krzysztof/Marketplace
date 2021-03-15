@@ -3,9 +3,9 @@ import { Route, BrowserRouter, Switch } from 'react-router-dom';
 import axios from 'axios';
 // Components
 import Search from './components/products/search/Search';
-import DisplayProduct from './components/products/DisplayProduct';
+import DisplayProductFull from './components/products/DisplayProductFull';
 import Navbar from './components/layout/Navbar';
-import SearchProducts from './components/products/search/SearchProducts';
+import DisplaySearchProducts from './components/products/search/DisplaySearchProducts';
 import DisplayUser from './components/users/DisplayUser';
 
 const App = (): JSX.Element => {
@@ -40,10 +40,17 @@ const App = (): JSX.Element => {
           <Route exact path="/">
             <h1>Just trying out stuff lol</h1>
             <Search searchProducts={searchProducts} />
-            <SearchProducts products={products} productCount={productCount} />
+            <DisplaySearchProducts
+              products={products}
+              productCount={productCount}
+            />
           </Route>
           <Route exact path="/not-found"></Route>
-          <Route exact path={`/product/:id`} component={DisplayProduct}></Route>
+          <Route
+            exact
+            path={`/product/:id`}
+            component={DisplayProductFull}
+          ></Route>
           <Route exact path={`/merchant/:id`} component={DisplayUser}></Route>
         </Switch>
       </div>

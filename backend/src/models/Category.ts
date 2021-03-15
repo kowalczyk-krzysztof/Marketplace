@@ -3,20 +3,37 @@ import { ObjectID } from 'mongodb';
 
 import Product from './Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
+
 interface Category extends mongoose.Document {
   name: string;
+  description: string;
+  parent: ObjectID;
   products: mongoose.Types.Array<ObjectID>;
 }
-
 interface CategoryModel extends mongoose.Model<Category> {
   categoryExists(id: ObjectID): Promise<Category>;
 }
 
 const CategorySchema = new mongoose.Schema(
   {
+    description: {
+      type: String,
+      required: [true, 'Please add a description'],
+      minlength: [4, 'Description needs to be at least 4 characters'],
+      maxlength: [500, 'Description can not be more than 500 characters'],
+      index: { type: 'text' },
+    },
     name: {
       type: String,
-      unique: true,
+      required: [true, 'Category name is required'],
+      minlength: [2, 'Category name needs to be at least 2 characters'],
+      maxlength: [30, 'Category name can not be more than 50 characters'],
+      index: { type: 'text' },
+    },
+    parent: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+      ref: 'Category',
     },
     products: [
       {
