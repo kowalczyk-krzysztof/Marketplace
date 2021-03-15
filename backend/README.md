@@ -30,6 +30,7 @@ NOTE: Registering as ADMIN is not possible. ADMIN role has to be manually given 
 
   * [Get All Categories](#1-get-all-categories)
   * [Get Category](#2-get-category)
+  * [Get Path To Root Category](#3-get-path-to-root-category)
 
 * [Products](#products)
 
@@ -40,7 +41,7 @@ NOTE: Registering as ADMIN is not possible. ADMIN role has to be manually given 
   * [Get Single Product](#5-get-single-product)
   * [Product Fuzzy Search](#6-product-fuzzy-search)
   * [Update Product](#7-update-product)
-  * [Update Product Categories](#8-update-product-categories)
+  * [Update Product Category](#8-update-product-category)
   * [Upload Product Photos](#9-upload-product-photos)
 
 * [User](#user)
@@ -396,6 +397,22 @@ URL: {{URL}}/api/v1/categories/category/find/60450029e37bb9115cb95e08
 
 
 
+### 3. Get Path To Root Category
+
+
+Gets path to root category.
+
+
+***Endpoint:***
+
+```bash
+Method: GET
+Type: RAW
+URL: {{URL}}/api/v1/categories/category/root/604f64aca22a7c26e473d1a6
+```
+
+
+
 ## Products
 Product related requests available to users without ADMIN role.
 
@@ -428,11 +445,11 @@ URL: {{URL}}/api/v1/products/manage/create
 ***Body:***
 
 ```js        
-{"name": "Name",
+{"name": "Name212",
 "quantity": 0,
 "description": "description",
 "pricePerUnit": 20,
-"categories": ["Name1", "Name2"]
+"category": ""
 }
 ```
 
@@ -554,19 +571,18 @@ URL: {{URL}}/api/v1/products/manage/edit/604d2f5ff85cd80ca492d0cd
 ```js        
 {"name": "Name",
 "quantity": 0,
-"description": "Description",
+"description": "description",
 "pricePerUnit": 20,
-"categories": ["Category"],
 "stock": "OUT OF STOCK"
 }
 ```
 
 
 
-### 8. Update Product Categories
+### 8. Update Product Category
 
 
-Updates product categories. Requires being logged in, role ADMIN or MERCHANT and being the product's owner.
+Updates product category. Requires being logged in, role ADMIN or MERCHANT and being the product's owner.
 
 
 ***Endpoint:***
@@ -574,7 +590,7 @@ Updates product categories. Requires being logged in, role ADMIN or MERCHANT and
 ```bash
 Method: PUT
 Type: RAW
-URL: {{URL}}/api/v1/products/manage/edit/categories/604ce48ebd4d02272413cf40
+URL: {{URL}}/api/v1/products/manage/edit/category/604ce48ebd4d02272413cf40
 ```
 
 
@@ -589,7 +605,7 @@ URL: {{URL}}/api/v1/products/manage/edit/categories/604ce48ebd4d02272413cf40
 ***Body:***
 
 ```js        
-{"categories": ["Category1", "Category2"]
+{"category": "category"
 }
 ```
 
@@ -958,4 +974,4 @@ URL: {{VerifyEmail}}7107bc166a7637e78c958405d32d4c25e6e83f06
 
 ---
 [Back to top](#marketplace-api)
-> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-15 10:32:44 by [docgen](https://github.com/thedevsaddam/docgen)
+> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-15 19:15:10 by [docgen](https://github.com/thedevsaddam/docgen)
