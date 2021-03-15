@@ -3,12 +3,14 @@ import { ObjectID } from 'mongodb';
 
 import Product from './Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
+import { slugify } from '../utils/slugify';
 
 interface Category extends mongoose.Document {
   name: string;
   description: string;
   parent: ObjectID;
   products: mongoose.Types.Array<ObjectID>;
+  slug: string;
 }
 interface CategoryModel extends mongoose.Model<Category> {
   categoryIdExists(id: ObjectID): Promise<Category>;
@@ -50,10 +52,18 @@ const CategorySchema = new mongoose.Schema(
         ref: 'Product',
       },
     ],
+    slug: String,
   },
   { timestamps: true }
 );
 
+// Create slug from name
+CategorySchema.pre<Category>('save', function (next) {
+  this.slug = slugify(this.name);
+  next();
+});
+
+// Deleting category from all products thad were in this category
 CategorySchema.pre<Category>(
   'deleteOne',
   { document: true, query: false },
@@ -120,14 +130,15 @@ CategorySchema.statics.findPath = async function (
         'path._id': 1,
         'path.name': 1,
         'path.structure': 1,
+        'path.slug': 1,
       },
     },
   ]);
 
   const path: QueryResult[] = findPath[0].path;
-  // Sorting the array in ascending order
+  // Sorting the array in descending order
   const sortedCategories = path.sort(function (a: QueryResult, b: QueryResult) {
-    return a.structure - b.structure;
+    return b.structure - a.structure; // ROOT WILL BE FIRST
   });
 
   return sortedCategories;

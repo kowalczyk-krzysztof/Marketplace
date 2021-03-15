@@ -4,6 +4,7 @@ import { ObjectID } from 'mongodb';
 import Category from './Category';
 import User from './User';
 import { ErrorResponse } from '../utils/ErrorResponse';
+import { slugify } from '../utils/slugify';
 
 interface Product extends mongoose.Document {
   name: string;
@@ -14,6 +15,7 @@ interface Product extends mongoose.Document {
   addedById: ObjectID;
   pricePerUnit: number;
   category: ObjectID | null;
+  slug: string;
 }
 
 // Interface ProductModel is needed for static methods to work with TypeScript
@@ -62,10 +64,17 @@ export const ProductSchema: Schema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
     },
+    slug: String,
   },
 
   { timestamps: true } // this has to be passed to constructor, so after the object with all properties
 );
+
+// Create slug from name
+ProductSchema.pre<Product>('save', function (next) {
+  this.slug = slugify(this.name);
+  next();
+});
 
 // For some reason for this hook to work you need to use deleteOne - findByIdAndDelete and findOneAndDelete won't work. You also need to pass in options { document: true, query: false } to access "this"
 ProductSchema.post<Product>(

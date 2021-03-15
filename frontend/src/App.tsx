@@ -9,18 +9,18 @@ import DisplaySearchProducts from './components/products/search/DisplaySearchPro
 import DisplayUser from './components/users/DisplayUser';
 
 const App = (): JSX.Element => {
-  axios.interceptors.response.use(
-    (response) => {
-      return response;
-    },
-    function (error) {
-      if (error.response.status === 404) {
-        window.location.href = `${process.env.REACT_APP_APP_URL}/not-found`;
-      }
+  // axios.interceptors.response.use(
+  //   (response) => {
+  //     return response;
+  //   },
+  //   function (error) {
+  //     if (error.response.status === 404) {
+  //       window.location.href = `${process.env.REACT_APP_APP_URL}/not-found`;
+  //     }
 
-      return Promise.reject(error.response);
-    }
-  );
+  //     return Promise.reject(error.response);
+  //   }
+  // );
   const [products, setProducts] = useState([]);
   const [productCount, setproductCount] = useState(0);
 
