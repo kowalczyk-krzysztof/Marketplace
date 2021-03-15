@@ -1,15 +1,15 @@
 import { FC } from 'react';
 // Components
 import SearchProductItem from './SearchProductItem';
-import { ProductSummary } from '../ProductItem';
+import { ProductSummary } from '../ProductItemFull';
 
-interface SearchProductsProps {
+interface DisplaySearchProductsProps {
   products: ProductSummary[];
   productCount: number;
 }
 
 // Displays a list of all objects found of type ProductSummary as SearchProductItem if the found product count is higher than 0
-const SearchProducts: FC<SearchProductsProps> = ({
+const DisplaySearchProducts: FC<DisplaySearchProductsProps> = ({
   products,
   productCount,
 }): JSX.Element | null => {
@@ -33,4 +33,4 @@ const SearchProducts: FC<SearchProductsProps> = ({
   }
 };
 
-export default SearchProducts;
+export default DisplaySearchProducts;

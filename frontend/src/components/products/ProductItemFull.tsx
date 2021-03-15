@@ -20,12 +20,12 @@ export interface ProductFull extends ProductSummary {
   addedById: string;
 }
 
-interface ProductItemProps {
+interface ProductItemFullProps {
   product: ProductFull;
 }
 
 // Full product item
-const ProductItem: FC<ProductItemProps> = ({
+const ProductItemFull: FC<ProductItemFullProps> = ({
   product: {
     _id,
     name,
@@ -52,4 +52,4 @@ const ProductItem: FC<ProductItemProps> = ({
   );
 };
 
-export default ProductItem;
+export default ProductItemFull;

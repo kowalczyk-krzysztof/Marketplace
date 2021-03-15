@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { Link } from 'react-router-dom';
 // Components
-import { ProductSummary } from '../ProductItem';
+import { ProductSummary } from '../ProductItemFull';
 
 interface SearchProductItemProps {
   product: ProductSummary;

@@ -22,7 +22,9 @@ const DisplayProductCategories: FC<DisplayProductCategoriesProps> = ({
           {categories.map((category) => {
             return (
               <li key={category._id}>
-                <Link to={`/category/${category.name}`}>{category.name}</Link>
+                <Link to={`/category/${category.name.toLowerCase()}`}>
+                  {category.name}
+                </Link>
               </li>
             );
           })}

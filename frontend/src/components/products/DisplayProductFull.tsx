@@ -2,15 +2,15 @@ import { FC, useState, useEffect } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import axios from 'axios';
 // Components
-import ProductItem from './ProductItem';
-import { ProductFull } from './ProductItem';
+import ProductItemFull from './ProductItemFull';
+import { ProductFull } from './ProductItemFull';
 
-interface DisplayProductProps {
+interface DisplayProductFullProps {
   id: string;
 }
 
 // This is the interface needed to get access to match.params.id
-const DisplayProduct: FC<RouteComponentProps<DisplayProductProps>> = (
+const DisplayProductFull: FC<RouteComponentProps<DisplayProductFullProps>> = (
   props
 ): JSX.Element | null => {
   const { id } = props.match.params; // This is how I get /:id from <Route exact path={`/product/:id`}/>
@@ -46,9 +46,9 @@ const DisplayProduct: FC<RouteComponentProps<DisplayProductProps>> = (
   else
     return (
       <>
-        <ProductItem product={product} />
+        <ProductItemFull product={product} />
       </>
     );
 };
 
-export default DisplayProduct;
+export default DisplayProductFull;

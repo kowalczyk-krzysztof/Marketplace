@@ -2,7 +2,7 @@ import { FC } from 'react';
 // Components
 import DisplayUserPhoto from './DisplayUserPhoto';
 import DisplayUserProducts from './DisplayUserProducts';
-import { ProductSummary } from '../products/ProductItem';
+import { ProductSummary } from '../products/ProductItemFull';
 
 export interface User {
   _id: string;

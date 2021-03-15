@@ -1,7 +1,7 @@
 import { FC } from 'react';
-import { Link } from 'react-router-dom';
 // Components
-import { ProductSummary } from '../products/ProductItem';
+import { ProductSummary } from '../products/ProductItemFull';
+import DisplayProductsSummary from '../products/DisplayProductsSummary';
 interface DisplayUserProductsProps {
   addedProducts: ProductSummary[];
 }
@@ -9,21 +9,13 @@ interface DisplayUserProductsProps {
 const DisplayUserProducts: FC<DisplayUserProductsProps> = ({
   addedProducts,
 }): JSX.Element | null => {
-  console.log(addedProducts);
   if (addedProducts.length > 0)
     return (
       <>
         <p>Added prodducts:</p>
-        <ul>
-          {addedProducts.map((product: ProductSummary) => {
-            return (
-              <li key={product._id}>
-                <Link to={`/product/${product._id}`}>{product.name}</Link>
-                <p>{product.description}</p>
-              </li>
-            );
-          })}
-        </ul>
+        <DisplayProductsSummary
+          summaryProducts={addedProducts}
+        ></DisplayProductsSummary>
       </>
     );
   else return null;
