@@ -19,7 +19,6 @@ interface User extends mongoose.Document {
   verifyEmailTokenExpire: string | undefined | number;
   resetPasswordToken: string | undefined;
   resetPasswordExpire: number | undefined;
-  createdAt: Date;
   getSignedJwtToken(): string;
   matchPassword(enteredPassword: string): string;
   getResetPasswordToken(): string;
@@ -87,7 +86,6 @@ const UserSchema = new mongoose.Schema(
     verifyEmailTokenExpire: Date,
     resetPasswordToken: String,
     resetPasswordExpire: Date,
-    createdAt: { type: Date, immutable: true },
   },
   { timestamps: true } // this has to be passed to constructor, so after the object with all properties
 );
