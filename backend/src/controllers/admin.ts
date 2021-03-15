@@ -213,7 +213,7 @@ export const deleteCategory = async (
     loggedInUser.roleCheck('ADMIN');
 
     const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
-    const category: Category = await Category.categoryExists(categoryId);
+    const category: Category = await Category.categoryIdExists(categoryId);
 
     // Recursive search with $graphLookup to find all children and their children in category tree
     const subcategories = await Category.aggregate([

@@ -43,13 +43,33 @@ export const getCategory = async (
 ): Promise<void> => {
   try {
     const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
-    const category: Category = await Category.categoryExists(categoryId); // Checking if lowestBranch exists
+    const category: Category = await Category.categoryIdExists(categoryId);
 
     res.status(200).json({
       success: true,
       productCount: category.products.length,
       data: category,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Get path to root category
+// @route   GET /api/v1/categories/category/root/:id
+// @access  Pyblic
+export const getPathToRoot = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const category: Category = await Category.categoryIdExists(categoryId);
+
+    const sortedCategories = await Category.findPath(category.name);
+
+    res.status(200).json({ success: true, data: sortedCategories });
   } catch (err) {
     next(err);
   }

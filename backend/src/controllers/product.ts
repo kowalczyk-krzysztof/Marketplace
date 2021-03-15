@@ -95,7 +95,8 @@ export const getProduct = async (
   try {
     const productId: ObjectID = (req.params.id as unknown) as ObjectID;
     const product: Product = await Product.productExists(productId);
-    await product.populate('categories', 'name').execPopulate();
+    await product.populate('category').execPopulate();
+
     res.status(200).json({ sucess: true, data: product });
   } catch (err) {
     next(err);
@@ -126,10 +127,8 @@ export const createProduct = async (
       );
     }
 
-    // Check if categories exist
-    const [categoryIds, categoryObject] = await Product.categoryValidation(
-      req.body.categories
-    );
+    // Check if category exists
+    const category = await Category.categoryNameExists(req.body.category);
 
     // Limiting the number of products a merchant can add
     const maxProducts: number = 5;
@@ -150,18 +149,16 @@ export const createProduct = async (
       pricePerUnit: req.body.pricePerUnit,
       stock: req.body.stock,
       addedById: user.id,
-      categories: categoryIds,
+      category: category.id,
     });
 
     // Adding product to addedProducts in user who created the product
     user.addedProducts.push(product.id);
     user.save();
 
-    // Adding product to categories
-    for (const category of categoryObject) {
-      category.products.addToSet(product.id);
-      category.save();
-    }
+    // Adding product to category
+    category.products.addToSet(product.id);
+    category.save();
 
     res.status(201).json({ success: true, data: product });
   } catch (err) {
@@ -206,25 +203,8 @@ export const updateProduct = async (
       product.pricePerUnit = req.body.pricePerUnit || product.pricePerUnit;
       product.stock = req.body.stock || product.stock;
 
-      // Check if categories exist
-      const validCategories = await Product.categoryValidation(
-        req.body.categories
-      );
-      // This is how you get the correct types from a tuple
-      const categoryIds: ObjectID[] = validCategories[0];
-      const categoryObject: Category[] = validCategories[1];
-
-      // Adding valid categories to product
-      categoryIds.map((category: ObjectID) => {
-        product.categories.addToSet(category);
-      });
+      // Saving product
       await product.save();
-
-      // Adding product to categories
-      for (const category of categoryObject) {
-        category.products.addToSet(product.id);
-        category.save();
-      }
 
       res.status(201).json({ sucess: true, data: product });
     } else
@@ -411,10 +391,10 @@ export const productFileUpload = async (
   }
 };
 
-// @desc    Update product categories
-// @route   PUT /api/v1/products/manage/edit/categories/:id
+// @desc    Update product category
+// @route   PUT /api/v1/products/manage/edit/category/:id
 // @access  Private
-export const updateProductCategories = async (
+export const updateProductCategory = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -431,36 +411,21 @@ export const updateProductCategories = async (
       product.addedById.toString() === user.id.toString() ||
       user.role === 'ADMIN'
     ) {
-      // Check if categories exist
-      const validCategories = await Product.categoryValidation(
-        req.body.categories
-      );
-      // This is how you get the correct types from a tuple
-      const newCategoryIds: ObjectID[] = validCategories[0];
-      const newCategoryObjects: Category[] = validCategories[1];
+      // Removing product from old category
+      const productCategory = product.category as ObjectID;
+      const oldCategory = await Category.categoryIdExists(productCategory);
 
-      // Removing product from categories it belongs to then emptying the product.categories array. This is done to so user can delete categories from product when updating. Product is deleted from categories it belongs to first and then the product.categories array is emptied - this might lead to some issues but as of now I couldn't think of anything better.
-      const currentCategories: ObjectID[] = product.categories;
-      const currentCategoriesObjects: Category[] = await Category.find({
-        _id: { $in: currentCategories },
-      });
-      for (const category of currentCategoriesObjects) {
-        category.products.pull(product.id);
-        category.save();
-      }
-      currentCategories.splice(0, currentCategories.length); // This empties the product categories array
+      oldCategory.products.pull(product.id);
+      await oldCategory.save();
 
-      // Adding valid categories to product
-      newCategoryIds.map((category: ObjectID) => {
-        product.categories.addToSet(category);
-      });
+      // Check if category exists
+      const newCategory = await Category.categoryNameExists(req.body.category);
+      // Saving product
+      product.category = newCategory.id;
       await product.save();
-
-      // Adding product to categories
-      for (const category of newCategoryObjects) {
-        category.products.addToSet(product.id);
-        category.save();
-      }
+      // Adding product to category
+      newCategory.products.addToSet(product.id);
+      await newCategory.save();
 
       res.status(201).json({ sucess: true, data: product });
     } else

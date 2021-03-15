@@ -10,7 +10,7 @@ import {
   getMerchantFromProductId,
   getProductsByMerchant,
   productFileUpload,
-  updateProductCategories,
+  updateProductCategory,
 } from '../controllers/product';
 import '../config/passport'; // importing passport settings
 
@@ -38,10 +38,7 @@ productRouter
 productRouter.route('/find/merchant/products/:id').get(getProductsByMerchant);
 
 productRouter
-  .route('/manage/edit/categories/:id')
-  .put(
-    passport.authenticate('jwt', { session: false }),
-    updateProductCategories
-  );
+  .route('/manage/edit/category/:id')
+  .put(passport.authenticate('jwt', { session: false }), updateProductCategory);
 
 export default productRouter;
