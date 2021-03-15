@@ -19,7 +19,7 @@ const DisplayProductFull: FC<RouteComponentProps<DisplayProductFullProps>> = (
     name: '',
     photos: [],
     stock: '',
-    categories: [],
+    category: { name: '', _id: '', description: '', parent: '', slug: '' },
     quantity: 0,
     pricePerUnit: 0,
     addedById: '',

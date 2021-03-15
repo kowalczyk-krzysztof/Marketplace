@@ -14,7 +14,7 @@ export interface ProductSummary {
 export interface ProductFull extends ProductSummary {
   photos: string[];
   stock: string;
-  categories: Category[];
+  category: Category;
   quantity: number;
   pricePerUnit: number;
   addedById: string;
@@ -32,7 +32,7 @@ const ProductItemFull: FC<ProductItemFullProps> = ({
     description,
     photos,
     stock,
-    categories,
+    category,
     quantity,
     pricePerUnit,
     addedById,
@@ -42,7 +42,7 @@ const ProductItemFull: FC<ProductItemFullProps> = ({
     <div>
       <h1>{name}</h1>
       <DisplayProductPhotos photos={photos} _id={_id} />
-      <DisplayProductCategories categories={categories} />
+      <DisplayProductCategories category={category} />
       <p>Description: {description}</p>
       <p>Stock: {stock}</p>
       <p>Quantity: {quantity}</p>
