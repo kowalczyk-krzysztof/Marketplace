@@ -185,7 +185,7 @@ UserSchema.statics.getVerifyEmailToken = function (): (string | number)[] {
 UserSchema.statics.userExists = async function (_id: ObjectID): Promise<User> {
   const user: User | null = await User.findOne({ _id: _id });
   if (!user)
-    throw new ErrorResponse(`User with id of ${_id} does not exist`, 404);
+    throw new ErrorResponse(`User with _id: ${_id} does not exist`, 404);
   return user;
 };
 
@@ -195,7 +195,7 @@ UserSchema.methods.roleCheck = function (...roles: string[]): void {
   const user: User = this as User;
   if (!allowedRoles.includes(user.role))
     throw new ErrorResponse(
-      `User with role of ${user.role} is unauthorized to access this route`,
+      `User with role: ${user.role} is unauthorized to access this route`,
       403
     );
 };
