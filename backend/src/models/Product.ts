@@ -107,7 +107,7 @@ ProductSchema.statics.productExists = async function (
 ): Promise<Product> {
   const product: Product | null = await Product.findOne({ _id: _id });
   if (!product)
-    throw new ErrorResponse(`Product with id of ${_id} does not exist`, 404);
+    throw new ErrorResponse(`Product with _id: ${_id} does not exist`, 404);
   return product;
 };
 

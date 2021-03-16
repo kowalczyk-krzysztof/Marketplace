@@ -60,12 +60,12 @@ export const addProductToCart = async (
     if (!cart.isModified('products'))
       res.status(400).json({
         success: false,
-        data: `You already have product with id of ${req.params.id} in your cart`,
+        data: `You already have product with _id: ${req.params.id} in your cart`,
       });
     else
       res.status(201).json({
         success: true,
-        data: `Added product with id of ${req.params.id} to your cart`,
+        data: `Added product with _id: ${req.params.id} to your cart`,
       });
   } catch (err) {
     next(err);
@@ -151,7 +151,7 @@ export const deleteProductFromCart = async (
 
     res.status(201).json({
       success: true,
-      data: `Removed product with id of ${product} from your cart`,
+      data: `Removed product with _id: ${product} from your cart`,
     });
   } catch (err) {
     next(err);

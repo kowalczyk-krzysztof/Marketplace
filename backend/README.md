@@ -36,7 +36,7 @@ NOTE: Registering as ADMIN is not possible. ADMIN role has to be manually given 
 
   * [Create New Product](#1-create-new-product)
   * [Delete Product](#2-delete-product)
-  * [Get Merchant By Product ID](#3-get-merchant-by-product-id)
+  * [Get Merchant By Product _id](#3-get-merchant-by-product-_id)
   * [Get Products By Merchant](#4-get-products-by-merchant)
   * [Get Single Product](#5-get-single-product)
   * [Product Fuzzy Search](#6-product-fuzzy-search)
@@ -65,14 +65,14 @@ NOTE: Registering as ADMIN is not possible. ADMIN role has to be manually given 
 
 
 ## ADMIN
-ADMIN routes require user to be logged in and have a role of ADMIN.
+ADMIN routes require user to be logged in and have ADMIN role.
 
 
 
 ### 1. Create New Category
 
 
-Creates a new category. Requires being logged in and a role of ADMIN.
+Creates a new category. Requires being logged in and ADMIN role.
 
 
 ***Endpoint:***
@@ -80,7 +80,7 @@ Creates a new category. Requires being logged in and a role of ADMIN.
 ```bash
 Method: POST
 Type: RAW
-URL: {{URL}}/api/v1/admin/categories/add
+URL: {{URI}}/api/v1/admin/categories/add
 ```
 
 
@@ -105,7 +105,7 @@ URL: {{URL}}/api/v1/admin/categories/add
 ### 2. Delete Category
 
 
-Deletes a category and all its subcategories. Requires being logged in and a role of ADMIN.
+Deletes a category and all its subcategories. Requires being logged in and ADMIN role.
 
 
 ***Endpoint:***
@@ -113,7 +113,7 @@ Deletes a category and all its subcategories. Requires being logged in and a rol
 ```bash
 Method: DELETE
 Type: RAW
-URL: {{URL}}/api/v1/admin/categories/delete/60450029e37bb9115cb95e08
+URL: {{URI}}/api/v1/admin/categories/delete/60450029e37bb9115cb95e08
 ```
 
 
@@ -121,7 +121,7 @@ URL: {{URL}}/api/v1/admin/categories/delete/60450029e37bb9115cb95e08
 ### 3. Delete User
 
 
-Deletes user by user id. Requires being logged in and a role of ADMIN.
+Deletes user by user _id. Requires being logged in and ADMIN role.
 
 
 ***Endpoint:***
@@ -129,7 +129,7 @@ Deletes user by user id. Requires being logged in and a role of ADMIN.
 ```bash
 Method: DELETE
 Type: 
-URL: {{URL}}/api/v1/admin/users/user/604281ea7ac10e49686a589d
+URL: {{URI}}/api/v1/admin/users/user/604281ea7ac10e49686a589d
 ```
 
 
@@ -137,7 +137,7 @@ URL: {{URL}}/api/v1/admin/users/user/604281ea7ac10e49686a589d
 ### 4. Get All Products
 
 
-Gets a list of all products. Requires being logged in and a role of ADMIN.
+Gets a list of all products. Requires being logged in and ADMIN role.
 
 
 ***Endpoint:***
@@ -145,7 +145,7 @@ Gets a list of all products. Requires being logged in and a role of ADMIN.
 ```bash
 Method: GET
 Type: 
-URL: {{URL}}/api/v1/admin/products
+URL: {{URI}}/api/v1/admin/products
 ```
 
 
@@ -153,7 +153,7 @@ URL: {{URL}}/api/v1/admin/products
 ### 5. Get All Users
 
 
-Gets a list of all users. Requires being logged in and a role of ADMIN.
+Gets a list of all users. Requires being logged in and ADMIN role.
 
 
 ***Endpoint:***
@@ -161,7 +161,7 @@ Gets a list of all users. Requires being logged in and a role of ADMIN.
 ```bash
 Method: GET
 Type: RAW
-URL: {{URL}}/api/v1/admin/users/all
+URL: {{URI}}/api/v1/admin/users/all
 ```
 
 
@@ -169,7 +169,7 @@ URL: {{URL}}/api/v1/admin/users/all
 ### 6. Get User's Cart
 
 
-Gets user's cart by user id. Requires being logged in and a role of ADMIN.
+Gets user's cart by user _id. Requires being logged in and ADMIN role.
 
 
 ***Endpoint:***
@@ -177,7 +177,7 @@ Gets user's cart by user id. Requires being logged in and a role of ADMIN.
 ```bash
 Method: GET
 Type: RAW
-URL: {{URL}}/api/v1/admin/users/cart/604281ea7ac10e49686a589d
+URL: {{URI}}/api/v1/admin/users/cart/604281ea7ac10e49686a589d
 ```
 
 
@@ -185,7 +185,7 @@ URL: {{URL}}/api/v1/admin/users/cart/604281ea7ac10e49686a589d
 ### 7. Update User
 
 
-Updates user by user id. Requires being logged in and a role of ADMIN.
+Updates user by user _id. Requires being logged in and ADMIN role.
 
 
 ***Endpoint:***
@@ -193,7 +193,7 @@ Updates user by user id. Requires being logged in and a role of ADMIN.
 ```bash
 Method: PUT
 Type: RAW
-URL: {{URL}}/api/v1/admin/users/user/604281ea7ac10e49686a589d
+URL: {{URI}}/api/v1/admin/users/user/604281ea7ac10e49686a589d
 ```
 
 
@@ -231,7 +231,7 @@ Adds many products to cart of currently logged in user.
 ```bash
 Method: PUT
 Type: RAW
-URL: {{URL}}/api/v1/cart/mycart/addmany
+URL: {{URI}}/api/v1/cart/mycart/addmany
 ```
 
 
@@ -262,7 +262,7 @@ Adds a single product to cart of currently logged in user.
 ```bash
 Method: PUT
 Type: RAW
-URL: {{URL}}/api/v1/cart/mycart/add/6043a389d92f7a3e7c8a431e
+URL: {{URI}}/api/v1/cart/mycart/add/6043a389d92f7a3e7c8a431e
 ```
 
 
@@ -278,7 +278,7 @@ Deletes many products from cart of currently logged in user.
 ```bash
 Method: PUT
 Type: RAW
-URL: {{URL}}/api/v1/cart/mycart/deletemany
+URL: {{URI}}/api/v1/cart/mycart/deletemany
 ```
 
 
@@ -309,7 +309,7 @@ Deletes a single product from cart of currently logged in user.
 ```bash
 Method: PUT
 Type: RAW
-URL: {{URL}}/api/v1/cart/mycart/delete/6043a389d92f7a3e7c8a431e
+URL: {{URI}}/api/v1/cart/mycart/delete/6043a389d92f7a3e7c8a431e
 ```
 
 
@@ -332,7 +332,7 @@ Empties cart of currently logged in user.
 ```bash
 Method: PUT
 Type: RAW
-URL: {{URL}}/api/v1/cart/mycart/empty
+URL: {{URI}}/api/v1/cart/mycart/empty
 ```
 
 
@@ -355,7 +355,7 @@ Gets cart of currently logged in user.
 ```bash
 Method: GET
 Type: RAW
-URL: {{URL}}/api/v1/cart/mycart/get
+URL: {{URI}}/api/v1/cart/mycart/get
 ```
 
 
@@ -376,7 +376,7 @@ Gets a list of all categories
 ```bash
 Method: GET
 Type: 
-URL: {{URL}}/api/v1/categories/list
+URL: {{URI}}/api/v1/categories/list
 ```
 
 
@@ -392,7 +392,7 @@ Gets all products in a category.
 ```bash
 Method: GET
 Type: 
-URL: {{URL}}/api/v1/categories/category/find/60450029e37bb9115cb95e08
+URL: {{URI}}/api/v1/categories/category/find/604fbd4f090f7d1bf84ba072
 ```
 
 
@@ -408,7 +408,7 @@ Gets path to root category.
 ```bash
 Method: GET
 Type: RAW
-URL: {{URL}}/api/v1/categories/category/root/604f64aca22a7c26e473d1a6
+URL: {{URI}}/api/v1/categories/category/root/604fbd70090f7d1bf84ba074
 ```
 
 
@@ -429,7 +429,7 @@ Creates product. Requires being logged in and role MERCHANT or ADMIN.
 ```bash
 Method: POST
 Type: RAW
-URL: {{URL}}/api/v1/products/manage/create
+URL: {{URI}}/api/v1/products/manage/create
 ```
 
 
@@ -445,11 +445,12 @@ URL: {{URL}}/api/v1/products/manage/create
 ***Body:***
 
 ```js        
-{"name": "Name212",
-"quantity": 0,
+{"name": "Name",
+"quantity": 5,
 "description": "description",
-"pricePerUnit": 20,
-"category": ""
+"pricePerUnit": 140,
+"category": "category",
+"stock": "IN STOCK"
 }
 ```
 
@@ -466,15 +467,15 @@ Deletes product. Requires being logged in, role ADMIN or MERCHANT and being the 
 ```bash
 Method: DELETE
 Type: 
-URL: {{URL}}/api/v1/products/manage/delete/60455ee8869ec6326c9784e9
+URL: {{URI}}/api/v1/products/manage/delete/60455ee8869ec6326c9784e9
 ```
 
 
 
-### 3. Get Merchant By Product ID
+### 3. Get Merchant By Product _id
 
 
-Gets merchant profile by product id.
+Gets merchant profile by product _id.
 
 
 ***Endpoint:***
@@ -482,7 +483,7 @@ Gets merchant profile by product id.
 ```bash
 Method: GET
 Type: 
-URL: {{URL}}/api/v1/products/find/merchant/productid/60426e69fa85b4444c9c7f1a
+URL: {{URI}}/api/v1/products/find/merchant/productid/60426e69fa85b4444c9c7f1a
 ```
 
 
@@ -490,7 +491,7 @@ URL: {{URL}}/api/v1/products/find/merchant/productid/60426e69fa85b4444c9c7f1a
 ### 4. Get Products By Merchant
 
 
-Gets all product from a merchant by merchant id.
+Gets all product from a merchant by merchant _id.
 
 
 ***Endpoint:***
@@ -498,7 +499,7 @@ Gets all product from a merchant by merchant id.
 ```bash
 Method: GET
 Type: RAW
-URL: {{URL}}/api/v1/products/find/merchant/products/604266c84372372068259f80
+URL: {{URI}}/api/v1/products/find/merchant/products/604266c84372372068259f80
 ```
 
 
@@ -506,7 +507,7 @@ URL: {{URL}}/api/v1/products/find/merchant/products/604266c84372372068259f80
 ### 5. Get Single Product
 
 
-Gets a single product by product id.
+Gets a single product by product _id.
 
 
 ***Endpoint:***
@@ -514,7 +515,7 @@ Gets a single product by product id.
 ```bash
 Method: GET
 Type: 
-URL: {{URL}}/api/v1/products/find/product/6045004ae37bb9115cb95e09
+URL: {{URI}}/api/v1/products/find/product/6045004ae37bb9115cb95e09
 ```
 
 
@@ -530,7 +531,7 @@ Basic regex fuzzy search on "desription" and "name" fields.
 ```bash
 Method: GET
 Type: 
-URL: {{URL}}/api/v1/products/find/search
+URL: {{URI}}/api/v1/products/find/search
 ```
 
 
@@ -554,7 +555,7 @@ Updates product. Requires being logged in, role ADMIN or MERCHANT and being the 
 ```bash
 Method: PUT
 Type: RAW
-URL: {{URL}}/api/v1/products/manage/edit/604d2f5ff85cd80ca492d0cd
+URL: {{URI}}/api/v1/products/manage/edit/604d2f5ff85cd80ca492d0cd
 ```
 
 
@@ -590,7 +591,7 @@ Updates product category. Requires being logged in, role ADMIN or MERCHANT and b
 ```bash
 Method: PUT
 Type: RAW
-URL: {{URL}}/api/v1/products/manage/edit/category/604ce48ebd4d02272413cf40
+URL: {{URI}}/api/v1/products/manage/edit/category/604ce48ebd4d02272413cf40
 ```
 
 
@@ -622,7 +623,7 @@ Uploads product's photos. Requires being logged in, role ADMIN or MERCHANT and b
 ```bash
 Method: PUT
 Type: FORMDATA
-URL: {{URL}}/api/v1/products/manage/photo/604b5f6aa8b25715f45ad40a
+URL: {{URI}}/api/v1/products/manage/photo/604b5f6aa8b25715f45ad40a
 ```
 
 
@@ -651,7 +652,7 @@ Generates user's password reset token and sends e-mail.
 ```bash
 Method: PUT
 Type: RAW
-URL: {{URL}}/api/v1/user/forgotpassword
+URL: {{URI}}/api/v1/user/forgotpassword
 ```
 
 
@@ -682,7 +683,7 @@ Gets profile of currently logged in user.
 ```bash
 Method: GET
 Type: RAW
-URL: {{URL}}/api/v1/user/profile
+URL: {{URI}}/api/v1/user/profile
 ```
 
 
@@ -698,7 +699,7 @@ Gets all products created by logged in user.
 ```bash
 Method: GET
 Type: RAW
-URL: {{URL}}/api/v1/user/profile/products
+URL: {{URI}}/api/v1/user/profile/products
 ```
 
 
@@ -721,7 +722,7 @@ Gets user's profile by user id.
 ```bash
 Method: GET
 Type: RAW
-URL: {{URL}}/api/v1/user/user/60402299aa2f0c1584af8164a
+URL: {{URI}}/api/v1/user/user/60402299aa2f0c1584af8164a
 ```
 
 
@@ -737,7 +738,7 @@ Logins user and creates a cookie with JWT token.
 ```bash
 Method: POST
 Type: RAW
-URL: {{URL}}/api/v1/user/login
+URL: {{URI}}/api/v1/user/login
 ```
 
 
@@ -770,7 +771,7 @@ Logs out currently logged in user.
 ```bash
 Method: GET
 Type: RAW
-URL: {{URL}}/api/v1/user/logout
+URL: {{URI}}/api/v1/user/logout
 ```
 
 
@@ -786,7 +787,7 @@ Registers user with encrypted password and sends a verification email.
 ```bash
 Method: POST
 Type: RAW
-URL: {{URL}}/api/v1/user/register
+URL: {{URI}}/api/v1/user/register
 ```
 
 
@@ -821,7 +822,7 @@ Resends verify email token to email of currently logged in user.
 ```bash
 Method: GET
 Type: RAW
-URL: {{URL}}/api/v1/user/profile/resendverifyemail
+URL: {{URI}}/api/v1/user/profile/resendverifyemail
 ```
 
 
@@ -870,7 +871,7 @@ Updates logged in user's details.
 ```bash
 Method: PUT
 Type: RAW
-URL: {{URL}}/api/v1/user/profile/changedetails
+URL: {{URI}}/api/v1/user/profile/changedetails
 ```
 
 
@@ -904,7 +905,7 @@ Updates logged in user's password.
 ```bash
 Method: PUT
 Type: RAW
-URL: {{URL}}/api/v1/user/profile/updatepassword
+URL: {{URI}}/api/v1/user/profile/updatepassword
 ```
 
 
@@ -936,7 +937,7 @@ Updates logged in user's photo.
 ```bash
 Method: PUT
 Type: FORMDATA
-URL: {{URL}}/api/v1/user/profile/photo
+URL: {{URI}}/api/v1/user/profile/photo
 ```
 
 
@@ -974,4 +975,4 @@ URL: {{VerifyEmail}}7107bc166a7637e78c958405d32d4c25e6e83f06
 
 ---
 [Back to top](#marketplace-api)
-> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-15 19:15:10 by [docgen](https://github.com/thedevsaddam/docgen)
+> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-16 18:51:14 by [docgen](https://github.com/thedevsaddam/docgen)

@@ -17,7 +17,7 @@ const errorHandler = (
   let error = { ...err };
   // console.log(err.next);
   error.message = err.message;
-  // Uses the message passed to next() in the controller, for example `Product not found with id of ${req.params.id}`
+  // Uses the message passed to next() in the controller, for example `Product not found with _id: ${req.params.id}`
 
   // Log to console for dev
   console.log(colors.white.bgRed.bold(err));

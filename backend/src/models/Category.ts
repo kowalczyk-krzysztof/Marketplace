@@ -89,7 +89,7 @@ CategorySchema.statics.categoryIdExists = async function (
 ): Promise<Category> {
   const category: Category | null = await Category.findOne({ _id: _id });
   if (!category)
-    throw new ErrorResponse(`Category with id of ${_id} does not exist`, 404);
+    throw new ErrorResponse(`Category with _id: ${_id} does not exist`, 404);
   return category;
 };
 // Check if category exists by name
@@ -101,7 +101,7 @@ CategorySchema.statics.categoryNameExists = async function (
   });
   if (!category)
     throw new ErrorResponse(
-      `Category with name ${categoryName} does not exist`,
+      `Category with name: ${categoryName} does not exist`,
       404
     );
   return category;
@@ -120,7 +120,7 @@ CategorySchema.statics.findPath = async function (
     {
       $graphLookup: {
         from: 'categories', // the collection we operate in
-        startWith: '$_id', // what value we search for starts with, $._id is for ObjectID
+        startWith: '$_id', // what value we search for starts with, $_id is for ObjectID
         connectFromField: 'parent', //  field name whose value $graphLookup uses to recursively match against the connectToField
         connectToField: '_id', // field name in other documents against which to match the value of the field specified by the connectFromField parameter.
         depthField: 'structure', // this is the field that will show the route

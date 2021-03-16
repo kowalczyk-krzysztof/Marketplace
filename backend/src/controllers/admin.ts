@@ -114,7 +114,7 @@ export const deleteUser = async (
 
     // Check if user is trying to delete itself
     if (user._id === loggedInUser._id) {
-      throw new ErrorResponse(`You can't delete yourself`, 401);
+      throw new ErrorResponse(`You can not delete yourself`, 401);
     }
 
     // Checks if user you want to delete is another admin
@@ -126,7 +126,7 @@ export const deleteUser = async (
 
     res.status(200).json({
       success: true,
-      data: `Deleted user with id of: ${user._id}`,
+      data: `Deleted user with _id: ${user._id}`,
     });
   } catch (err) {
     next(err);
@@ -242,7 +242,7 @@ export const deleteCategory = async (
 
     res.status(200).json({
       success: true,
-      data: `Deleted category with with id of: ${category._id} and its subcategories: ${categoriesToDelete}`,
+      data: `Deleted category with with _id: ${category._id} and its subcategories: ${categoriesToDelete}`,
     });
   } catch (err) {
     next(err);

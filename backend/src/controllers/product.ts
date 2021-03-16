@@ -122,7 +122,7 @@ export const createProduct = async (
     });
     if (nameUniqueForUser) {
       throw new ErrorResponse(
-        `${user._id} already has a product with name of ${req.body.name}`,
+        `${user._id} already has a product with name: ${req.body.name}`,
         400
       );
     }
@@ -193,7 +193,7 @@ export const updateProduct = async (
       });
       if (nameUniqueForUser && product.name !== req.body.name) {
         throw new ErrorResponse(
-          `${user._id} already has a product with name of ${req.body.name}`,
+          `${user._id} already has a product with name: ${req.body.name}`,
           400
         );
       }
@@ -240,11 +240,11 @@ export const deleteProduct = async (
 
       res.status(200).json({
         sucess: true,
-        data: `Deleted product with id of ${product._id}`,
+        data: `Deleted product with _id: ${product._id}`,
       });
     } else
       throw new ErrorResponse(
-        `User with id of ${user._id} is not authorised to delete this product`,
+        `User with _id: ${user._id} is not authorised to delete this product`,
         401
       );
     // For some reason, to use 'deleteOne' hook you have to use deleteOne, findOneAndDelete doesn't work, neither does findByIdAndDelete
@@ -293,7 +293,7 @@ export const getProductsByMerchant = async (
     // Check if merchant has any products
     if (products.length === 0)
       throw new ErrorResponse(
-        `No products from user with id of ${req.params.id}`,
+        `No products from user with _id: ${req.params.id}`,
         404
       );
 
@@ -383,7 +383,7 @@ export const productFileUpload = async (
       );
     } else
       throw new ErrorResponse(
-        `User with id of ${user._id} is not authorized to update this product`,
+        `User with _id: ${user._id} is not authorized to update this product`,
         401
       );
   } catch (err) {
