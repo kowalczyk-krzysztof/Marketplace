@@ -13,7 +13,7 @@ interface Category extends mongoose.Document {
   slug: string;
 }
 interface CategoryModel extends mongoose.Model<Category> {
-  categoryIdExists(id: ObjectID): Promise<Category>;
+  categoryIdExists(_id: ObjectID): Promise<Category>;
   categoryNameExists(categoryName: string): Promise<Category>;
   findPath(categoryName: string): Promise<QueryResult[]>;
 }
@@ -59,7 +59,8 @@ const CategorySchema = new mongoose.Schema(
 
 // Create slug from name
 CategorySchema.pre<Category>('save', function (next) {
-  this.slug = slugify(this.name);
+  const category: Category = this as Category;
+  category.slug = slugify(category.name);
   next();
 });
 
@@ -69,9 +70,11 @@ CategorySchema.pre<Category>(
   { document: true, query: false },
   // document: true makes it so the hook works on document, not the query
   async function () {
+    const category: Category = this as Category;
+
     // Deleting category from all products in this category
     const products: Product[] = await Product.find({
-      category: this._id,
+      category: category._id,
     });
 
     for (const product of products) {
@@ -82,11 +85,11 @@ CategorySchema.pre<Category>(
 );
 // Check if category exists by ID
 CategorySchema.statics.categoryIdExists = async function (
-  id: ObjectID
+  _id: ObjectID
 ): Promise<Category> {
-  const category: Category | null = await Category.findOne({ _id: id });
+  const category: Category | null = await Category.findOne({ _id: _id });
   if (!category)
-    throw new ErrorResponse(`Category with id of ${id} does not exist`, 404);
+    throw new ErrorResponse(`Category with id of ${_id} does not exist`, 404);
   return category;
 };
 // Check if category exists by name
@@ -117,7 +120,7 @@ CategorySchema.statics.findPath = async function (
     {
       $graphLookup: {
         from: 'categories', // the collection we operate in
-        startWith: '$_id', // what value we search for starts with, $_id is for ObjectID
+        startWith: '$_id', // what value we search for starts with, $._id is for ObjectID
         connectFromField: 'parent', //  field name whose value $graphLookup uses to recursively match against the connectToField
         connectToField: '_id', // field name in other documents against which to match the value of the field specified by the connectFromField parameter.
         depthField: 'structure', // this is the field that will show the route

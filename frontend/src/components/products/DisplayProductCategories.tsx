@@ -22,7 +22,7 @@ const DisplayProductCategories: FC<DisplayProductCategoriesProps> = ({
 
   const findCategoryTree = async (_id: string): Promise<void> => {
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/categories/category/root/${_id}`,
+      `${process.env.REACT_APP_API_URI}/api/v1/categories/category/root/${_id}`,
       {
         headers: {
           'Access-Control-Allow-Origin': '*',

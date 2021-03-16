@@ -74,7 +74,7 @@ export const updateUser = async (
     const user: User = await User.userExists(userId);
 
     // Check if admin is trying to edit its own profile
-    if (user.id === loggedInUser.id)
+    if (user._id === loggedInUser._id)
       throw new ErrorResponse(
         `If you want to edit yourself go to your profile`,
         401
@@ -113,7 +113,7 @@ export const deleteUser = async (
     const user: User = await User.userExists(userId);
 
     // Check if user is trying to delete itself
-    if (user.id === loggedInUser.id) {
+    if (user._id === loggedInUser._id) {
       throw new ErrorResponse(`You can't delete yourself`, 401);
     }
 
@@ -126,7 +126,7 @@ export const deleteUser = async (
 
     res.status(200).json({
       success: true,
-      data: `Deleted user with id of: ${user.id}`,
+      data: `Deleted user with id of: ${user._id}`,
     });
   } catch (err) {
     next(err);

@@ -28,7 +28,7 @@ interface User extends mongoose.Document {
 
 // Interface UserModel is needed for static methods to work with TypeScript, instance methods go into UserModel
 interface UserModel extends mongoose.Model<User> {
-  userExists(id: ObjectID): Promise<User>;
+  userExists(_id: ObjectID): Promise<User>;
   getVerifyEmailToken(): (string | number)[];
 }
 
@@ -108,7 +108,7 @@ UserSchema.pre<User>(
   async function () {
     const user: User = this as User;
     const products: Product[] = await Product.find({
-      addedById: user.id,
+      addedById: user._id,
     });
 
     for (const product of products) {
@@ -126,7 +126,7 @@ UserSchema.pre<User>(
 // Sign JWT and return
 UserSchema.methods.getSignedJwtToken = function (): string {
   const user: User = this as User;
-  return jsonwebtoken.sign({ id: user.id }, process.env.JWT_SECRET!, {
+  return jsonwebtoken.sign({ _id: user._id }, process.env.JWT_SECRET!, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 };
@@ -182,10 +182,10 @@ UserSchema.statics.getVerifyEmailToken = function (): (string | number)[] {
 };
 
 // Checks if user exists
-UserSchema.statics.userExists = async function (id: ObjectID): Promise<User> {
-  const user: User | null = await User.findOne({ _id: id });
+UserSchema.statics.userExists = async function (_id: ObjectID): Promise<User> {
+  const user: User | null = await User.findOne({ _id: _id });
   if (!user)
-    throw new ErrorResponse(`User with id of ${id} does not exist`, 404);
+    throw new ErrorResponse(`User with id of ${_id} does not exist`, 404);
   return user;
 };
 

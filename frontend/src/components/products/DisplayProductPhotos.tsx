@@ -16,7 +16,7 @@ const DisplayProductPhotos: FC<DisplayProductPhotosProps> = ({
           key="no image"
           style={{ width: 200, height: 200 }}
           alt="no_image.jpg"
-          src={`${process.env.REACT_APP_API_URL}/${process.env.REACT_APP_NO_PHOTO_FILE}`}
+          src={`${process.env.REACT_APP_API_URI}/${process.env.REACT_APP_NO_PHOTO_FILE}`}
           crossOrigin="anonymous"
         />
       </Fragment>
@@ -30,7 +30,7 @@ const DisplayProductPhotos: FC<DisplayProductPhotosProps> = ({
               key={photo}
               style={{ width: 200, height: 200 }}
               alt={photo}
-              src={`${process.env.REACT_APP_API_URL}/uploads/products/${_id}/${photo}`}
+              src={`${process.env.REACT_APP_API_URI}/uploads/products/${_id}/${photo}`}
               crossOrigin="anonymous"
             />
           );

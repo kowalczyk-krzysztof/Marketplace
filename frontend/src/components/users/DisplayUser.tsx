@@ -13,7 +13,7 @@ interface DisplayUserProps {
  * This interface is needed so I can access <Link to={userPath}></Link>
  * userPath = {
     pathname: `/merchant/${addedById}`,
-    state: { productId: _id },
+    state: { productId: ._id },
   };
   For this to work I also need to add StaticContext interface from react-rotuer
  */
@@ -41,7 +41,7 @@ const DisplayUser: FC<RouteComponentProps<DisplayUserProps>> = (
 
   const getUser = async (_id: string): Promise<void> => {
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/user/user/${_id}`,
+      `${process.env.REACT_APP_API_URI}/api/v1/user/user/${_id}`,
       {
         headers: {
           'Access-Control-Allow-Origin': '*',

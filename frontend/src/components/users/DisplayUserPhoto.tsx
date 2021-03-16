@@ -15,7 +15,7 @@ const DisplayUserPhoto: FC<DisplayUserPhotoProps> = ({
           key="no image"
           style={{ width: 200, height: 200 }}
           alt="no_image.jpg"
-          src={`${process.env.REACT_APP_API_URL}/${process.env.REACT_APP_NO_PHOTO_FILE}`}
+          src={`${process.env.REACT_APP_API_URI}/${process.env.REACT_APP_NO_PHOTO_FILE}`}
           crossOrigin="anonymous"
         />
       </Fragment>
@@ -27,7 +27,7 @@ const DisplayUserPhoto: FC<DisplayUserPhotoProps> = ({
           key={photo}
           style={{ width: 200, height: 200 }}
           alt={photo}
-          src={`${process.env.REACT_APP_API_URL}/uploads/users/${photo}`}
+          src={`${process.env.REACT_APP_API_URI}/uploads/users/${photo}`}
           crossOrigin="anonymous"
         />
       </Fragment>

@@ -15,7 +15,7 @@ const App = (): JSX.Element => {
     },
     function (error) {
       if (error.response.status === 404) {
-        window.location.href = `${process.env.REACT_APP_APP_URL}/not-found`;
+        window.location.href = `${process.env.REACT_APP_APP_URI}/not-found`;
       }
 
       return Promise.reject(error.response);
@@ -26,7 +26,7 @@ const App = (): JSX.Element => {
 
   const searchProducts = async (text: string): Promise<void> => {
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/products/find/search?term=${text}`,
+      `${process.env.REACT_APP_API_URI}/api/v1/products/find/search?term=${text}`,
       {
         headers: {
           'Access-Control-Allow-Origin': '*',
