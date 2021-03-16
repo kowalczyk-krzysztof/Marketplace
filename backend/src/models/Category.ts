@@ -84,7 +84,7 @@ CategorySchema.pre<Category>(
 CategorySchema.statics.categoryIdExists = async function (
   id: ObjectID
 ): Promise<Category> {
-  let category: Category | null = await Category.findOne({ _id: id });
+  const category: Category | null = await Category.findOne({ _id: id });
   if (!category)
     throw new ErrorResponse(`Category with id of ${id} does not exist`, 404);
   return category;
@@ -93,7 +93,7 @@ CategorySchema.statics.categoryIdExists = async function (
 CategorySchema.statics.categoryNameExists = async function (
   categoryName: string
 ): Promise<Category> {
-  let category: Category | null = await Category.findOne({
+  const category: Category | null = await Category.findOne({
     name: categoryName,
   });
   if (!category)

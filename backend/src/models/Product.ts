@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { ObjectID } from 'mongodb';
+import fs from 'fs';
 
 import Category from './Category';
 import User from './User';
@@ -77,6 +78,7 @@ ProductSchema.pre<Product>('save', function (next) {
 });
 
 // For some reason for this hook to work you need to use deleteOne - findByIdAndDelete and findOneAndDelete won't work. You also need to pass in options { document: true, query: false } to access "this"
+// TODO: Delete images
 ProductSchema.post<Product>(
   'deleteOne',
   { document: true, query: false },
@@ -85,18 +87,22 @@ ProductSchema.post<Product>(
     const category = this.category as ObjectID;
     const categoryToRemoveFrom = await Category.categoryIdExists(category);
     categoryToRemoveFrom.products.pull(this.id);
+    categoryToRemoveFrom.save();
     // Remove product from user who created it
     const owner: ObjectID = this.addedById;
     const user = await User.userExists(owner);
     user.addedProducts.pull(this.id);
     user.save();
+    // Deleting photos
+    const dir = `${process.env.FILE_UPLOAD_PATH}/products/${this.id}`;
+    fs.rmdirSync(dir, { recursive: true }); // recursive makes it so it also deletes all files in the folder
   }
 );
 // Check if products exists
 ProductSchema.statics.productExists = async function (
   id: ObjectID
 ): Promise<Product> {
-  let product: Product | null = await Product.findOne({ _id: id });
+  const product: Product | null = await Product.findOne({ _id: id });
   if (!product)
     throw new ErrorResponse(`Product with id of ${id} does not exist`, 404);
   return product;
