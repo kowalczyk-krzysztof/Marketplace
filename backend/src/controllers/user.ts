@@ -164,7 +164,7 @@ export const forgotPassword = async (
         404
       );
     // Get reset token
-    let resetToken: string = user.getResetPasswordToken();
+    const resetToken: string = user.getResetPasswordToken();
 
     await user.save({ validateBeforeSave: false });
 

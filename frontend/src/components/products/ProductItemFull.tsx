@@ -1,9 +1,11 @@
-import { FC } from 'react';
+import { FC, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 // Components
 import DisplayProductPhotos from './DisplayProductPhotos';
 import DisplayProductCategories from './DisplayProductCategories';
 import { Category } from './DisplayProductCategories';
+
+import Spinner from '../layout/Spinner';
 
 export interface ProductSummary {
   _id: string;
@@ -42,7 +44,10 @@ const ProductItemFull: FC<ProductItemFullProps> = ({
   return (
     <div>
       <h1>{name}</h1>
-      <DisplayProductPhotos photos={photos} _id={_id} />
+      <Suspense fallback={<Spinner></Spinner>}>
+        <DisplayProductPhotos photos={photos} _id={_id} />
+      </Suspense>
+
       <DisplayProductCategories category={category} />
       <p>Description: {description}</p>
       <p>Stock: {stock}</p>

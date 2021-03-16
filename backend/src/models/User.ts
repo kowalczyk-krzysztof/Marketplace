@@ -3,8 +3,9 @@ import { ObjectID } from 'mongodb';
 import bcryptjs from 'bcryptjs';
 import jsonwebtoken from 'jsonwebtoken';
 import crypto from 'crypto';
-import Product from './Product';
+import fs from 'fs';
 
+import Product from './Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
 
 interface User extends mongoose.Document {
@@ -92,11 +93,11 @@ const UserSchema = new mongoose.Schema(
 
 // Encrypt password using bcrypt
 UserSchema.pre<User>('save', async function (next): Promise<void> {
+  const user: User = this as User;
   // Without this check, user password would get hashed again  with different salt on every save which would break the password. So with this check, the password only gets hashed if modified so when CREATING the user or MODYFING password
-  if (!this.isModified('password')) {
+  if (!user.isModified('password')) {
     next();
   }
-  let user: User = this;
   const salt: string = await bcryptjs.genSalt(10);
   user.password = await bcryptjs.hash(user.password, salt);
 });
@@ -105,19 +106,27 @@ UserSchema.pre<User>(
   'deleteOne',
   { document: true, query: false },
   async function () {
+    const user: User = this as User;
     const products: Product[] = await Product.find({
-      addedById: this.id,
+      addedById: user.id,
     });
 
     for (const product of products) {
       await product.deleteOne();
     }
+    // Deleting photo
+    const dir = `${process.env.FILE_UPLOAD_PATH}/users/${user.photo}`;
+    if (user.photo !== 'no_photo.jpg')
+      fs.unlink(dir, (err) => {
+        console.log(err);
+      });
   }
 );
 
 // Sign JWT and return
 UserSchema.methods.getSignedJwtToken = function (): string {
-  return jsonwebtoken.sign({ id: this.id }, process.env.JWT_SECRET!, {
+  const user: User = this as User;
+  return jsonwebtoken.sign({ id: user.id }, process.env.JWT_SECRET!, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 };
@@ -126,7 +135,7 @@ UserSchema.methods.getSignedJwtToken = function (): string {
 UserSchema.methods.matchPassword = async function (
   enteredPassword: string
 ): Promise<boolean> {
-  let user: User = this as User;
+  const user: User = this as User;
   return await bcryptjs.compare(enteredPassword, user.password);
 };
 
@@ -136,7 +145,7 @@ UserSchema.methods.getResetPasswordToken = function (): string {
   const resetToken: string = crypto.randomBytes(20).toString('hex');
 
   // Hash token and set to resetPasswordToken field
-  let user: User = this as User; // need to do this otherwise error: Property 'resetPasswordToken' does not exist on type 'Document<any>'
+  const user: User = this as User; // need to do this otherwise error: Property 'resetPasswordToken' does not exist on type 'Document<any>'
 
   user.resetPasswordToken = crypto
     .createHash('sha256')
@@ -174,7 +183,7 @@ UserSchema.statics.getVerifyEmailToken = function (): (string | number)[] {
 
 // Checks if user exists
 UserSchema.statics.userExists = async function (id: ObjectID): Promise<User> {
-  let user: User | null = await User.findOne({ _id: id });
+  const user: User | null = await User.findOne({ _id: id });
   if (!user)
     throw new ErrorResponse(`User with id of ${id} does not exist`, 404);
   return user;
