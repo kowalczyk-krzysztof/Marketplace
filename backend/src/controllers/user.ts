@@ -419,9 +419,7 @@ export const getUser = async (
     // Finds a single user
     const userID: ObjectID = (req.params.id as unknown) as ObjectID;
     const findUser: User = await User.userExists(userID);
-    await findUser
-      .populate('addedProducts', '_id name description')
-      .execPopulate();
+    await findUser.populate('addedProducts').execPopulate();
 
     res.status(200).json({ sucess: true, data: findUser });
   } catch (err) {

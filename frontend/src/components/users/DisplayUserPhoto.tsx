@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, Fragment } from 'react';
 
 interface DisplayUserPhotoProps {
   photo: string;
@@ -10,25 +10,27 @@ const DisplayUserPhoto: FC<DisplayUserPhotoProps> = ({
   // If user doesn't have photo then render default photo
   if (photo === process.env.REACT_APP_NO_PHOTO_FILE)
     return (
-      <>
+      <Fragment>
         <img
           key="no image"
           style={{ width: 200, height: 200 }}
           alt="no_image.jpg"
           src={`${process.env.REACT_APP_API_URL}/${process.env.REACT_APP_NO_PHOTO_FILE}`}
+          crossOrigin="anonymous"
         />
-      </>
+      </Fragment>
     );
   else
     return (
-      <>
+      <Fragment>
         <img
           key={photo}
           style={{ width: 200, height: 200 }}
           alt={photo}
           src={`${process.env.REACT_APP_API_URL}/uploads/users/${photo}`}
+          crossOrigin="anonymous"
         />
-      </>
+      </Fragment>
     );
 };
 

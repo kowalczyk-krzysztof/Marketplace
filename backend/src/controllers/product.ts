@@ -35,7 +35,7 @@ export const fuzzySearch = async (
     })
       .limit(80)
       .sort({ name: 1 })
-      .select({ name: 1, description: 1, _id: 1 });
+      .select({ name: 1, description: 1, _id: 1, slug: 1 });
 
     /**
      * Below is atlas search solution - for this to work you need to create a search index

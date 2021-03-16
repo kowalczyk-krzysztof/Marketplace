@@ -41,7 +41,12 @@ const DisplayUser: FC<RouteComponentProps<DisplayUserProps>> = (
 
   const getUser = async (_id: string): Promise<void> => {
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/user/user/${_id}`
+      `${process.env.REACT_APP_API_URL}/api/v1/user/user/${_id}`,
+      {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+      }
     );
 
     setUser(res.data.data);

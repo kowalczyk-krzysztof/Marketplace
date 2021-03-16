@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -22,7 +22,12 @@ const DisplayProductCategories: FC<DisplayProductCategoriesProps> = ({
 
   const findCategoryTree = async (_id: string): Promise<void> => {
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/categories/category/root/${_id}`
+      `${process.env.REACT_APP_API_URL}/api/v1/categories/category/root/${_id}`,
+      {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+      }
     );
     setcategoryTree(res.data.data);
   };
@@ -31,23 +36,21 @@ const DisplayProductCategories: FC<DisplayProductCategoriesProps> = ({
     findCategoryTree(category._id);
   }, [category]);
   // IMPORTANT! categoryTree will be in root - > child order (animals -> domestic animals - > cats)
-  // For some weird reason I need to add key on <Link>
+  // For some weird reason I need to add key on <Fragment>
   return (
-    <>
+    <Fragment>
       <p>
         {`Categories: `}{' '}
         {categoryTree.map((category: Category, index: number) => {
           return (
-            <>
-              <Link to={`/category/${category.slug}`} key={category._id}>
-                {category.name}
-              </Link>
+            <Fragment key={category._id}>
+              <Link to={`/category/${category.slug}`}>{category.name}</Link>
               {index !== categoryTree.length - 1 ? ` --> ` : null}
-            </>
+            </Fragment>
           );
         })}
       </p>
-    </>
+    </Fragment>
   );
 };
 

@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, Fragment } from 'react';
 // Components
 import SearchProductItem from './SearchProductItem';
 import { ProductSummary } from '../ProductItemFull';
@@ -15,7 +15,7 @@ const DisplaySearchProducts: FC<DisplaySearchProductsProps> = ({
 }): JSX.Element | null => {
   if (productCount > 0)
     return (
-      <>
+      <Fragment>
         <h2>Products found: {productCount}</h2>
         <ul>
           {products.map((product: ProductSummary) => {
@@ -26,7 +26,7 @@ const DisplaySearchProducts: FC<DisplaySearchProductsProps> = ({
             );
           })}
         </ul>
-      </>
+      </Fragment>
     );
   else {
     return null;
