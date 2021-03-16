@@ -152,13 +152,7 @@ export const getUserCart = async (
     let productCount: number = cart.products.length;
 
     if (productCount === 0) cartStatus = 'Cart is empty';
-    else
-      cartStatus = await cart
-        .populate(
-          'products',
-          'name pricePerUnit stock description addedBy photo'
-        )
-        .execPopulate();
+    else cartStatus = await cart.populate('products').execPopulate();
 
     res.status(200).json({
       success: true,

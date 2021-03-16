@@ -1,4 +1,4 @@
-import { useState, FormEvent, ChangeEvent, FC } from 'react';
+import { useState, FormEvent, ChangeEvent, FC, Fragment } from 'react';
 // Components
 import SubmitInputField from './SubmitInputField';
 interface SearchProps {
@@ -23,7 +23,7 @@ const Search: FC<SearchProps> = ({ searchProducts }): JSX.Element => {
   };
 
   return (
-    <>
+    <Fragment>
       <SubmitInputField
         type="text"
         name="search"
@@ -33,7 +33,7 @@ const Search: FC<SearchProps> = ({ searchProducts }): JSX.Element => {
         onChange={changeHandler}
         onSubmit={submitHandler}
       ></SubmitInputField>
-    </>
+    </Fragment>
   );
 };
 

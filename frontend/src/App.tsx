@@ -9,24 +9,29 @@ import DisplaySearchProducts from './components/products/search/DisplaySearchPro
 import DisplayUser from './components/users/DisplayUser';
 
 const App = (): JSX.Element => {
-  // axios.interceptors.response.use(
-  //   (response) => {
-  //     return response;
-  //   },
-  //   function (error) {
-  //     if (error.response.status === 404) {
-  //       window.location.href = `${process.env.REACT_APP_APP_URL}/not-found`;
-  //     }
+  axios.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    function (error) {
+      if (error.response.status === 404) {
+        window.location.href = `${process.env.REACT_APP_APP_URL}/not-found`;
+      }
 
-  //     return Promise.reject(error.response);
-  //   }
-  // );
+      return Promise.reject(error.response);
+    }
+  );
   const [products, setProducts] = useState([]);
   const [productCount, setproductCount] = useState(0);
 
   const searchProducts = async (text: string): Promise<void> => {
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/products/find/search?term=${text}`
+      `${process.env.REACT_APP_API_URL}/api/v1/products/find/search?term=${text}`,
+      {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+      }
     );
     setproductCount(res.data.count);
     setProducts(res.data.data);
@@ -48,10 +53,10 @@ const App = (): JSX.Element => {
           <Route exact path="/not-found"></Route>
           <Route
             exact
-            path={`/product/:id`}
+            path={`/product/:slug-:id/`}
             component={DisplayProductFull}
           ></Route>
-          <Route exact path={`/merchant/:id`} component={DisplayUser}></Route>
+          <Route exact path={`/user/:id/`} component={DisplayUser}></Route>
         </Switch>
       </div>
     </BrowserRouter>

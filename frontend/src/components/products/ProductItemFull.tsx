@@ -9,6 +9,7 @@ export interface ProductSummary {
   _id: string;
   name: string;
   description: string;
+  slug: string;
 }
 
 export interface ProductFull extends ProductSummary {
@@ -47,7 +48,7 @@ const ProductItemFull: FC<ProductItemFullProps> = ({
       <p>Stock: {stock}</p>
       <p>Quantity: {quantity}</p>
       <p>Price: ${pricePerUnit} each</p>
-      <Link to={`/merchant/${addedById}`}>Seller Profile</Link>
+      <Link to={`/user/${addedById}`}>Seller Profile</Link>
     </div>
   );
 };

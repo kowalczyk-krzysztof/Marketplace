@@ -17,7 +17,7 @@ interface UserItemProps {
 }
 
 const UserItem: FC<UserItemProps> = ({
-  user: { _id, photo, name, role, addedProducts },
+  user: { photo, name, role, addedProducts },
 }): JSX.Element => {
   return (
     <div>

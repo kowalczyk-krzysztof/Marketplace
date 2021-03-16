@@ -9,7 +9,7 @@ interface SearchProductItemProps {
 
 // Displays a product with type ProductSummary
 const SearchProductItem: FC<SearchProductItemProps> = ({
-  product: { name, description, _id },
+  product: { name, description, _id, slug },
 }): JSX.Element => {
   // It's better to make a link styled as button that to make an actual button
 
@@ -17,7 +17,7 @@ const SearchProductItem: FC<SearchProductItemProps> = ({
     <div>
       <p>Name: {name}</p>
       <p>Description: {description}</p>
-      <Link to={`/product/${_id}`}>View Product</Link>
+      <Link to={`/product/${slug}-${_id}`}>View Product</Link>
     </div>
   );
 };
