@@ -33,7 +33,7 @@ const DisplayProductFull: FC<RouteComponentProps<DisplayProductFullProps>> = (
   // Fetching product data from database
   const getProduct = async (_id: string): Promise<void> => {
     const res = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/products/find/product/${_id}`,
+      `${process.env.REACT_APP_API_URI}/api/v1/products/find/product/${_id}`,
       {
         headers: {
           'Access-Control-Allow-Origin': '*',

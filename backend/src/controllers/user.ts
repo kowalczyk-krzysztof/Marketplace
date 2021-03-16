@@ -128,7 +128,7 @@ export const updatePassword = async (
 ): Promise<void> => {
   try {
     const loggedInUser: User = req.user as User;
-    const user: User | null = await User.findById(loggedInUser.id).select(
+    const user: User | null = await User.findById(loggedInUser._id).select(
       '+password'
     );
 
@@ -268,7 +268,7 @@ export const userPhotoUpload = async (
       );
 
     // Create custom filename
-    file.name = `user_${user.id}${path.parse(file.name).ext}`;
+    file.name = `user_${user._id}${path.parse(file.name).ext}`;
     // Moving file to folder
     file.mv(
       `${process.env.FILE_UPLOAD_PATH}/users/${file.name}`,

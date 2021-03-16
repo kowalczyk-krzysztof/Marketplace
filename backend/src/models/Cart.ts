@@ -5,7 +5,7 @@ interface Cart extends mongoose.Document {
   products: mongoose.Types.Array<ObjectID | string>;
 }
 interface CartModel extends mongoose.Model<Cart> {
-  cartExists(id: ObjectID): Promise<Cart>;
+  cartExists(_id: ObjectID): Promise<Cart>;
 }
 
 const CartSchema = new mongoose.Schema(
@@ -22,9 +22,9 @@ const CartSchema = new mongoose.Schema(
   { timestamps: true }
 );
 // Check if cart exists
-CartSchema.statics.cartExists = async function (id: ObjectID): Promise<Cart> {
-  let cart: Cart | null = await Cart.findOne({ owner: id });
-  if (!cart) cart = await Cart.create({ owner: id });
+CartSchema.statics.cartExists = async function (_id: ObjectID): Promise<Cart> {
+  let cart: Cart | null = await Cart.findOne({ owner: _id });
+  if (!cart) cart = await Cart.create({ owner: _id });
   return cart;
 };
 

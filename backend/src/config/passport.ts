@@ -23,7 +23,7 @@ passport.use(
     async (payload, done) => {
       // Paylod is extracted jwt
 
-      const user: User | null = await User.findById(payload.id);
+      const user: User | null = await User.findById(payload._id);
 
       if (!user) {
         return done(new ErrorResponse(`User not found`, 404), false);
@@ -61,7 +61,7 @@ passport.use(
           return done(new ErrorResponse(`Invalid credentials`, 404), false);
         }
 
-        const validate: string = await user.matchPassword(password);
+        const validate: string = user.matchPassword(password);
 
         if (!validate) {
           return done(new ErrorResponse(`Invalid credentials`, 401), false);

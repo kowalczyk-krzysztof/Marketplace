@@ -19,7 +19,7 @@ export const getMyCart = async (
 
     // Check if cart exists for req.user
     const user: User = req.user as User;
-    const cart: Cart = await Cart.cartExists(user.id);
+    const cart: Cart = await Cart.cartExists(user._id);
     let cartStatus: Cart | string;
     let productCount: number = cart.products.length;
 
@@ -47,7 +47,7 @@ export const addProductToCart = async (
   try {
     // Check if cart exists for req.user
     const user: User = req.user as User;
-    const cart: Cart = await Cart.cartExists(user.id);
+    const cart: Cart = await Cart.cartExists(user._id);
 
     // Check if product exists
     const productId: ObjectID = (req.params.id as unknown) as ObjectID;
@@ -83,7 +83,7 @@ export const addManyProductsToCart = async (
   try {
     // Check if cart exists for req.user
     const user: User = req.user as User;
-    const cart: Cart = await Cart.cartExists(user.id);
+    const cart: Cart = await Cart.cartExists(user._id);
 
     // Adding products
     const productsToAdd: ObjectID[] = req.body.products;
@@ -94,7 +94,7 @@ export const addManyProductsToCart = async (
     const validProducts = [];
 
     for (const product of productsExists) {
-      validProducts.push(product.id);
+      validProducts.push(product._id);
     }
 
     // Checks if products user is trying to add are both existing products and not already in cart
@@ -138,7 +138,7 @@ export const deleteProductFromCart = async (
   try {
     // Check if cart exists for req.user
     const user: User = req.user as User;
-    const cart = await Cart.cartExists(user.id);
+    const cart = await Cart.cartExists(user._id);
 
     // Check if user is trying to delete a product that is not in his cart
     const product: ObjectID | string = req.params.id;
@@ -170,7 +170,7 @@ export const deleteManyProductFromCart = async (
   try {
     // Check if cart exists for req.user
     const user: User = req.user as User;
-    const cart: Cart = await Cart.cartExists(user.id);
+    const cart: Cart = await Cart.cartExists(user._id);
 
     //  .forEach expects a synchronous function and won't do anything with the return value. It just calls the function and on to the next. for...of will actually await on the result of the execution of the function.
 
@@ -212,7 +212,7 @@ export const emptyCart = async (
   try {
     // Check if cart exists for req.user
     const user: User = req.user as User;
-    const cart: Cart = await Cart.cartExists(user.id);
+    const cart: Cart = await Cart.cartExists(user._id);
     if (cart.products.length === 0)
       throw new ErrorResponse(`Your cart is already empty`, 400);
     // Empties products array

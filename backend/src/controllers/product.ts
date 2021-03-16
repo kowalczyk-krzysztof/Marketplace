@@ -117,12 +117,12 @@ export const createProduct = async (
     user.roleCheck('MERCHANT', 'ADMIN');
     // Check is user already has a product with provided name
     const nameUniqueForUser: Product | null = await Product.findOne({
-      addedById: user.id,
+      addedById: user._id,
       name: req.body.name,
     });
     if (nameUniqueForUser) {
       throw new ErrorResponse(
-        `${user.id} already has a product with name of ${req.body.name}`,
+        `${user._id} already has a product with name of ${req.body.name}`,
         400
       );
     }
@@ -133,7 +133,7 @@ export const createProduct = async (
     // Limiting the number of products a merchant can add
     const maxProducts: number = 5;
     const totalAddedProducts: Product[] = await Product.find({
-      addedById: user.id,
+      addedById: user._id,
     });
 
     if (totalAddedProducts.length >= maxProducts && user.role !== 'ADMIN')
@@ -148,16 +148,16 @@ export const createProduct = async (
       description: req.body.description,
       pricePerUnit: req.body.pricePerUnit,
       stock: req.body.stock,
-      addedById: user.id,
-      category: category.id,
+      addedById: user._id,
+      category: category._id,
     });
 
     // Adding product to addedProducts in user who created the product
-    user.addedProducts.push(product.id);
+    user.addedProducts.push(product._id);
     user.save();
 
     // Adding product to category
-    category.products.addToSet(product.id);
+    category.products.addToSet(product._id);
     category.save();
 
     res.status(201).json({ success: true, data: product });
@@ -183,17 +183,17 @@ export const updateProduct = async (
 
     // Check if user is the products owner or admin
     if (
-      product.addedById.toString() === user.id.toString() ||
+      product.addedById.toString() === user._id.toString() ||
       user.role === 'ADMIN'
     ) {
       // Check is user already has a product with provided name and if the product user wants to update isn't that product
       const nameUniqueForUser: Product | null = await Product.findOne({
-        addedById: user.id,
+        addedById: user._id,
         name: req.body.name,
       });
       if (nameUniqueForUser && product.name !== req.body.name) {
         throw new ErrorResponse(
-          `${user.id} already has a product with name of ${req.body.name}`,
+          `${user._id} already has a product with name of ${req.body.name}`,
           400
         );
       }
@@ -233,18 +233,18 @@ export const deleteProduct = async (
     const product: Product = await Product.productExists(productId);
     // Check if user is the products owner or admin
     if (
-      product.addedById.toString() === user.id.toString() ||
+      product.addedById.toString() === user._id.toString() ||
       user.role === 'ADMIN'
     ) {
       await product.deleteOne();
 
       res.status(200).json({
         sucess: true,
-        data: `Deleted product with id of ${product.id}`,
+        data: `Deleted product with id of ${product._id}`,
       });
     } else
       throw new ErrorResponse(
-        `User with id of ${user.id} is not authorised to delete this product`,
+        `User with id of ${user._id} is not authorised to delete this product`,
         401
       );
     // For some reason, to use 'deleteOne' hook you have to use deleteOne, findOneAndDelete doesn't work, neither does findByIdAndDelete
@@ -321,7 +321,7 @@ export const productFileUpload = async (
 
     // Check if user is product owner
     if (
-      product.addedById.toString() === user.id.toString() ||
+      product.addedById.toString() === user._id.toString() ||
       user.role === 'ADMIN'
     ) {
       if (!req.files)
@@ -346,12 +346,12 @@ export const productFileUpload = async (
           400
         );
       // Dynamic directory
-      const dir: string = `${product.id}`;
+      const dir: string = `${product._id}`;
       // Generating random hash for product name
       const hash: string = crypto.randomBytes(5).toString('hex');
 
       // Create custom filename
-      file.name = `product_${product.id}_${hash}${path.parse(file.name).ext}`;
+      file.name = `product_${product._id}_${hash}${path.parse(file.name).ext}`;
 
       // Checking if file already exists $addToSet already handles duplicates inside db but I don't want the file to get overriden. There's a very low chance of this happening with added hash, but it still can happen
       if (product.photos.includes(file.name))
@@ -383,7 +383,7 @@ export const productFileUpload = async (
       );
     } else
       throw new ErrorResponse(
-        `User with id of ${user.id} is not authorized to update this product`,
+        `User with id of ${user._id} is not authorized to update this product`,
         401
       );
   } catch (err) {
@@ -408,23 +408,23 @@ export const updateProductCategory = async (
 
     // Check if user is the products owner or admin
     if (
-      product.addedById.toString() === user.id.toString() ||
+      product.addedById.toString() === user._id.toString() ||
       user.role === 'ADMIN'
     ) {
       // Removing product from old category
       const productCategory = product.category as ObjectID;
       const oldCategory = await Category.categoryIdExists(productCategory);
 
-      oldCategory.products.pull(product.id);
+      oldCategory.products.pull(product._id);
       await oldCategory.save();
 
       // Check if category exists
       const newCategory = await Category.categoryNameExists(req.body.category);
       // Saving product
-      product.category = newCategory.id;
+      product.category = newCategory._id;
       await product.save();
       // Adding product to category
-      newCategory.products.addToSet(product.id);
+      newCategory.products.addToSet(product._id);
       await newCategory.save();
 
       res.status(201).json({ sucess: true, data: product });

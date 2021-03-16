@@ -21,7 +21,7 @@ interface Product extends mongoose.Document {
 
 // Interface ProductModel is needed for static methods to work with TypeScript
 interface ProductModel extends mongoose.Model<Product> {
-  productExists(id: ObjectID): Promise<Product>;
+  productExists(_id: ObjectID): Promise<Product>;
 }
 export const ProductSchema: Schema = new mongoose.Schema(
   {
@@ -73,7 +73,8 @@ export const ProductSchema: Schema = new mongoose.Schema(
 
 // Create slug from name
 ProductSchema.pre<Product>('save', function (next) {
-  this.slug = slugify(this.name);
+  const product: Product = this as Product;
+  product.slug = slugify(product.name);
   next();
 });
 
@@ -83,28 +84,30 @@ ProductSchema.post<Product>(
   'deleteOne',
   { document: true, query: false },
   async function () {
+    const product: Product = this as Product;
+
     // Removing product from category it belongs to
-    const category = this.category as ObjectID;
+    const category = product.category as ObjectID;
     const categoryToRemoveFrom = await Category.categoryIdExists(category);
-    categoryToRemoveFrom.products.pull(this.id);
+    categoryToRemoveFrom.products.pull(product._id);
     categoryToRemoveFrom.save();
     // Remove product from user who created it
-    const owner: ObjectID = this.addedById;
+    const owner: ObjectID = product.addedById;
     const user = await User.userExists(owner);
-    user.addedProducts.pull(this.id);
+    user.addedProducts.pull(product._id);
     user.save();
     // Deleting photos
-    const dir = `${process.env.FILE_UPLOAD_PATH}/products/${this.id}`;
+    const dir = `${process.env.FILE_UPLOAD_PATH}/products/${product._id}`;
     fs.rmdirSync(dir, { recursive: true }); // recursive makes it so it also deletes all files in the folder
   }
 );
 // Check if products exists
 ProductSchema.statics.productExists = async function (
-  id: ObjectID
+  _id: ObjectID
 ): Promise<Product> {
-  const product: Product | null = await Product.findOne({ _id: id });
+  const product: Product | null = await Product.findOne({ _id: _id });
   if (!product)
-    throw new ErrorResponse(`Product with id of ${id} does not exist`, 404);
+    throw new ErrorResponse(`Product with id of ${_id} does not exist`, 404);
   return product;
 };
 
