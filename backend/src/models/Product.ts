@@ -86,12 +86,16 @@ ProductSchema.post<Product>(
   async function () {
     const product: Product = this as Product;
 
-    // Removing product from category it belongs to
-    const category = product.category as ObjectID;
-    const categoryToRemoveFrom = await Category.findOne({ _id: category });
-    if (categoryToRemoveFrom) {
-      categoryToRemoveFrom.products.pull(product._id);
-      await categoryToRemoveFrom.save();
+    // Removing product from categories it belongs to
+    const categoriesToRemoveFrom = await Category.find({
+      products: product._id,
+    });
+
+    if (categoriesToRemoveFrom.length > 0) {
+      for (const category of categoriesToRemoveFrom) {
+        category.products.pull(product._id);
+        await category.save();
+      }
     }
     // Remove product from user who created it
     const owner: ObjectID = product.addedById;

@@ -11,6 +11,7 @@ interface Category extends mongoose.Document {
   parent: ObjectID | null;
   products: mongoose.Types.Array<ObjectID>;
   slug: string;
+  isParent: boolean;
 }
 interface CategoryModel extends mongoose.Model<Category> {
   categoryIdExists(_id: ObjectID): Promise<Category>;
@@ -19,7 +20,7 @@ interface CategoryModel extends mongoose.Model<Category> {
   findAllRoots(): Promise<Category[]>;
 }
 // Interface for getting path to root of category
-interface QueryResult {
+export interface QueryResult {
   _id: string;
   name: string;
   structure: number;
@@ -54,6 +55,7 @@ const CategorySchema = new mongoose.Schema(
       },
     ],
     slug: String,
+    isParent: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -136,6 +138,7 @@ CategorySchema.statics.findPathToRoot = async function (
         'path.name': 1,
         'path.structure': 1,
         'path.slug': 1,
+        'path.products': 1,
       },
     },
   ]);

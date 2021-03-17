@@ -5,7 +5,7 @@ import { ObjectID } from 'mongodb';
 
 import Product from '../models/Product';
 import User from '../models/User';
-import Category from '../models/Category';
+import Category, { QueryResult } from '../models/Category';
 import { UploadedFile } from 'express-fileupload';
 import { ErrorResponse } from '../utils/ErrorResponse';
 
@@ -156,9 +156,26 @@ export const createProduct = async (
     user.addedProducts.push(product._id);
     await user.save();
 
-    // Adding product to category
-    category.products.addToSet(product._id);
-    await category.save();
+    // Adding product to category and all its ancestors all the way to root
+    const categoryBranch: QueryResult[] = await Category.findPathToRoot(
+      category.name
+    );
+    const categoryIds: string[] = []; // array of _ids
+
+    for (const category of categoryBranch) {
+      categoryIds.push(category._id);
+    }
+
+    const categories: Category[] = await Category.find({
+      // finding the documents
+      _id: { $in: categoryIds },
+    });
+
+    for (const category of categories) {
+      // adding product to each category on path to root
+      category.products.addToSet(product._id);
+      await category.save();
+    }
 
     res.status(201).json({ success: true, data: product });
   } catch (err) {
@@ -411,24 +428,45 @@ export const updateProductCategory = async (
       product.addedById.toString() === user._id.toString() ||
       user.role === 'ADMIN'
     ) {
-      // Removing product from old category
-      const productCategory = product.category as ObjectID;
-      const oldCategory = await Category.findOne({
-        _id: productCategory,
+      // Removing product from old categories
+      const categoriesToRemoveFrom: Category[] = await Category.find({
+        products: product._id,
       });
-      if (oldCategory) {
-        oldCategory.products.pull(product._id);
-        await oldCategory.save();
+
+      if (categoriesToRemoveFrom.length > 0) {
+        for (const category of categoriesToRemoveFrom) {
+          category.products.pull(product._id);
+          await category.save();
+        }
       }
 
       // Check if category exists
-      const newCategory = await Category.categoryNameExists(req.body.category);
+      const newCategory: Category = await Category.categoryNameExists(
+        req.body.category
+      );
       // Saving product
       product.category = newCategory._id;
       await product.save();
-      // Adding product to category
-      newCategory.products.addToSet(product._id);
-      await newCategory.save();
+      // Adding product to category and all its ancestors all the way to root
+      const categoryBranch: QueryResult[] = await Category.findPathToRoot(
+        newCategory.name
+      );
+      const categoryIds: string[] = []; // array of _ids
+
+      for (const category of categoryBranch) {
+        categoryIds.push(category._id);
+      }
+
+      const categories: Category[] = await Category.find({
+        // finding the documents
+        _id: { $in: categoryIds },
+      });
+
+      for (const category of categories) {
+        // adding product to each category on path to root
+        category.products.addToSet(product._id);
+        await category.save();
+      }
 
       res.status(201).json({ sucess: true, data: product });
     } else
