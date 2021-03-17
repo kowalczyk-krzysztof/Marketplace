@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ObjectID } from 'mongodb';
 
 import Category from '../models/Category';
+import { ErrorResponse } from '../utils/ErrorResponse';
 
 /**
  * Originally I wanted users to be able to add multiple categories to a product. I made a check in case user wanted to add two or more categories from the same root e.g add "computers" and "phones" (root category "technology"). That check would find if both products have the same root and throw error if so. Then I realised users could add products to two completely different categories e.g "computers" and "animals" and that would make no sense. So in the end I opted for just one category per product.
@@ -38,7 +39,7 @@ export const getCategory = async (
 ): Promise<void> => {
   try {
     const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
-    const category: Category = await Category.categoryIdExists(categoryId);
+    const category: Category = await Category.categoryExists(categoryId);
 
     res.status(200).json({
       success: true,
@@ -59,10 +60,12 @@ export const getPathToRoot = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
-    const category: Category = await Category.categoryIdExists(categoryId);
+    const categoryName: string = req.body.category;
 
-    const sortedCategories = await Category.findPathToRoot(category.name);
+    if (categoryName === '')
+      throw new ErrorResponse('Please enter category name', 404);
+
+    const sortedCategories = await Category.findPathToRoot(categoryName);
 
     res.status(200).json({ success: true, data: sortedCategories });
   } catch (err) {

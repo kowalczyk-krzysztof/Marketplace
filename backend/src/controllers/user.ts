@@ -62,7 +62,7 @@ export const login = async (
   }
 };
 
-// @desc    Log user out / clear cookie
+// @desc    Logout user / clear cookie
 // @route   GET /api/v1/user/logout
 // @access  Private
 export const logout = async (req: Request, res: Response): Promise<void> => {
