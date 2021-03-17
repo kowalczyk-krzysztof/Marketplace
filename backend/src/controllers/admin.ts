@@ -179,14 +179,18 @@ export const addCategory = async (
     // Check for parent category
     const parentCategory = await Category.findOne({ name: req.body.parent });
     let parent: ObjectID | null;
-    if (parentCategory) parent = parentCategory._id;
-    else parent = null;
+    if (parentCategory) {
+      parent = parentCategory._id;
+      parentCategory.isParent = true;
+      await parentCategory.save();
+    } else parent = null;
     // Adds a new category
     const category: Category = await Category.create({
       name: req.body.name,
       description: req.body.description,
       parent: parent, // If parent category doesn't exist then this means the new category is a new root category
     });
+
     res.status(201).json({ success: true, data: category });
   } catch (err) {
     next(err);
@@ -234,6 +238,18 @@ export const deleteCategory = async (
     // Delete root category
     await category.deleteOne();
 
+    // Change isParent status of parent
+    const parent = await Category.findOne({ _id: category.parent });
+    if (parent) {
+      const deletedCategorySiblings = await Category.find({
+        parent: parent._id,
+      });
+      if (deletedCategorySiblings.length === 0) {
+        parent.isParent = false;
+        await parent.save();
+      }
+    }
+
     // Delete subcategories
     const categoriesToDelete = subcategories[0].categoriesToDelete;
     for (const categoryId of categoriesToDelete) {
@@ -269,8 +285,9 @@ export const getAllCategories = async (
         description: 1,
         parent: 1,
         slug: 1,
+        products: 1,
       }
-    );
+    ).populate('products');
 
     res.status(200).json({
       success: true,
