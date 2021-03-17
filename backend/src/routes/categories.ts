@@ -1,14 +1,16 @@
 import express, { Router } from 'express';
 
 import {
-  getCategories,
+  getRootCategories,
   getCategory,
   getPathToRoot,
+  getDirectChildren,
 } from '../controllers/categories';
 
 const categoryRouter: Router = express.Router();
 
-categoryRouter.route('/list').get(getCategories);
+categoryRouter.route('/roots').get(getRootCategories);
 categoryRouter.route('/category/find/:id').get(getCategory);
 categoryRouter.route('/category/root/:id').get(getPathToRoot);
+categoryRouter.route('/category/children/:id').get(getDirectChildren);
 export default categoryRouter;

@@ -6,6 +6,7 @@ import Category from './Category';
 import User from './User';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { slugify } from '../utils/slugify';
+import Cart from './Cart';
 
 interface Product extends mongoose.Document {
   name: string;
@@ -79,7 +80,6 @@ ProductSchema.pre<Product>('save', function (next) {
 });
 
 // For some reason for this hook to work you need to use deleteOne - findByIdAndDelete and findOneAndDelete won't work. You also need to pass in options { document: true, query: false } to access "this"
-// TODO: Delete images
 ProductSchema.post<Product>(
   'deleteOne',
   { document: true, query: false },
@@ -88,14 +88,28 @@ ProductSchema.post<Product>(
 
     // Removing product from category it belongs to
     const category = product.category as ObjectID;
-    const categoryToRemoveFrom = await Category.categoryIdExists(category);
-    categoryToRemoveFrom.products.pull(product._id);
-    categoryToRemoveFrom.save();
+    const categoryToRemoveFrom = await Category.findOne({ _id: category });
+    if (categoryToRemoveFrom) {
+      categoryToRemoveFrom.products.pull(product._id);
+      await categoryToRemoveFrom.save();
+    }
     // Remove product from user who created it
     const owner: ObjectID = product.addedById;
-    const user = await User.userExists(owner);
-    user.addedProducts.pull(product._id);
-    user.save();
+    const user = await User.findOne({ _id: owner });
+    if (user) {
+      user.addedProducts.pull(product._id);
+      await user.save();
+    }
+
+    // Remove products from carts
+    const carts: Cart[] = await Cart.find({ products: product._id });
+    if (carts.length > 0) {
+      for (const cart of carts) {
+        cart.products.pull(product._id);
+        await cart.save();
+      }
+    }
+
     // Deleting photos
     const dir = `${process.env.FILE_UPLOAD_PATH}/products/${product._id}`;
     fs.rmdirSync(dir, { recursive: true }); // recursive makes it so it also deletes all files in the folder

@@ -2,8 +2,8 @@ import { FC, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 // Components
 import DisplayProductPhotos from './DisplayProductPhotos';
-import DisplayProductCategories from './DisplayProductCategories';
-import { Category } from './DisplayProductCategories';
+import DisplayCategoryTree from '../categories/DisplayCategoryTree';
+import { Category } from '../categories/DisplayCategoryTree';
 
 import Spinner from '../layout/Spinner';
 
@@ -47,8 +47,8 @@ const ProductItemFull: FC<ProductItemFullProps> = ({
       <Suspense fallback={<Spinner></Spinner>}>
         <DisplayProductPhotos photos={photos} _id={_id} />
       </Suspense>
-
-      <DisplayProductCategories category={category} />
+      <p>Categories: </p>
+      <DisplayCategoryTree category={category} />
       <p>Description: {description}</p>
       <p>Stock: {stock}</p>
       <p>Quantity: {quantity}</p>

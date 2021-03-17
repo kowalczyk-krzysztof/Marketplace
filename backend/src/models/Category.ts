@@ -8,14 +8,15 @@ import { slugify } from '../utils/slugify';
 interface Category extends mongoose.Document {
   name: string;
   description: string;
-  parent: ObjectID;
+  parent: ObjectID | null;
   products: mongoose.Types.Array<ObjectID>;
   slug: string;
 }
 interface CategoryModel extends mongoose.Model<Category> {
   categoryIdExists(_id: ObjectID): Promise<Category>;
   categoryNameExists(categoryName: string): Promise<Category>;
-  findPath(categoryName: string): Promise<QueryResult[]>;
+  findPathToRoot(categoryName: string): Promise<QueryResult[]>;
+  findAllRoots(): Promise<Category[]>;
 }
 // Interface for getting path to root of category
 interface QueryResult {
@@ -38,7 +39,7 @@ const CategorySchema = new mongoose.Schema(
       required: [true, 'Category name is required'],
       minlength: [2, 'Category name needs to be at least 2 characters'],
       maxlength: [30, 'Category name can not be more than 50 characters'],
-      index: true,
+      unique: true,
     },
     parent: {
       type: mongoose.Schema.Types.ObjectId,
@@ -76,10 +77,11 @@ CategorySchema.pre<Category>(
     const products: Product[] = await Product.find({
       category: category._id,
     });
-
-    for (const product of products) {
-      product.category = null;
-      product.save();
+    if (products.length > 0) {
+      for (const product of products) {
+        product.category = null;
+        await product.save();
+      }
     }
   }
 );
@@ -107,11 +109,11 @@ CategorySchema.statics.categoryNameExists = async function (
   return category;
 };
 // Find path to root
-CategorySchema.statics.findPath = async function (
+CategorySchema.statics.findPathToRoot = async function (
   categoryName: string
 ): Promise<QueryResult[]> {
   // Find pathy to root category
-  const findPath = await Category.aggregate([
+  const findPathToRoot = await Category.aggregate([
     {
       $match: {
         name: categoryName, // starting category
@@ -137,14 +139,18 @@ CategorySchema.statics.findPath = async function (
       },
     },
   ]);
-
-  const path: QueryResult[] = findPath[0].path;
+  const path: QueryResult[] = findPathToRoot[0].path;
   // Sorting the array in descending order
   const sortedCategories = path.sort(function (a: QueryResult, b: QueryResult) {
     return b.structure - a.structure; // ROOT WILL BE FIRST
   });
 
   return sortedCategories;
+};
+// Find all root categories
+CategorySchema.statics.findAllRoots = async function (): Promise<Category[]> {
+  const roots: Category[] = await Category.find({ parent: null });
+  return roots;
 };
 
 const Category: CategoryModel = mongoose.model<Category, CategoryModel>(

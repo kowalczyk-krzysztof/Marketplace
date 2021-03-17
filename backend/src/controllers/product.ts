@@ -122,7 +122,7 @@ export const createProduct = async (
     });
     if (nameUniqueForUser) {
       throw new ErrorResponse(
-        `${user._id} already has a product with name: ${req.body.name}`,
+        `User with _id: ${user._id} already has a product with name: ${req.body.name}`,
         400
       );
     }
@@ -154,11 +154,11 @@ export const createProduct = async (
 
     // Adding product to addedProducts in user who created the product
     user.addedProducts.push(product._id);
-    user.save();
+    await user.save();
 
     // Adding product to category
     category.products.addToSet(product._id);
-    category.save();
+    await category.save();
 
     res.status(201).json({ success: true, data: product });
   } catch (err) {
@@ -193,7 +193,7 @@ export const updateProduct = async (
       });
       if (nameUniqueForUser && product.name !== req.body.name) {
         throw new ErrorResponse(
-          `${user._id} already has a product with name: ${req.body.name}`,
+          `User with _id: ${user._id} already has a product with name: ${req.body.name}`,
           400
         );
       }
@@ -209,7 +209,7 @@ export const updateProduct = async (
       res.status(201).json({ sucess: true, data: product });
     } else
       throw new ErrorResponse(
-        `User with id ${user._id} is not authorised to update this product`,
+        `User with _id: ${user._id} is not authorised to update this product`,
         401
       );
   } catch (err) {
@@ -413,10 +413,13 @@ export const updateProductCategory = async (
     ) {
       // Removing product from old category
       const productCategory = product.category as ObjectID;
-      const oldCategory = await Category.categoryIdExists(productCategory);
-
-      oldCategory.products.pull(product._id);
-      await oldCategory.save();
+      const oldCategory = await Category.findOne({
+        _id: productCategory,
+      });
+      if (oldCategory) {
+        oldCategory.products.pull(product._id);
+        await oldCategory.save();
+      }
 
       // Check if category exists
       const newCategory = await Category.categoryNameExists(req.body.category);
@@ -430,7 +433,7 @@ export const updateProductCategory = async (
       res.status(201).json({ sucess: true, data: product });
     } else
       throw new ErrorResponse(
-        `User with id ${user._id} is not authorised to update this product`,
+        `User with _id: ${user._id} is not authorised to update this product`,
         401
       );
   } catch (err) {

@@ -248,3 +248,36 @@ export const deleteCategory = async (
     next(err);
   }
 };
+// @desc    Get all categories
+// @route   GET /api/v1/admin/categories/list
+// @access  Admin
+export const getAllCategories = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    // Checks if req.user has required role
+    const loggedInUser: User = req.user as User;
+    loggedInUser.roleCheck('ADMIN');
+    // 1 = show field, 0 = hide
+    const categories: Category[] = await Category.find(
+      {},
+      {
+        name: 1,
+        // _id: 0,
+        description: 1,
+        parent: 1,
+        slug: 1,
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      count: categories.length,
+      data: categories,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

@@ -1,4 +1,5 @@
 import { useState, FormEvent, ChangeEvent, FC, Fragment } from 'react';
+import { useHistory } from 'react-router';
 // Components
 import SubmitInputField from './SubmitInputField';
 interface SearchProps {
@@ -8,9 +9,11 @@ interface SearchProps {
 // Searches for text from inputField
 const Search: FC<SearchProps> = ({ searchProducts }): JSX.Element => {
   const [text, setText] = useState(``);
+  const history = useHistory(); // this is how I get redirected
 
-  const changeHandler = (e: ChangeEvent<HTMLInputElement>): void =>
+  const changeHandler = (e: ChangeEvent<HTMLInputElement>): void => {
     setText(e.currentTarget.value);
+  };
 
   const submitHandler = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
@@ -19,6 +22,7 @@ const Search: FC<SearchProps> = ({ searchProducts }): JSX.Element => {
     } else {
       searchProducts(text);
       setText('');
+      history.push('/search-results'); // redirecting onSubmit has to be done in onSubmit method
     }
   };
 

@@ -7,26 +7,16 @@ import Category from '../models/Category';
  * Originally I wanted users to be able to add multiple categories to a product. I made a check in case user wanted to add two or more categories from the same root e.g add "computers" and "phones" (root category "technology"). That check would find if both products have the same root and throw error if so. Then I realised users could add products to two completely different categories e.g "computers" and "animals" and that would make no sense. So in the end I opted for just one category per product.
  */
 
-// @desc    Get all categories
-// @route   GET /api/v1/categories/list
+// @desc    Get all root categories
+// @route   GET /api/v1/categories/roots
 // @access  Public
-export const getCategories = async (
+export const getRootCategories = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    // 1 = show field, 0 = hide
-    const categories: Category[] = await Category.find(
-      {},
-      {
-        name: 1,
-        // _id: 0,
-        description: 1,
-        parent: 1,
-        slug: 1,
-      }
-    );
+    const categories = await Category.findAllRoots();
 
     res.status(200).json({
       success: true,
@@ -72,9 +62,34 @@ export const getPathToRoot = async (
     const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
     const category: Category = await Category.categoryIdExists(categoryId);
 
-    const sortedCategories = await Category.findPath(category.name);
+    const sortedCategories = await Category.findPathToRoot(category.name);
 
     res.status(200).json({ success: true, data: sortedCategories });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Get direct children
+// @route   GET /api/v1/categories/category/children/:id
+// @access  Public
+export const getDirectChildren = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const parentId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const children = await Category.find({ parent: parentId });
+
+    // let childrenList
+    // if (!children) childrenList = []
+
+    res.status(200).json({
+      success: true,
+      count: children.length,
+      data: children,
+    });
   } catch (err) {
     next(err);
   }
