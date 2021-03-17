@@ -38,7 +38,7 @@ const DisplayUser: FC<RouteComponentProps<DisplayUserProps>> = (
   };
 
   const [user, setUser] = useState(workaround);
-
+  // Get user profile
   const getUser = async (_id: string): Promise<void> => {
     const res = await axios.get(
       `${process.env.REACT_APP_API_URI}/api/v1/user/user/${_id}`,

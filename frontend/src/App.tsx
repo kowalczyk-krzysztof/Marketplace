@@ -9,6 +9,7 @@ import DisplayUser from './components/users/DisplayUser';
 import DisplayRootCategories from './components/categories/DisplayRootCategories';
 
 const App = (): JSX.Element => {
+  // TODO: Better error handler
   axios.interceptors.response.use(
     (response) => {
       return response;
@@ -21,8 +22,9 @@ const App = (): JSX.Element => {
       return Promise.reject(error.response);
     }
   );
-  const [products, setProducts] = useState([]);
-  const [productCount, setproductCount] = useState(0);
+  // I need those as a global state so each time I go back/forward I won't need to repeat the search query
+  const [searchProductsList, setSearchProductList] = useState([]); // list of products that are result of search query
+  const [searchProductCount, setSearchProductCount] = useState(0); // product count
 
   const searchProducts = async (text: string): Promise<void> => {
     const res = await axios.get(
@@ -33,8 +35,8 @@ const App = (): JSX.Element => {
         },
       }
     );
-    setproductCount(res.data.count);
-    setProducts(res.data.data);
+    setSearchProductCount(res.data.count);
+    setSearchProductList(res.data.data);
   };
 
   return (
@@ -47,8 +49,8 @@ const App = (): JSX.Element => {
           </Route>
           <Route exact path="/search-results">
             <DisplaySearchProducts
-              products={products}
-              productCount={productCount}
+              products={searchProductsList}
+              productCount={searchProductCount}
             />
           </Route>
           <Route exact path="/not-found"></Route>

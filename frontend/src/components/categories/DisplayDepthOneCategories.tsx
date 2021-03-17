@@ -1,7 +1,8 @@
 import { FC, Fragment, useEffect, useState } from 'react';
-import axios from 'axios';
-import { Category } from './DisplayCategoryTree';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+// Components
+import { Category } from './DisplayCategoryTree';
 
 export interface DisplayDepthOneCategoriesProps {
   categoryId: string;
@@ -10,7 +11,7 @@ export const DisplayDepthOneCategories: FC<DisplayDepthOneCategoriesProps> = ({
   categoryId,
 }) => {
   const [categories, setCategories] = useState([]);
-
+  // Getting depth one categories for root passed in categoryId
   const findChildren = async (_id: string): Promise<void> => {
     const res = await axios.get(
       `${process.env.REACT_APP_API_URI}/api/v1/categories/category/children/${_id}`,

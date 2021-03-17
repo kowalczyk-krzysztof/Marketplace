@@ -14,7 +14,7 @@ const DisplayProductFull: FC<RouteComponentProps<DisplayProductFullProps>> = (
   props
 ): JSX.Element | null => {
   const { id } = props.match.params; // This is how I get /:id from <Route exact path={`/product/:id`}/>
-
+  // Dummy product as a workaround for setting state
   const workaround: ProductFull = {
     name: '',
     photos: [],

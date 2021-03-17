@@ -6,6 +6,7 @@ interface DisplayUserProductsProps {
   addedProducts: ProductSummary[];
 }
 
+// Display all products added by user
 const DisplayUserProducts: FC<DisplayUserProductsProps> = ({
   addedProducts,
 }): JSX.Element | null => {

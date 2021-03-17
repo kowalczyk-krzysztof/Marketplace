@@ -82,9 +82,6 @@ export const getDirectChildren = async (
     const parentId: ObjectID = (req.params.id as unknown) as ObjectID;
     const children = await Category.find({ parent: parentId });
 
-    // let childrenList
-    // if (!children) childrenList = []
-
     res.status(200).json({
       success: true,
       count: children.length,

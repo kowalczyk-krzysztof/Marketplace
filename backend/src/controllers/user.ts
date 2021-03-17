@@ -426,3 +426,5 @@ export const getUser = async (
     next(err);
   }
 };
+
+// TODO: Add route for deleting user photos
