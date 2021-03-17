@@ -15,7 +15,7 @@ export interface User {
 interface UserItemProps {
   user: User;
 }
-
+// Component to render user profile
 const UserItem: FC<UserItemProps> = ({
   user: { photo, name, role, addedProducts },
 }): JSX.Element => {

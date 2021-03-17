@@ -17,9 +17,8 @@ interface DisplayCategoryTreeProps {
 const DisplayCategoryTree: FC<DisplayCategoryTreeProps> = ({
   category,
 }): JSX.Element => {
-  // Each product NEEDS to have a category, so there's no need for a check whether category exists
   const [categoryTree, setcategoryTree] = useState([]);
-
+  // Getting path to root for category
   const findCategoryTree = async (_id: string): Promise<void> => {
     const res = await axios.get(
       `${process.env.REACT_APP_API_URI}/api/v1/categories/category/root/${_id}`,
@@ -33,6 +32,7 @@ const DisplayCategoryTree: FC<DisplayCategoryTreeProps> = ({
   };
 
   useEffect(() => {
+    // Even though each product NEEDS to have a category, I do a check just in case there's a corrupted product document
     if (category !== undefined) findCategoryTree(category._id);
   }, [category]);
   // IMPORTANT! categoryTree will be in root - > child order (animals -> domestic animals - > cats)

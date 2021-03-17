@@ -440,3 +440,5 @@ export const updateProductCategory = async (
     next(err);
   }
 };
+
+// TODO: Add route for deleting product photos

@@ -5,7 +5,7 @@ import { ProductSummary } from '../products/ProductItemFull';
 interface DisplayProductsSummaryProps {
   summaryProducts: ProductSummary[];
 }
-
+// Product summary to be displayed as search result
 const DisplayProductsSummary: FC<DisplayProductsSummaryProps> = ({
   summaryProducts,
 }): JSX.Element => {
