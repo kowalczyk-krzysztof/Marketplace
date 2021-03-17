@@ -87,7 +87,7 @@ export const addManyProductsToCart = async (
 
     // Adding products
     const productsToAdd: ObjectID[] = req.body.products;
-    // Checking if products exist
+    // Checking if products exists
     const productsExists = await Product.find({
       _id: { $in: productsToAdd },
     });
@@ -141,11 +141,11 @@ export const deleteProductFromCart = async (
     const cart = await Cart.cartExists(user._id);
 
     // Check if user is trying to delete a product that is not in his cart
-    const product: ObjectID | string = req.params.id;
+    const product: ObjectID = (req.params.id as unknown) as ObjectID;
     if (!cart.products.includes(product))
       throw new ErrorResponse('Something went wrong', 400);
 
-    // Removes products from cart
+    // Removes product from cart
     cart.products.pull(product);
     await cart.save();
 

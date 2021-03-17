@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { ObjectID } from 'mongodb';
 interface Cart extends mongoose.Document {
   owner: ObjectID;
-  products: mongoose.Types.Array<ObjectID | string>;
+  products: mongoose.Types.Array<ObjectID>;
 }
 interface CartModel extends mongoose.Model<Cart> {
   cartExists(_id: ObjectID): Promise<Cart>;

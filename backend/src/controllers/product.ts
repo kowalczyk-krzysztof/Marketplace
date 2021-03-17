@@ -113,7 +113,6 @@ export const createProduct = async (
 ): Promise<void> => {
   try {
     const user: User = req.user as User;
-
     user.roleCheck('MERCHANT', 'ADMIN');
     // Check is user already has a product with provided name
     const nameUniqueForUser: Product | null = await Product.findOne({
@@ -128,7 +127,14 @@ export const createProduct = async (
     }
 
     // Check if category exists
-    const category = await Category.categoryNameExists(req.body.category);
+    const category: Category | null = await Category.findOne({
+      name: req.body.category,
+    });
+    if (!category)
+      throw new ErrorResponse(
+        `Category with name: ${req.body.category} does not exist`,
+        404
+      );
 
     // Limiting the number of products a merchant can add
     const maxProducts: number = 5;
@@ -249,10 +255,7 @@ export const deleteProduct = async (
     const productId: ObjectID = (req.params.id as unknown) as ObjectID;
     const product: Product = await Product.productExists(productId);
     // Check if user is the products owner or admin
-    if (
-      product.addedById.toString() === user._id.toString() ||
-      user.role === 'ADMIN'
-    ) {
+    if (product.addedById === user._id || user.role === 'ADMIN') {
       await product.deleteOne();
 
       res.status(200).json({
@@ -271,7 +274,7 @@ export const deleteProduct = async (
 };
 
 // @desc    Get merchant by product id
-// @route   GET /api/v1/products/:id/merchant
+// @route   GET /api/v1/products/find/merchant/productid/:id
 // @access  Public
 
 export const getMerchantFromProductId = async (
@@ -281,8 +284,11 @@ export const getMerchantFromProductId = async (
 ): Promise<void> => {
   try {
     const productId: ObjectID = (req.params.id as unknown) as ObjectID;
-    const product: Product = await Product.productExists(productId);
-    const merchant: User = await User.userExists(product.addedById);
+
+    const merchant: User | null = await User.findOne({
+      addedProducts: productId,
+    });
+    if (!merchant) throw new ErrorResponse('User does not exist', 404);
 
     res.status(200).json({
       success: true,
@@ -370,7 +376,7 @@ export const productFileUpload = async (
       // Create custom filename
       file.name = `product_${product._id}_${hash}${path.parse(file.name).ext}`;
 
-      // Checking if file already exists $addToSet already handles duplicates inside db but I don't want the file to get overriden. There's a very low chance of this happening with added hash, but it still can happen
+      // Checking if file already exists - this shouldn't happen with random hash but in case it does, I don't want the file to get overriden
       if (product.photos.includes(file.name))
         throw new ErrorResponse('File already exists', 400);
 
@@ -388,9 +394,8 @@ export const productFileUpload = async (
             throw new ErrorResponse(`Problem with file upload`, 500);
           }
 
-          await Product.findByIdAndUpdate(req.params.id, {
-            $addToSet: { photos: file.name },
-          });
+          product.photos.push(file.name);
+          await product.save();
 
           res.status(200).json({
             success: true,
@@ -424,10 +429,7 @@ export const updateProductCategory = async (
     const product: Product = await Product.productExists(productId);
 
     // Check if user is the products owner or admin
-    if (
-      product.addedById.toString() === user._id.toString() ||
-      user.role === 'ADMIN'
-    ) {
+    if (product.addedById === user._id || user.role === 'ADMIN') {
       // Removing product from old categories
       const categoriesToRemoveFrom: Category[] = await Category.find({
         products: product._id,
@@ -440,16 +442,9 @@ export const updateProductCategory = async (
         }
       }
 
-      // Check if category exists
-      const newCategory: Category = await Category.categoryNameExists(
-        req.body.category
-      );
-      // Saving product
-      product.category = newCategory._id;
-      await product.save();
       // Adding product to category and all its ancestors all the way to root
       const categoryBranch: QueryResult[] = await Category.findPathToRoot(
-        newCategory.name
+        req.body.category
       );
       const categoryIds: string[] = []; // array of _ids
 
@@ -467,6 +462,12 @@ export const updateProductCategory = async (
         category.products.addToSet(product._id);
         await category.save();
       }
+
+      // Adding category to product
+      const lowestLevelCategory = categoryIds[categoryIds.length - 1]; // this will be the id of category we want to add to product
+      product.category = (lowestLevelCategory as unknown) as ObjectID;
+
+      await product.save();
 
       res.status(201).json({ sucess: true, data: product });
     } else

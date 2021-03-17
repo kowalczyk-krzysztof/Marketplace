@@ -14,8 +14,7 @@ interface Category extends mongoose.Document {
   isParent: boolean;
 }
 interface CategoryModel extends mongoose.Model<Category> {
-  categoryIdExists(_id: ObjectID): Promise<Category>;
-  categoryNameExists(categoryName: string): Promise<Category>;
+  categoryExists(_id: ObjectID): Promise<Category>;
   findPathToRoot(categoryName: string): Promise<QueryResult[]>;
   findAllRoots(): Promise<Category[]>;
 }
@@ -87,27 +86,13 @@ CategorySchema.pre<Category>(
     }
   }
 );
-// Check if category exists by ID
-CategorySchema.statics.categoryIdExists = async function (
+// Check if category exists
+CategorySchema.statics.categoryExists = async function (
   _id: ObjectID
 ): Promise<Category> {
   const category: Category | null = await Category.findOne({ _id: _id });
   if (!category)
     throw new ErrorResponse(`Category with _id: ${_id} does not exist`, 404);
-  return category;
-};
-// Check if category exists by name
-CategorySchema.statics.categoryNameExists = async function (
-  categoryName: string
-): Promise<Category> {
-  const category: Category | null = await Category.findOne({
-    name: categoryName,
-  });
-  if (!category)
-    throw new ErrorResponse(
-      `Category with name: ${categoryName} does not exist`,
-      404
-    );
   return category;
 };
 // Find path to root
@@ -142,6 +127,13 @@ CategorySchema.statics.findPathToRoot = async function (
       },
     },
   ]);
+  // Check if query found anything
+  if (findPathToRoot.length === 0)
+    throw new ErrorResponse(
+      `Category with name: ${categoryName} does not exist`,
+      404
+    );
+
   const path: QueryResult[] = findPathToRoot[0].path;
   // Sorting the array in descending order
   const sortedCategories = path.sort(function (a: QueryResult, b: QueryResult) {

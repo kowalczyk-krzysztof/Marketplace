@@ -133,7 +133,7 @@ UserSchema.pre<User>(
   }
 );
 
-// Sign JWT and return
+// Sign JWT token
 UserSchema.methods.getSignedJwtToken = function (): string {
   const user: User = this as User;
   return jsonwebtoken.sign({ _id: user._id }, process.env.JWT_SECRET!, {
@@ -155,8 +155,7 @@ UserSchema.methods.getResetPasswordToken = function (): string {
   const resetToken: string = crypto.randomBytes(20).toString('hex');
 
   // Hash token and set to resetPasswordToken field
-  const user: User = this as User; // need to do this otherwise error: Property 'resetPasswordToken' does not exist on type 'Document<any>'
-
+  const user: User = this as User;
   user.resetPasswordToken = crypto
     .createHash('sha256')
     .update(resetToken)
@@ -167,7 +166,6 @@ UserSchema.methods.getResetPasswordToken = function (): string {
 
   return resetToken; // original token
 };
-
 // Generate and hash email verification token
 UserSchema.statics.getVerifyEmailToken = function (): (string | number)[] {
   // Generate token
@@ -190,7 +188,6 @@ UserSchema.statics.getVerifyEmailToken = function (): (string | number)[] {
 
   return tokenData;
 };
-
 // Checks if user exists
 UserSchema.statics.userExists = async function (_id: ObjectID): Promise<User> {
   const user: User | null = await User.findOne({ _id: _id });
@@ -198,7 +195,6 @@ UserSchema.statics.userExists = async function (_id: ObjectID): Promise<User> {
     throw new ErrorResponse(`User with _id: ${_id} does not exist`, 404);
   return user;
 };
-
 // Role check
 UserSchema.methods.roleCheck = function (...roles: string[]): void {
   const allowedRoles: string[] = roles;
@@ -209,7 +205,6 @@ UserSchema.methods.roleCheck = function (...roles: string[]): void {
       403
     );
 };
-
 // Exporting the model with an interface applied
 const User: UserModel = mongoose.model<User, UserModel>('User', UserSchema);
 export default User;

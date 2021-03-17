@@ -84,10 +84,10 @@ export const updateUser = async (
       throw new ErrorResponse(`You can not edit other admins`, 401);
 
     // Updates user you want to update
-    await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.role = req.body.role || user.role;
+    await user.save();
 
     res.status(200).json({ sucess: true, data: user });
   } catch (err) {
@@ -188,7 +188,7 @@ export const addCategory = async (
     const category: Category = await Category.create({
       name: req.body.name,
       description: req.body.description,
-      parent: parent, // If parent category doesn't exist then this means the new category is a new root category
+      parent, // If parent category doesn't exist then this means the new category is a new root category
     });
 
     res.status(201).json({ success: true, data: category });
@@ -211,7 +211,7 @@ export const deleteCategory = async (
     loggedInUser.roleCheck('ADMIN');
 
     const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
-    const category: Category = await Category.categoryIdExists(categoryId);
+    const category: Category = await Category.categoryExists(categoryId);
 
     // Recursive search with $graphLookup to find all children and their children in category tree
     const subcategories = await Category.aggregate([
