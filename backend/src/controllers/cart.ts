@@ -54,7 +54,7 @@ export const addProductToCart = async (
     await Product.productExists(productId);
     // Adds new product to cart, since it's addToSet, it will only add non duplicates
     cart.products.addToSet(req.params.id);
-    cart.save();
+    await cart.save();
 
     // Check if product is duplicate
     if (!cart.isModified('products'))
@@ -109,7 +109,7 @@ export const addManyProductsToCart = async (
         notAdddedProducts.push(product);
     }
 
-    cart.save();
+    await cart.save();
 
     // Message to be sent in res
     let message: string;
@@ -147,7 +147,7 @@ export const deleteProductFromCart = async (
 
     // Removes products from cart
     cart.products.pull(product);
-    cart.save();
+    await cart.save();
 
     res.status(201).json({
       success: true,
@@ -190,7 +190,7 @@ export const deleteManyProductFromCart = async (
     if (deletedProducts.length === 0)
       throw new ErrorResponse('Something went wrong', 400);
 
-    cart.save();
+    await cart.save();
 
     res.status(201).json({
       success: true,
@@ -217,7 +217,7 @@ export const emptyCart = async (
       throw new ErrorResponse(`Your cart is already empty`, 400);
     // Empties products array
     cart.products.splice(0, cart.products.length);
-    cart.save();
+    await cart.save();
 
     res.status(200).json({
       success: true,

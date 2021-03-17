@@ -12,10 +12,11 @@ NOTE: Registering as ADMIN is not possible. ADMIN role has to be manually given 
   * [Create New Category](#1-create-new-category)
   * [Delete Category](#2-delete-category)
   * [Delete User](#3-delete-user)
-  * [Get All Products](#4-get-all-products)
-  * [Get All Users](#5-get-all-users)
-  * [Get User's Cart](#6-get-user's-cart)
-  * [Update User](#7-update-user)
+  * [Get All Categories](#4-get-all-categories)
+  * [Get All Products](#5-get-all-products)
+  * [Get All Users](#6-get-all-users)
+  * [Get User's Cart](#7-get-user's-cart)
+  * [Update User](#8-update-user)
 
 * [Cart](#cart)
 
@@ -28,9 +29,10 @@ NOTE: Registering as ADMIN is not possible. ADMIN role has to be manually given 
 
 * [Categories](#categories)
 
-  * [Get All Categories](#1-get-all-categories)
-  * [Get Category](#2-get-category)
+  * [Get Category](#1-get-category)
+  * [Get Direct Children](#2-get-direct-children)
   * [Get Path To Root Category](#3-get-path-to-root-category)
+  * [Get Root Categories](#4-get-root-categories)
 
 * [Products](#products)
 
@@ -95,9 +97,9 @@ URL: {{URI}}/api/v1/admin/categories/add
 ***Body:***
 
 ```js        
-{"name": "Name",
+{"name": "Long Terriers",
 "description": "description",
-"parent": "parent"}
+"parent": "Terriers"}
 ```
 
 
@@ -134,7 +136,23 @@ URL: {{URI}}/api/v1/admin/users/user/604281ea7ac10e49686a589d
 
 
 
-### 4. Get All Products
+### 4. Get All Categories
+
+
+Gets a list of all categories. Requires being logged in and ADMIN role.
+
+
+***Endpoint:***
+
+```bash
+Method: GET
+Type: 
+URL: {{URI}}/api/v1/admin/categories/list
+```
+
+
+
+### 5. Get All Products
 
 
 Gets a list of all products. Requires being logged in and ADMIN role.
@@ -150,7 +168,7 @@ URL: {{URI}}/api/v1/admin/products
 
 
 
-### 5. Get All Users
+### 6. Get All Users
 
 
 Gets a list of all users. Requires being logged in and ADMIN role.
@@ -166,7 +184,7 @@ URL: {{URI}}/api/v1/admin/users/all
 
 
 
-### 6. Get User's Cart
+### 7. Get User's Cart
 
 
 Gets user's cart by user _id. Requires being logged in and ADMIN role.
@@ -182,7 +200,7 @@ URL: {{URI}}/api/v1/admin/users/cart/604281ea7ac10e49686a589d
 
 
 
-### 7. Update User
+### 8. Update User
 
 
 Updates user by user _id. Requires being logged in and ADMIN role.
@@ -365,23 +383,7 @@ Categories related requests available to users without ADMIN role.
 
 
 
-### 1. Get All Categories
-
-
-Gets a list of all categories
-
-
-***Endpoint:***
-
-```bash
-Method: GET
-Type: 
-URL: {{URI}}/api/v1/categories/list
-```
-
-
-
-### 2. Get Category
+### 1. Get Category
 
 
 Gets all products in a category.
@@ -392,7 +394,23 @@ Gets all products in a category.
 ```bash
 Method: GET
 Type: 
-URL: {{URI}}/api/v1/categories/category/find/604fbd4f090f7d1bf84ba072
+URL: {{URI}}/api/v1/categories/category/find/60511f0d735f7e0e882d383b
+```
+
+
+
+### 2. Get Direct Children
+
+
+Gets all direct children of a category.
+
+
+***Endpoint:***
+
+```bash
+Method: GET
+Type: 
+URL: {{URI}}/api/v1/categories/category/children/60511f34735f7e0e882d3840
 ```
 
 
@@ -409,6 +427,22 @@ Gets path to root category.
 Method: GET
 Type: RAW
 URL: {{URI}}/api/v1/categories/category/root/604fbd70090f7d1bf84ba074
+```
+
+
+
+### 4. Get Root Categories
+
+
+Gets a list of all root categories
+
+
+***Endpoint:***
+
+```bash
+Method: GET
+Type: 
+URL: {{URI}}/api/v1/categories/roots
 ```
 
 
@@ -515,7 +549,7 @@ Gets a single product by product _id.
 ```bash
 Method: GET
 Type: 
-URL: {{URI}}/api/v1/products/find/product/6045004ae37bb9115cb95e09
+URL: {{URI}}/api/v1/products/find/product/604fbdeb090f7d1bf84ba075
 ```
 
 
@@ -975,4 +1009,4 @@ URL: {{VerifyEmail}}7107bc166a7637e78c958405d32d4c25e6e83f06
 
 ---
 [Back to top](#marketplace-api)
-> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-16 18:51:14 by [docgen](https://github.com/thedevsaddam/docgen)
+> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-17 02:24:05 by [docgen](https://github.com/thedevsaddam/docgen)

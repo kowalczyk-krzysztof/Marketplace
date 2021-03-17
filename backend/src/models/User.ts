@@ -7,6 +7,7 @@ import fs from 'fs';
 
 import Product from './Product';
 import { ErrorResponse } from '../utils/ErrorResponse';
+import Cart from './Cart';
 
 interface User extends mongoose.Document {
   name: string;
@@ -107,13 +108,22 @@ UserSchema.pre<User>(
   { document: true, query: false },
   async function () {
     const user: User = this as User;
+
+    // Delete products created by user
     const products: Product[] = await Product.find({
       addedById: user._id,
     });
-
-    for (const product of products) {
-      await product.deleteOne();
+    if (products.length > 0) {
+      for (const product of products) {
+        await product.deleteOne();
+      }
     }
+    // Delete user's cart
+    const cart: Cart | null = await Cart.findOne({ owner: user._id });
+    if (cart) {
+      await cart.deleteOne();
+    }
+
     // Deleting photo
     const dir = `${process.env.FILE_UPLOAD_PATH}/users/${user.photo}`;
     if (user.photo !== 'no_photo.jpg')

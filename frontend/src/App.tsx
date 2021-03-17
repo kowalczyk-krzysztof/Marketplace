@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Route, BrowserRouter, Switch } from 'react-router-dom';
 import axios from 'axios';
 // Components
-import Search from './components/products/search/Search';
 import DisplayProductFull from './components/products/DisplayProductFull';
 import Navbar from './components/layout/Navbar';
 import DisplaySearchProducts from './components/products/search/DisplaySearchProducts';
 import DisplayUser from './components/users/DisplayUser';
+import DisplayRootCategories from './components/categories/DisplayRootCategories';
 
 const App = (): JSX.Element => {
   axios.interceptors.response.use(
@@ -40,11 +40,12 @@ const App = (): JSX.Element => {
   return (
     <BrowserRouter>
       <div className="App">
-        <Navbar />
+        <Navbar searchProducts={searchProducts} />
         <Switch>
           <Route exact path="/">
-            <h1>Just trying out stuff lol</h1>
-            <Search searchProducts={searchProducts} />
+            <h1>Marketplace</h1>
+          </Route>
+          <Route exact path="/search-results">
             <DisplaySearchProducts
               products={products}
               productCount={productCount}
@@ -57,6 +58,11 @@ const App = (): JSX.Element => {
             component={DisplayProductFull}
           ></Route>
           <Route exact path={`/user/:id/`} component={DisplayUser}></Route>
+          <Route
+            exact
+            path={`/categories/`}
+            component={DisplayRootCategories}
+          ></Route>
         </Switch>
       </div>
     </BrowserRouter>

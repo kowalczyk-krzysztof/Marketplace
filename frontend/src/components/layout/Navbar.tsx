@@ -1,19 +1,20 @@
-import { FC } from 'react';
+import { FC, Fragment } from 'react';
 import { Link } from 'react-router-dom';
+// Components
+import Search from '../products/search/Search';
 
-interface NavbarProps {}
+interface NavbarProps {
+  searchProducts(text: string): Promise<void>;
+}
 
-const Navbar: FC<NavbarProps> = (): JSX.Element => {
+const Navbar: FC<NavbarProps> = ({ searchProducts }): JSX.Element => {
   return (
     <nav>
-      <ul>
-        <li key="home">
-          <Link to="/">Home</Link>
-        </li>
-        <li key="profile">
-          <Link to="/profile">Profile</Link>
-        </li>
-      </ul>
+      <Fragment>
+        <Link to="/">Home</Link> <Link to="/profile">Profile</Link>{' '}
+        <Link to="/cart">Cart</Link> <Link to="/categories">Categories</Link>
+        <Search searchProducts={searchProducts} />
+      </Fragment>
     </nav>
   );
 };

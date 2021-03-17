@@ -10,11 +10,11 @@ export interface Category {
   slug: string;
 }
 
-interface DisplayProductCategoriesProps {
+interface DisplayCategoryTreeProps {
   category: Category;
 }
 
-const DisplayProductCategories: FC<DisplayProductCategoriesProps> = ({
+const DisplayCategoryTree: FC<DisplayCategoryTreeProps> = ({
   category,
 }): JSX.Element => {
   // Each product NEEDS to have a category, so there's no need for a check whether category exists
@@ -33,14 +33,13 @@ const DisplayProductCategories: FC<DisplayProductCategoriesProps> = ({
   };
 
   useEffect(() => {
-    findCategoryTree(category._id);
+    if (category !== undefined) findCategoryTree(category._id);
   }, [category]);
   // IMPORTANT! categoryTree will be in root - > child order (animals -> domestic animals - > cats)
   // For some weird reason I need to add key on <Fragment>
   return (
     <Fragment>
       <p>
-        {`Categories: `}{' '}
         {categoryTree.map((category: Category, index: number) => {
           return (
             <Fragment key={category._id}>
@@ -54,4 +53,4 @@ const DisplayProductCategories: FC<DisplayProductCategoriesProps> = ({
   );
 };
 
-export default DisplayProductCategories;
+export default DisplayCategoryTree;
