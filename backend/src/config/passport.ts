@@ -58,7 +58,7 @@ passport.use(
         );
 
         if (!user) {
-          return done(new ErrorResponse(`Invalid credentials`, 404), false);
+          return done(new ErrorResponse(`Invalid credentials`, 401), false);
         }
 
         const validate: string = user.matchPassword(password);

@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { Link } from 'react-router-dom';
 // Components
-import { ProductSummary } from '../ProductItemFull';
+import { ProductSummary } from '../../components/products/DisplayProductsSummary';
 
 interface SearchProductItemProps {
   product: ProductSummary;
@@ -12,7 +12,6 @@ const SearchProductItem: FC<SearchProductItemProps> = ({
   product: { name, description, _id, slug },
 }): JSX.Element => {
   // It's better to make a link styled as button that to make an actual button
-
   return (
     <div>
       <p>Name: {name}</p>

@@ -1,7 +1,11 @@
 import { FC, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-// Components
-import { ProductSummary } from '../products/ProductItemFull';
+export interface ProductSummary {
+  _id: string;
+  name: string;
+  description: string;
+  slug: string;
+}
 interface DisplayProductsSummaryProps {
   summaryProducts: ProductSummary[];
 }

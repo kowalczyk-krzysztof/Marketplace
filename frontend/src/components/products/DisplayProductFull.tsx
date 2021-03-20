@@ -2,8 +2,7 @@ import { FC, useState, useEffect, Fragment } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import axios from 'axios';
 // Components
-import ProductItemFull from './ProductItemFull';
-import { ProductFull } from './ProductItemFull';
+import ProductItemFull, { ProductFull } from './ProductItemFull';
 
 interface DisplayProductFullProps {
   id: string;
@@ -32,16 +31,20 @@ const DisplayProductFull: FC<RouteComponentProps<DisplayProductFullProps>> = (
 
   // Fetching product data from database
   const getProduct = async (_id: string): Promise<void> => {
-    const res = await axios.get(
-      `${process.env.REACT_APP_API_URI}/api/v1/products/find/product/${_id}`,
-      {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
-    );
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URI}/api/v1/products/find/product/${_id}`,
+        {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+          },
+        }
+      );
 
-    setProduct(res.data.data);
+      setProduct(res.data);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   useEffect(() => {

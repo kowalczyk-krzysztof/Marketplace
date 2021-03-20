@@ -79,7 +79,9 @@ export const fuzzySearch = async (
     //   },
     // ]);
 
-    res.status(200).json({ sucess: true, count: result.length, data: result });
+    if (result.length === 0) throw new ErrorResponse('No products found', 404);
+
+    res.status(200).json(result);
   } catch (err) {
     next(err);
   }
@@ -97,7 +99,7 @@ export const getProduct = async (
     const product: Product = await Product.productExists(productId);
     await product.populate('category').execPopulate();
 
-    res.status(200).json({ sucess: true, data: product });
+    res.status(200).json(product);
   } catch (err) {
     next(err);
   }
@@ -183,7 +185,7 @@ export const createProduct = async (
       await category.save();
     }
 
-    res.status(201).json({ success: true, data: product });
+    res.status(201).json(product);
   } catch (err) {
     next(err);
   }
@@ -229,7 +231,7 @@ export const updateProduct = async (
       // Saving product
       await product.save();
 
-      res.status(201).json({ sucess: true, data: product });
+      res.status(201).json(product);
     } else
       throw new ErrorResponse(
         `User with _id: ${user._id} is not authorised to update this product`,
@@ -258,10 +260,7 @@ export const deleteProduct = async (
     if (product.addedById === user._id || user.role === 'ADMIN') {
       await product.deleteOne();
 
-      res.status(200).json({
-        sucess: true,
-        data: `Deleted product with _id: ${product._id}`,
-      });
+      res.status(200).json(`Deleted product with _id: ${product._id}`);
     } else
       throw new ErrorResponse(
         `User with _id: ${user._id} is not authorised to delete this product`,
@@ -290,10 +289,7 @@ export const getMerchantFromProductId = async (
     });
     if (!merchant) throw new ErrorResponse('User does not exist', 404);
 
-    res.status(200).json({
-      success: true,
-      data: merchant,
-    });
+    res.status(200).json(merchant);
   } catch (err) {
     next(err);
   }
@@ -320,9 +316,7 @@ export const getProductsByMerchant = async (
         404
       );
 
-    res
-      .status(200)
-      .json({ success: true, count: products.length, products: products });
+    res.status(200).json(products);
   } catch (err) {
     next(err);
   }
@@ -397,10 +391,7 @@ export const productFileUpload = async (
           product.photos.push(file.name);
           await product.save();
 
-          res.status(200).json({
-            success: true,
-            data: file.name,
-          });
+          res.status(200).json(file.name);
         }
       );
     } else
@@ -469,7 +460,7 @@ export const updateProductCategory = async (
 
       await product.save();
 
-      res.status(201).json({ sucess: true, data: product });
+      res.status(201).json(product);
     } else
       throw new ErrorResponse(
         `User with _id: ${user._id} is not authorised to update this product`,

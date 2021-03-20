@@ -18,10 +18,7 @@ export const register = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    res.status(201).json({
-      success: true,
-      message: 'Account created. Please verify your email',
-    });
+    res.status(201).json('Account created. Please verify your email');
   } catch (err) {
     next(err);
   }
@@ -42,7 +39,7 @@ export const login = async (
 
     const expireTime: number = (process.env
       .JWT_COOKIE_EXPIRE as unknown) as number;
-    const expiresIn: string = process.env.JWT_EXPIRE as string;
+
     // Cookie options
     const options = {
       expires: new Date(Date.now() + expireTime * 24 * 60 * 60 * 1000),
@@ -52,11 +49,7 @@ export const login = async (
 
     if (process.env.NODE_ENV === 'production') options.secure = true;
 
-    res.status(200).cookie('token', token, options).json({
-      success: true,
-      token: token,
-      expiresIn,
-    });
+    res.status(200).cookie('token', token, options).json(token);
   } catch (err) {
     next(err);
   }
@@ -67,9 +60,7 @@ export const login = async (
 // @access  Private
 export const logout = async (req: Request, res: Response): Promise<void> => {
   req.logout();
-  res.status(200).json({
-    success: true,
-  });
+  res.status(200).json('Successfully logged out');
 };
 
 // @desc    Get logged in user
@@ -83,10 +74,7 @@ export const getMyProfile = async (
   try {
     const user: User = req.user as User;
 
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
+    res.status(200).json(user);
   } catch (err) {
     next(err);
   }
@@ -112,7 +100,7 @@ export const updateNameAndEmail = async (
     user.role = req.body.role || user.role;
     await user.save();
 
-    res.status(201).json({ sucess: true, data: user });
+    res.status(201).json(user);
   } catch (err) {
     next(err);
   }
@@ -140,7 +128,7 @@ export const updatePassword = async (
     loggedInUser.password = req.body.newPassword;
     await loggedInUser.save();
 
-    res.status(201).json({ succcess: true });
+    res.status(201).json(`Password successfully updated`);
   } catch (err) {
     next(err);
   }
@@ -184,7 +172,7 @@ export const forgotPassword = async (
         message,
       });
 
-      res.status(200).json({ success: true, data: 'Email sent' });
+      res.status(200).json('Email sent');
     } catch (err) {
       // If something goes wrong then delete the token and expire from database
       user.resetPasswordToken = undefined;
@@ -229,7 +217,7 @@ export const resetPassword = async (
 
     await user.save();
 
-    res.status(201).json({ succcess: true });
+    res.status(201).json('Successfully set new password');
   } catch (err) {
     next(err);
   }
@@ -280,10 +268,7 @@ export const userPhotoUpload = async (
         user.photo = file.name;
         await user.save();
 
-        res.status(200).json({
-          success: true,
-          data: file.name,
-        });
+        res.status(200).json(file.name);
       }
     );
   } catch (err) {
@@ -309,11 +294,7 @@ export const myCreatedProducts = async (
     if (myProducts.length === 0)
       throw new ErrorResponse(`You have not added any products`, 404);
 
-    res.status(200).json({
-      success: true,
-      count: myProducts.length,
-      data: user.addedProducts,
-    });
+    res.status(200).json(user.addedProducts);
   } catch (err) {
     next(err);
   }
@@ -349,10 +330,7 @@ export const verifyEmail = async (
 
     await user.save({ validateBeforeSave: false });
 
-    res.status(201).json({
-      success: true,
-      data: 'Your email address has been successfully verified',
-    });
+    res.status(201).json('Your email address has been successfully verified');
   } catch (err) {
     next(err);
   }
@@ -392,7 +370,7 @@ export const resendVerifyEmail = async (
         message,
       });
 
-      res.status(200).json({ success: true, data: 'Email sent' });
+      res.status(200).json('Email sent');
     } catch (err) {
       // If something goes wrong then delete the token and expire from database
       user.verifyEmailToken = undefined;
@@ -421,7 +399,7 @@ export const getUser = async (
     const findUser: User = await User.userExists(userID);
     await findUser.populate('addedProducts').execPopulate();
 
-    res.status(200).json({ sucess: true, data: findUser });
+    res.status(200).json(findUser);
   } catch (err) {
     next(err);
   }

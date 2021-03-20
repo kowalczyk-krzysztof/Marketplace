@@ -22,11 +22,7 @@ export const getAllProducts = async (
     // Gets all products
     const products: Product[] = await Product.find();
 
-    res.status(200).json({
-      success: true,
-      count: products.length,
-      data: products,
-    });
+    res.status(200).json(products);
   } catch (err) {
     next(err);
   }
@@ -45,13 +41,9 @@ export const getAllUsers = async (
     const loggedInUser: User = req.user as User;
     loggedInUser.roleCheck('ADMIN');
     // Gets a list of all users
-    const findUser: User[] = await User.find();
+    const findUsers: User[] = await User.find();
 
-    res.status(200).json({
-      success: true,
-      count: findUser.length,
-      data: findUser,
-    });
+    res.status(200).json(findUsers);
   } catch (err) {
     next(err);
   }
@@ -89,7 +81,7 @@ export const updateUser = async (
     user.role = req.body.role || user.role;
     await user.save();
 
-    res.status(200).json({ sucess: true, data: user });
+    res.status(200).json(user);
   } catch (err) {
     next(err);
   }
@@ -124,10 +116,7 @@ export const deleteUser = async (
     // Deletes user you want to delete
     await user.deleteOne();
 
-    res.status(200).json({
-      success: true,
-      data: `Deleted user with _id: ${user._id}`,
-    });
+    res.status(200).json(`Deleted user with _id: ${user._id}`);
   } catch (err) {
     next(err);
   }
@@ -154,11 +143,7 @@ export const getUserCart = async (
     if (productCount === 0) cartStatus = 'Cart is empty';
     else cartStatus = await cart.populate('products').execPopulate();
 
-    res.status(200).json({
-      success: true,
-      count: productCount,
-      data: cartStatus,
-    });
+    res.status(200).json(cartStatus);
   } catch (err) {
     next(err);
   }
@@ -191,7 +176,7 @@ export const addCategory = async (
       parent, // If parent category doesn't exist then this means the new category is a new root category
     });
 
-    res.status(201).json({ success: true, data: category });
+    res.status(201).json(category);
   } catch (err) {
     next(err);
   }
@@ -256,10 +241,11 @@ export const deleteCategory = async (
       await Category.deleteOne({ _id: categoryId });
     }
 
-    res.status(200).json({
-      success: true,
-      data: `Deleted category with with _id: ${category._id} and its subcategories: ${categoriesToDelete}`,
-    });
+    res
+      .status(200)
+      .json(
+        `Deleted category with with _id: ${category._id} and its subcategories: ${categoriesToDelete}`
+      );
   } catch (err) {
     next(err);
   }
@@ -289,11 +275,7 @@ export const getAllCategories = async (
       }
     ).populate('products');
 
-    res.status(200).json({
-      success: true,
-      count: categories.length,
-      data: categories,
-    });
+    res.status(200).json(categories);
   } catch (err) {
     next(err);
   }

@@ -1,19 +1,16 @@
 import { FC, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 // Components
-import Search from '../products/search/Search';
+import Search from '../../features/searchProducts/Search';
 
-interface NavbarProps {
-  searchProducts(text: string): Promise<void>;
-}
-
-const Navbar: FC<NavbarProps> = ({ searchProducts }): JSX.Element => {
+// TODO: Maker categories a frame(?) with dropdown menus
+const Navbar: FC = (): JSX.Element => {
   return (
     <nav>
       <Fragment>
         <Link to="/">Home</Link> <Link to="/profile">Profile</Link>{' '}
         <Link to="/cart">Cart</Link> <Link to="/categories">Categories</Link>
-        <Search searchProducts={searchProducts} />
+        <Search />
       </Fragment>
     </nav>
   );

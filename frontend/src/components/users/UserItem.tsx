@@ -2,7 +2,7 @@ import { FC } from 'react';
 // Components
 import DisplayUserPhoto from './DisplayUserPhoto';
 import DisplayUserProducts from './DisplayUserProducts';
-import { ProductSummary } from '../products/ProductItemFull';
+import { ProductSummary } from '../products/DisplayProductsSummary';
 
 export interface User {
   _id: string;
@@ -11,7 +11,6 @@ export interface User {
   role: string;
   addedProducts: ProductSummary[];
 }
-
 interface UserItemProps {
   user: User;
 }
