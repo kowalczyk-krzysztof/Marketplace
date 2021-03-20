@@ -1,7 +1,7 @@
 import { FC, useState, useEffect, Fragment } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import axios from 'axios';
-// Components
+// Components and interfaces
 import ProductItemFull, { ProductFull } from './ProductItemFull';
 
 interface DisplayProductFullProps {

@@ -1,6 +1,6 @@
 import { FC, Fragment } from 'react';
 import { Link } from 'react-router-dom';
-// Components
+// Components and interfaces
 import Search from '../../features/searchProducts/Search';
 
 // TODO: Maker categories a frame(?) with dropdown menus

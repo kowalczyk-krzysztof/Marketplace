@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { Link } from 'react-router-dom';
-// Components
+// Components and interfaces
 import { ProductSummary } from '../../components/products/DisplayProductsSummary';
 
 interface SearchProductItemProps {
