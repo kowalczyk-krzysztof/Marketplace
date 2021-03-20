@@ -3,11 +3,6 @@ import colors from 'colors';
 
 import { ErrorResponse } from '../utils/ErrorResponse';
 
-interface Test {
-  stack: string;
-  message: string;
-}
-
 const errorHandler = (
   err: any,
   req: Request,
@@ -49,10 +44,9 @@ const errorHandler = (
     error = new ErrorResponse(message, 400);
   }
 
-  res.status(error.statusCode || 500).json({
-    success: false,
-    error: error.message || err._message || 'Server error',
-  });
+  res
+    .status(error.statusCode || 500)
+    .json(error.message || err._message || 'Server error');
 };
 
 export default errorHandler;

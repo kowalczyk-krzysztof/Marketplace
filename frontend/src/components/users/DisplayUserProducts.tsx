@@ -1,7 +1,8 @@
 import { FC, Fragment } from 'react';
 // Components
-import { ProductSummary } from '../products/ProductItemFull';
-import DisplayProductsSummary from '../products/DisplayProductsSummary';
+import DisplayProductsSummary, {
+  ProductSummary,
+} from '../products/DisplayProductsSummary';
 interface DisplayUserProductsProps {
   addedProducts: ProductSummary[];
 }

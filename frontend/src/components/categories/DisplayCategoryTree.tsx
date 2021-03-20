@@ -28,7 +28,7 @@ const DisplayCategoryTree: FC<DisplayCategoryTreeProps> = ({
         },
       }
     );
-    setcategoryTree(res.data.data);
+    setcategoryTree(res.data);
   };
 
   useEffect(() => {

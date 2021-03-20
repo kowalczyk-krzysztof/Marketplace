@@ -1,13 +1,13 @@
 import { useState, FormEvent, ChangeEvent, FC, Fragment } from 'react';
 import { useHistory } from 'react-router';
 // Components
-import SubmitInputField from './SubmitInputField';
-interface SearchProps {
-  searchProducts(text: string): Promise<void>;
-}
+import SubmitInputField from '../../components/products/SubmitInputField';
+import { useDispatch } from 'react-redux';
+import { fetchProducts } from './searchProductsSlice';
 
 // Searches for text from inputField
-const Search: FC<SearchProps> = ({ searchProducts }): JSX.Element => {
+const Search: FC = (): JSX.Element => {
+  const dispatch = useDispatch();
   const [text, setText] = useState(``);
   const history = useHistory(); // this is how I get redirected
 
@@ -17,10 +17,12 @@ const Search: FC<SearchProps> = ({ searchProducts }): JSX.Element => {
 
   const submitHandler = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
+
     if (text === '') {
       window.alert('Please enter something'); // TODO make a better alert
     } else {
-      searchProducts(text);
+      dispatch(fetchProducts(text)); // dispatching to redux store
+
       setText('');
       history.push('/search-results'); // redirecting onSubmit has to be done in onSubmit method
     }

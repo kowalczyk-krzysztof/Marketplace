@@ -15,7 +15,7 @@ interface Category extends mongoose.Document {
 }
 interface CategoryModel extends mongoose.Model<Category> {
   categoryExists(_id: ObjectID): Promise<Category>;
-  findPathToRoot(categoryName: string): Promise<QueryResult[]>;
+  findPathToRoot(slug: string): Promise<QueryResult[]>;
   findAllRoots(): Promise<Category[]>;
 }
 // Interface for getting path to root of category
@@ -97,13 +97,14 @@ CategorySchema.statics.categoryExists = async function (
 };
 // Find path to root
 CategorySchema.statics.findPathToRoot = async function (
-  categoryName: string
+  slug: string
 ): Promise<QueryResult[]> {
-  // Find pathy to root category
+  // Find pathy to root category - searching BY SLUG
+
   const findPathToRoot = await Category.aggregate([
     {
       $match: {
-        name: categoryName, // starting category
+        slug, // starting category
       },
     },
     {
@@ -129,10 +130,7 @@ CategorySchema.statics.findPathToRoot = async function (
   ]);
   // Check if query found anything
   if (findPathToRoot.length === 0)
-    throw new ErrorResponse(
-      `Category with name: ${categoryName} does not exist`,
-      404
-    );
+    throw new ErrorResponse(`Category with name: ${slug} does not exist`, 404);
 
   const path: QueryResult[] = findPathToRoot[0].path;
   // Sorting the array in descending order

@@ -2,8 +2,7 @@ import { FC, useState, useEffect } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import axios from 'axios';
 // Components
-import UserItem from './UserItem';
-import { User } from './UserItem';
+import UserItem, { User } from './UserItem';
 
 interface DisplayUserProps {
   id: string;
@@ -40,16 +39,20 @@ const DisplayUser: FC<RouteComponentProps<DisplayUserProps>> = (
   const [user, setUser] = useState(workaround);
   // Get user profile
   const getUser = async (_id: string): Promise<void> => {
-    const res = await axios.get(
-      `${process.env.REACT_APP_API_URI}/api/v1/user/user/${_id}`,
-      {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
-    );
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URI}/api/v1/user/user/${_id}`,
+        {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+          },
+        }
+      );
 
-    setUser(res.data.data);
+      setUser(res.data);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   useEffect(() => {

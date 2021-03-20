@@ -19,11 +19,7 @@ export const getRootCategories = async (
   try {
     const categories = await Category.findAllRoots();
 
-    res.status(200).json({
-      success: true,
-      count: categories.length,
-      data: categories,
-    });
+    res.status(200).json(categories);
   } catch (err) {
     next(err);
   }
@@ -41,33 +37,30 @@ export const getCategory = async (
     const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
     const category: Category = await Category.categoryExists(categoryId);
 
-    res.status(200).json({
-      success: true,
-      productCount: category.products.length,
-      data: category,
-    });
+    res.status(200).json(category);
   } catch (err) {
     next(err);
   }
 };
 
 // @desc    Get path to root category
-// @route   GET /api/v1/categories/category/root/:id
-// @access  Pyblic
+// @route   GET /api/v1/categories/category/root?category=
+// @access  Public
 export const getPathToRoot = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const categoryName: string = req.body.category;
+    // ATTENTION! Searching by SLUG
+    const categorySlug: string = req.query.category as string;
 
-    if (categoryName === '')
+    if (categorySlug === '')
       throw new ErrorResponse('Please enter category name', 404);
 
-    const sortedCategories = await Category.findPathToRoot(categoryName);
+    const sortedCategories = await Category.findPathToRoot(categorySlug);
 
-    res.status(200).json({ success: true, data: sortedCategories });
+    res.status(200).json(sortedCategories);
   } catch (err) {
     next(err);
   }
@@ -85,11 +78,7 @@ export const getDirectChildren = async (
     const parentId: ObjectID = (req.params.id as unknown) as ObjectID;
     const children = await Category.find({ parent: parentId });
 
-    res.status(200).json({
-      success: true,
-      count: children.length,
-      data: children,
-    });
+    res.status(200).json(children);
   } catch (err) {
     next(err);
   }

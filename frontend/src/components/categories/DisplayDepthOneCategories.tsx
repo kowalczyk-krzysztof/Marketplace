@@ -21,7 +21,7 @@ export const DisplayDepthOneCategories: FC<DisplayDepthOneCategoriesProps> = ({
         },
       }
     );
-    setCategories(res.data.data);
+    setCategories(res.data);
   };
 
   useEffect(() => {

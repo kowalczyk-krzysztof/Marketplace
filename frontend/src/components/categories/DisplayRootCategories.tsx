@@ -20,7 +20,7 @@ export const DisplayRootCategories: FC<DisplayRootCategoriesProps> = () => {
         },
       }
     );
-    setRoots(res.data.data);
+    setRoots(res.data);
   };
 
   useEffect(() => {

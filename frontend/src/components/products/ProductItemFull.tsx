@@ -2,19 +2,15 @@ import { FC, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 // Components
 import DisplayProductPhotos from './DisplayProductPhotos';
-import DisplayCategoryTree from '../categories/DisplayCategoryTree';
-import { Category } from '../categories/DisplayCategoryTree';
-
+import DisplayCategoryTree, {
+  Category,
+} from '../categories/DisplayCategoryTree';
 import Spinner from '../layout/Spinner';
-
-export interface ProductSummary {
+export interface ProductFull {
   _id: string;
   name: string;
   description: string;
   slug: string;
-}
-
-export interface ProductFull extends ProductSummary {
   photos: string[];
   stock: string;
   category: Category;

@@ -26,11 +26,7 @@ export const getMyCart = async (
     if (productCount === 0) cartStatus = 'Your cart is empty';
     else cartStatus = await cart.populate('products').execPopulate();
 
-    res.status(200).json({
-      success: true,
-      count: productCount,
-      data: cartStatus,
-    });
+    res.status(200).json(cartStatus);
   } catch (err) {
     next(err);
   }
@@ -58,15 +54,15 @@ export const addProductToCart = async (
 
     // Check if product is duplicate
     if (!cart.isModified('products'))
-      res.status(400).json({
-        success: false,
-        data: `You already have product with _id: ${req.params.id} in your cart`,
-      });
+      res
+        .status(400)
+        .json(
+          `You already have product with _id: ${req.params.id} in your cart`
+        );
     else
-      res.status(201).json({
-        success: true,
-        data: `Added product with _id: ${req.params.id} to your cart`,
-      });
+      res
+        .status(201)
+        .json(`Added product with _id: ${req.params.id} to your cart`);
   } catch (err) {
     next(err);
   }
@@ -119,10 +115,7 @@ export const addManyProductsToCart = async (
       message = `Added products: ${addedProducts}. ${notAdddedProducts} are already in your cart.`;
     else message = `Added products: ${addedProducts}`;
 
-    res.status(200).json({
-      success: true,
-      data: message,
-    });
+    res.status(200).json(message);
   } catch (err) {
     next(err);
   }
@@ -149,10 +142,7 @@ export const deleteProductFromCart = async (
     cart.products.pull(product);
     await cart.save();
 
-    res.status(201).json({
-      success: true,
-      data: `Removed product with _id: ${product} from your cart`,
-    });
+    res.status(201).json(`Removed product with _id: ${product} from your cart`);
   } catch (err) {
     next(err);
   }
@@ -192,10 +182,7 @@ export const deleteManyProductFromCart = async (
 
     await cart.save();
 
-    res.status(201).json({
-      success: true,
-      data: `Removed products: ${deletedProducts}`,
-    });
+    res.status(201).json(`Removed products: ${deletedProducts}`);
   } catch (err) {
     next(err);
   }
@@ -219,10 +206,7 @@ export const emptyCart = async (
     cart.products.splice(0, cart.products.length);
     await cart.save();
 
-    res.status(200).json({
-      success: true,
-      message: 'Your cart is now empty',
-    });
+    res.status(200).json('Your cart is now empty');
   } catch (err) {
     next(err);
   }
