@@ -4,11 +4,13 @@ import { combineReducers } from '@reduxjs/toolkit';
 // Reducers
 import searchProductReducer from '../features/searchProducts/searchProductsSlice';
 import categoriesReducer from '../features/categories/categoriesSlice';
+import navbarReducer from '../features/navbar/navbarSlice';
 
 // Define rootReducer using combineReducers. Place all reducers inside as name: reducerName
 const rootReducer = combineReducers({
   searchProducts: searchProductReducer,
   categories: categoriesReducer,
+  navbar: navbarReducer,
 });
 
 // Setting up store, pass in rootReducer and default middleware. Any custom middleware will go into concat()
