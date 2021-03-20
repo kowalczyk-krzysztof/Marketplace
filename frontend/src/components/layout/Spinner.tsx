@@ -7,7 +7,12 @@ const Spinner = (): JSX.Element => {
       <img
         src={spinner}
         alt="Loading..."
-        style={{ width: '200px', margin: 'auto', display: 'block' }}
+        style={{
+          width: '50px',
+          height: '50px',
+          margin: 'auto',
+          display: 'block',
+        }}
         crossOrigin="anonymous"
       ></img>
     </Fragment>

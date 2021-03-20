@@ -1,8 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { AppThunk, RootState } from '../../app/store';
 import axios from 'axios';
-import { AppThunk } from '../../app/store';
-import { RootState } from '../../app/store';
-
+// Components and interfaces
 import { ProductSummary } from '../../components/products/DisplayProductsSummary';
 
 /**
@@ -14,13 +13,13 @@ import { ProductSummary } from '../../components/products/DisplayProductsSummary
  */
 
 interface SearchProducts {
-  isLoading: boolean;
+  status: 'idle' | 'loading' | 'succeeded' | 'failed';
   searchProducts: ProductSummary[];
   error: string | null;
 }
 
 const initialState: SearchProducts = {
-  isLoading: false,
+  status: 'idle',
   searchProducts: [],
   error: null,
 };
@@ -31,19 +30,18 @@ const searchProductsSlice = createSlice({
   initialState,
   reducers: {
     GET_SEARCH_PRODUCTS(state) {
-      state.isLoading = true;
+      state.status = 'loading';
     },
     GET_SEARCH_PRODUCTS_SUCCESS(
       state,
       action: PayloadAction<ProductSummary[]>
     ) {
-      state.isLoading = false;
-
+      state.status = 'succeeded';
       state.searchProducts = action.payload;
       state.error = null;
     },
     GET_SEARCH_PRODUCTS_FAIL(state, action: PayloadAction<string>) {
-      state.isLoading = false;
+      state.status = 'failed';
       const error = action.payload;
       state.error = error;
     },
@@ -52,7 +50,7 @@ const searchProductsSlice = createSlice({
 
 // Fetching products from database
 export const fetchProducts = (text: string): AppThunk => async (dispatch) => {
-  dispatch(GET_SEARCH_PRODUCTS);
+  dispatch(GET_SEARCH_PRODUCTS());
   try {
     const res = await axios.get(
       `${process.env.REACT_APP_API_URI}/api/v1/products/find/search?term=${text}`,
@@ -66,7 +64,9 @@ export const fetchProducts = (text: string): AppThunk => async (dispatch) => {
 
     dispatch(GET_SEARCH_PRODUCTS_SUCCESS(data));
   } catch (err) {
-    const error: string = err.response.data;
+    let error: string;
+    if (err.message === 'Network Error') error = err.message;
+    else error = err.response.data;
     dispatch(GET_SEARCH_PRODUCTS_FAIL(error));
   }
 };

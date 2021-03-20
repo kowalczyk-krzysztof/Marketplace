@@ -1,5 +1,5 @@
 import { FC } from 'react';
-// Components
+// Components and interfaces
 import DisplayUserPhoto from './DisplayUserPhoto';
 import DisplayUserProducts from './DisplayUserProducts';
 import { ProductSummary } from '../products/DisplayProductsSummary';

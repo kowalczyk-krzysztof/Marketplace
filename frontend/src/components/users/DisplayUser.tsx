@@ -1,7 +1,7 @@
 import { FC, useState, useEffect } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import axios from 'axios';
-// Components
+// Components and interfaces
 import UserItem, { User } from './UserItem';
 
 interface DisplayUserProps {

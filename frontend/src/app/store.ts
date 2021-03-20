@@ -3,10 +3,12 @@ import { ThunkAction } from 'redux-thunk';
 import { combineReducers } from '@reduxjs/toolkit';
 // Reducers
 import searchProductReducer from '../features/searchProducts/searchProductsSlice';
+import categoriesReducer from '../features/categories/categoriesSlice';
 
 // Define rootReducer using combineReducers. Place all reducers inside as name: reducerName
 const rootReducer = combineReducers({
   searchProducts: searchProductReducer,
+  categories: categoriesReducer,
 });
 
 // Setting up store, pass in rootReducer and default middleware. Any custom middleware will go into concat()

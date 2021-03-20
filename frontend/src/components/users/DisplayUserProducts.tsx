@@ -1,5 +1,5 @@
 import { FC, Fragment } from 'react';
-// Components
+// Components and interfaces
 import DisplayProductsSummary, {
   ProductSummary,
 } from '../products/DisplayProductsSummary';

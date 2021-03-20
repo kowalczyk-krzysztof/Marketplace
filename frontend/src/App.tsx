@@ -1,12 +1,12 @@
 import { Route, BrowserRouter, Switch } from 'react-router-dom';
 import { Provider } from 'react-redux'; // wrapping application in a provider that will subscribe and unsubscribe to store
 import { store } from './app/store';
-// Components
+// Components and interfaces
 import DisplayProductFull from './components/products/DisplayProductFull';
 import Navbar from './components/layout/Navbar';
 import DisplaySearchProducts from './features/searchProducts/DisplaySearchProducts';
 import DisplayUser from './components/users/DisplayUser';
-import DisplayRootCategories from './components/categories/DisplayRootCategories';
+import DisplayRootCategories from './features/categories/DisplayRootCategories';
 
 const App = (): JSX.Element => {
   // <Provider store={store}> is how components have access to the store. Anything wrapped with it will have access to store.
