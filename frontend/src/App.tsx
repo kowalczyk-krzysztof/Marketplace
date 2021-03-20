@@ -3,10 +3,9 @@ import { Provider } from 'react-redux'; // wrapping application in a provider th
 import { store } from './app/store';
 // Components and interfaces
 import DisplayProductFull from './components/products/DisplayProductFull';
-import Navbar from './components/layout/Navbar';
+import Navbar from './features/navbar/Navbar';
 import DisplaySearchProducts from './features/searchProducts/DisplaySearchProducts';
 import DisplayUser from './components/users/DisplayUser';
-import DisplayRootCategories from './features/categories/DisplayRootCategories';
 
 const App = (): JSX.Element => {
   // <Provider store={store}> is how components have access to the store. Anything wrapped with it will have access to store.
@@ -31,11 +30,6 @@ const App = (): JSX.Element => {
               component={DisplayProductFull}
             ></Route>
             <Route exact path={`/user/:id/`} component={DisplayUser}></Route>
-            <Route
-              exact
-              path={`/categories/`}
-              component={DisplayRootCategories}
-            ></Route>
           </Switch>
         </div>
       </BrowserRouter>
