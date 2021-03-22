@@ -31,7 +31,9 @@ const navbarSlice = createSlice({
 });
 
 // Selectors
-export const navbarSelector = (state: RootState) => state.navbar;
+export const searchSelector = (state: RootState) => state.navbar.showSearch;
+export const categoriesSelector = (state: RootState) =>
+  state.navbar.showCategories;
 // Actions and reducer
 export const {
   SET_SEARCH_TRUE,

@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AppThunk, RootState } from '../../app/store';
 import axios from 'axios';
-
+import { axiosErrorHandler } from '../../utils/axiosErrorHandler';
 export interface Category {
   name: string;
   _id: string;
@@ -9,22 +9,29 @@ export interface Category {
   parent: string;
   slug: string;
 }
+interface CategoryWithChildren extends Category {
+  children: Category[];
+}
+
+interface CategoryWithPath extends Category {
+  path: Category[];
+}
 
 interface Categories {
-  roots: Category[];
-  rootId: string;
-  depthOne: Category[];
-  pathToRoot: Category[];
+  roots: { [key: string]: CategoryWithChildren };
+  showRootChildren: { [key: string]: boolean };
+  pathToRoot: { [key: string]: CategoryWithPath };
   error: string | null;
-  status: 'idle' | 'loading' | 'succeeded' | 'failed';
+  rootStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  pathStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
 }
 const initialState: Categories = {
-  roots: [],
-  rootId: '',
-  depthOne: [],
-  pathToRoot: [],
+  roots: {},
+  showRootChildren: {},
+  pathToRoot: {},
   error: null,
-  status: 'idle',
+  rootStatus: 'idle',
+  pathStatus: 'idle',
 };
 
 // Slice
@@ -33,61 +40,70 @@ const categoriesSlice = createSlice({
   initialState,
   reducers: {
     GET_ROOTS(state) {
-      state.status = 'loading';
+      state.rootStatus = 'loading';
     },
-    GET_ROOTS_SUCCESS(state, action: PayloadAction<Category[]>) {
-      state.status = 'succeeded';
-      state.roots = action.payload;
-    },
-    GET_ROOTS_FAIL(state, action: PayloadAction<string>) {
-      state.status = 'failed';
-      const error = action.payload;
-      state.error = error;
-    },
-    SET_ROOT_ID(state, action: any) {
-      state.rootId = action.payload;
-    },
-    GET_DEPTH_ONE(state) {
-      state.status = 'loading';
-    },
-    GET_DEPTH_ONE_SUCCESS(state, action: PayloadAction<Category[]>) {
-      state.status = 'succeeded';
-      // Payload is array of objects
-      action.payload.forEach((category: Category) => {
-        state.depthOne.push(category);
+    GET_ROOTS_SUCCESS(state, action: PayloadAction<CategoryWithChildren[]>) {
+      state.rootStatus = 'succeeded';
+      // Here I take an array of CategoryWithChildren and for each CategoryWithChildren I make a key in roots object with key name category._id and assign corresponding category as a value
+      action.payload.forEach((category: CategoryWithChildren) => {
+        state.roots[category._id] = category;
       });
     },
-    GET_DEPTH_ONE_FAIL(state, action: PayloadAction<string>) {
-      state.status = 'failed';
+    GET_ROOTS_FAIL(state, action: PayloadAction<string>) {
+      state.rootStatus = 'failed';
       const error = action.payload;
       state.error = error;
     },
+    SET_SHOW_ROOT_CHILDREN(state, action: PayloadAction<string>) {
+      state.showRootChildren[action.payload] = true;
+      /* This is equal to:
+       *  state.showRootChildren = {
+        ...state.showRootChildren,
+        [action.payload]: true,
+      };
+       */
+    },
+    SHOW_ROOT_CHILDREN_TRUE(state, action: PayloadAction<string>) {
+      state.showRootChildren[action.payload] = true;
+    },
+    SHOW_ROOT_CHILDREN_FALSE(state, action: PayloadAction<string>) {
+      state.showRootChildren[action.payload] = false;
+    },
+
     GET_PATH_TO_ROOT(state) {
-      state.status = 'loading';
+      state.pathStatus = 'loading';
     },
-    GET_PATH_TO_ROOT_SUCCESS(state, action: any) {
-      state.status = 'succeeded';
-      state.pathToRoot = action.payload;
+    GET_PATH_TO_ROOT_SUCCESS(state, action: PayloadAction<CategoryWithPath>) {
+      state.pathToRoot[action.payload._id] = action.payload;
+      state.pathStatus = 'succeeded';
     },
-    GET_PATH_TO_ROOT_FAIL(state, action: any) {
-      state.status = 'failed';
+    GET_PATH_TO_ROOT_FAIL(state, action: PayloadAction<string>) {
+      state.pathStatus = 'failed';
       const error = action.payload;
       state.error = error;
     },
   },
 });
 
-// Selectors
-export const categoriesSelector = (state: RootState) => state.categories;
+// Selectors - listening to whole store is a bad idea
+export const rootsSelector = (state: RootState) => state.categories.roots;
+export const showRootChildrenSelector = (state: RootState) =>
+  state.categories.showRootChildren;
+export const pathToRootSelector = (state: RootState) =>
+  state.categories.pathToRoot;
+export const errorSelector = (state: RootState) => state.categories.error;
+export const rootStatusSelector = (state: RootState) =>
+  state.categories.rootStatus;
+export const pathStatusSelector = (state: RootState) =>
+  state.categories.pathStatus;
 // Actions and reducer
 export const {
   GET_ROOTS,
   GET_ROOTS_SUCCESS,
   GET_ROOTS_FAIL,
-  SET_ROOT_ID,
-  GET_DEPTH_ONE,
-  GET_DEPTH_ONE_SUCCESS,
-  GET_DEPTH_ONE_FAIL,
+  SET_SHOW_ROOT_CHILDREN,
+  SHOW_ROOT_CHILDREN_TRUE,
+  SHOW_ROOT_CHILDREN_FALSE,
   GET_PATH_TO_ROOT,
   GET_PATH_TO_ROOT_SUCCESS,
   GET_PATH_TO_ROOT_FAIL,
@@ -95,69 +111,63 @@ export const {
 export default categoriesSlice.reducer;
 
 // Fetch all root categories
-export const fetchRoots = (): AppThunk => async (dispatch) => {
-  dispatch(GET_ROOTS()); // this has to be before axios request. NOTE to myself: remember to actually pass GET_ROOTS as a function (so with ())...I spent 30 min trying to figure out why this was never dispatched
-  try {
-    const res = await axios.get(
-      `${process.env.REACT_APP_API_URI}/api/v1/categories/roots`,
-      {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
-    );
-    const data: Category[] = res.data;
+export const fetchRoots = (): AppThunk => async (dispatch, getState) => {
+  const state = getState();
+  const {
+    categories: { roots },
+  } = state;
+  // Otherwise it would keep refetching
+  if (Object.entries(roots).length === 0) {
+    dispatch(GET_ROOTS());
 
-    dispatch(GET_ROOTS_SUCCESS(data));
-  } catch (err) {
-    let error: string;
-    if (err.message === 'Network Error') error = err.message;
-    else error = err.response.data;
-    dispatch(GET_ROOTS_FAIL(error));
-  }
-};
-// Fetch depth one categories
-export const fetchDepthOne = (_id: string): AppThunk => async (dispatch) => {
-  dispatch(GET_DEPTH_ONE());
-  try {
-    const res = await axios.get(
-      `${process.env.REACT_APP_API_URI}/api/v1/categories/category/children/${_id}`,
-      {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
-    );
-    const data: Category[] = res.data;
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URI}/api/v1/categories/roots`,
+        {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+          },
+        }
+      );
+      const data: CategoryWithChildren[] = res.data;
 
-    dispatch(GET_DEPTH_ONE_SUCCESS(data));
-  } catch (err) {
-    let error: string;
-    if (err.message === 'Network Error') error = err.message;
-    else error = err.response.data;
-    dispatch(GET_DEPTH_ONE_FAIL(error));
+      dispatch(GET_ROOTS_SUCCESS(data));
+    } catch (err) {
+      const error: string = axiosErrorHandler(err);
+      dispatch(GET_ROOTS_FAIL(error));
+    }
   }
 };
 // Fetch category path to root
-export const fetchPathToRoot = (slug: string): AppThunk => async (dispatch) => {
-  dispatch(GET_PATH_TO_ROOT());
-  try {
-    const res = await axios.get(
-      `${process.env.REACT_APP_API_URI}/api/v1/categories/category/root?category=${slug}`,
-      {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
-    );
+export const fetchPathToRoot = (slug: string, _id: string): AppThunk => async (
+  dispatch,
+  getState
+) => {
+  const state = getState();
+  const {
+    categories: { pathToRoot },
+  } = state;
+  console.log(_id);
 
-    const data: Category[] = res.data;
+  if (_id in pathToRoot === false) {
+    dispatch(GET_PATH_TO_ROOT());
 
-    dispatch(GET_PATH_TO_ROOT_SUCCESS(data));
-  } catch (err) {
-    let error: string;
-    if (err.message === 'Network Error') error = err.message;
-    else error = err.response.data;
-    dispatch(GET_PATH_TO_ROOT_FAIL(error));
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URI}/api/v1/categories/category/root?category=${slug}`,
+        {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+          },
+        }
+      );
+
+      const data: CategoryWithPath = res.data;
+
+      dispatch(GET_PATH_TO_ROOT_SUCCESS(data));
+    } catch (err) {
+      const error: string = axiosErrorHandler(err);
+      dispatch(GET_PATH_TO_ROOT_FAIL(error));
+    }
   }
 };

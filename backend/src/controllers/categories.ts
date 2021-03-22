@@ -17,7 +17,22 @@ export const getRootCategories = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const categories = await Category.findAllRoots();
+    // This query will return all root categories and their direct children
+    const categories = await Category.aggregate([
+      {
+        $match: {
+          parent: null,
+        },
+      },
+      {
+        $lookup: {
+          from: 'categories', // collection
+          localField: '_id', // field from result of $match
+          foreignField: 'parent', // field to search in
+          as: 'children', // array where results will be pushed
+        },
+      },
+    ]);
 
     res.status(200).json(categories);
   } catch (err) {
@@ -56,7 +71,7 @@ export const getPathToRoot = async (
     const categorySlug: string = req.query.category as string;
 
     if (categorySlug === '')
-      throw new ErrorResponse('Please enter category name', 404);
+      throw new ErrorResponse('Please enter category name', 400);
 
     const sortedCategories = await Category.findPathToRoot(categorySlug);
 
@@ -67,7 +82,7 @@ export const getPathToRoot = async (
 };
 
 // @desc    Get direct children
-// @route   GET /api/v1/categories/category/children/:id
+// @route   GET /api/v1/categories/category/children?category=
 // @access  Public
 export const getDirectChildren = async (
   req: Request,
@@ -75,10 +90,30 @@ export const getDirectChildren = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const parentId: ObjectID = (req.params.id as unknown) as ObjectID;
-    const children = await Category.find({ parent: parentId });
+    // ATTENTION! Searching by SLUG
+    const categorySlug: string = req.query.category as string;
+    if (categorySlug === '')
+      throw new ErrorResponse('Please enter category name', 400);
 
-    res.status(200).json(children);
+    const document = await Category.aggregate([
+      {
+        $match: {
+          slug: categorySlug,
+        },
+      },
+      {
+        $lookup: {
+          from: 'categories', // collection
+          localField: '_id', // field from result of $match
+          foreignField: 'parent', // field to search in
+          as: 'children', // array where results will be pushed
+        },
+      },
+    ]);
+
+    const childrenCategories = document[0].children; // result will be only ONE document becase slugs are unique, so $match will make it so there's only one document, that's why I access index 0
+
+    res.status(200).json(childrenCategories);
   } catch (err) {
     next(err);
   }

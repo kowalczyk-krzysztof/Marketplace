@@ -95,12 +95,10 @@ CategorySchema.statics.categoryExists = async function (
     throw new ErrorResponse(`Category with _id: ${_id} does not exist`, 404);
   return category;
 };
-// Find path to root
+// Find path to root category - searching BY SLUG
 CategorySchema.statics.findPathToRoot = async function (
   slug: string
 ): Promise<QueryResult[]> {
-  // Find pathy to root category - searching BY SLUG
-
   const findPathToRoot = await Category.aggregate([
     {
       $match: {
@@ -118,32 +116,30 @@ CategorySchema.statics.findPathToRoot = async function (
       },
     },
 
-    {
-      $project: {
-        'path._id': 1,
-        'path.name': 1,
-        'path.structure': 1,
-        'path.slug': 1,
-        'path.products': 1,
-      },
-    },
+    // {
+    //   $project: {
+    //     'path._id': 1,
+    //     'path.name': 1,
+    //     'path.structure': 1,
+    //     'path.slug': 1,
+    //     'path.products': 1,
+    //   },
+    // },
   ]);
+  // Result of this query is an array of documents. Since we limit the search in first stage to a slug (unique) it will only return one document. So we access the document using index 0. Then we sort path array inside that document to be in descending order and then return the document
+
   // Check if query found anything
   if (findPathToRoot.length === 0)
     throw new ErrorResponse(`Category with name: ${slug} does not exist`, 404);
 
   const path: QueryResult[] = findPathToRoot[0].path;
+
   // Sorting the array in descending order
-  const sortedCategories = path.sort(function (a: QueryResult, b: QueryResult) {
+  path.sort(function (a: QueryResult, b: QueryResult) {
     return b.structure - a.structure; // ROOT WILL BE FIRST
   });
 
-  return sortedCategories;
-};
-// Find all root categories
-CategorySchema.statics.findAllRoots = async function (): Promise<Category[]> {
-  const roots: Category[] = await Category.find({ parent: null });
-  return roots;
+  return findPathToRoot[0];
 };
 
 const Category: CategoryModel = mongoose.model<Category, CategoryModel>(
