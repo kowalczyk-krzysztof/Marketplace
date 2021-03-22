@@ -34,8 +34,10 @@ export const fuzzySearch = async (
       ],
     })
       .limit(80)
-      .sort({ name: 1 })
-      .select({ name: 1, description: 1, _id: 1, slug: 1 });
+      .sort({ name: 1 });
+    for (const product of result) {
+      await product.populate('category', 'slug').execPopulate(); // this is so my frontend can get the slug
+    }
 
     /**
      * Below is atlas search solution - for this to work you need to create a search index
@@ -130,7 +132,7 @@ export const createProduct = async (
 
     // Check if category exists
     const category: Category | null = await Category.findOne({
-      name: req.body.category,
+      slug: req.body.category,
     });
     if (!category)
       throw new ErrorResponse(
@@ -166,7 +168,7 @@ export const createProduct = async (
 
     // Adding product to category and all its ancestors all the way to root
     const categoryBranch: QueryResult[] = await Category.findPathToRoot(
-      category.name
+      category.slug
     );
     const categoryIds: string[] = []; // array of _ids
 

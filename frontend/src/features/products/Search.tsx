@@ -1,7 +1,7 @@
 import { useState, FormEvent, ChangeEvent, FC, Fragment } from 'react';
 import { useHistory } from 'react-router';
 import { useDispatch } from 'react-redux';
-import { fetchProducts } from './searchProductsSlice';
+import { fetchProducts } from './productsSlice';
 // Components and interfaces
 import SubmitInputField from '../../components/products/SubmitInputField';
 

@@ -2,22 +2,22 @@ import { FC, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  navbarSelector,
+  categoriesSelector,
+  searchSelector,
   SET_CATEGORIES_TRUE,
   SET_CATEGORIES_FALSE,
   SET_SEARCH_TRUE,
   SET_SEARCH_FALSE,
 } from './navbarSlice';
-
 // Components and interfaces
-import Search from '../searchProducts/Search';
+import Search from '../products/Search';
 import DisplayRootCategories from '../categories/DisplayRootCategories';
 
-// TODO: Maker categories a frame(?) with dropdown menus
 const Navbar: FC = (): JSX.Element => {
   const dispatch = useDispatch();
-  const state = useSelector(navbarSelector);
-  const { showCategories, showSearch } = state;
+
+  const showCategories = useSelector(categoriesSelector);
+  const showSearch = useSelector(searchSelector);
 
   const rootCategoryHandler = (): void => {
     if (showCategories === false) dispatch(SET_CATEGORIES_TRUE());

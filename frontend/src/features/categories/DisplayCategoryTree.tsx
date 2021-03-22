@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom';
 // Components and interfaces
 import {
   fetchPathToRoot,
-  categoriesSelector,
   Category,
+  pathToRootSelector,
+  errorSelector,
+  pathStatusSelector,
 } from './categoriesSlice';
 import Spinner from '../../components/layout/Spinner';
 
@@ -17,31 +19,37 @@ const DisplayCategoryTree: FC<DisplayCategoryTreeProps> = ({
   category,
 }): JSX.Element => {
   const dispatch = useDispatch();
-  const state = useSelector(categoriesSelector);
-  const { pathToRoot, error, status } = state;
+  // const state = useSelector(categoriesSelector);
+  // const { pathToRoot, error, pathStatus } = state;
+
+  const pathToRoot = useSelector(pathToRootSelector);
+  const error = useSelector(errorSelector);
+  const pathStatus = useSelector(pathStatusSelector);
+
   useEffect(() => {
-    if (category && pathToRoot.length === 0)
-      dispatch(fetchPathToRoot(category.slug));
-  }, [dispatch, category, pathToRoot]);
+    dispatch(fetchPathToRoot(category.slug, category._id));
+  }, [dispatch, category.slug, category._id]);
+
   // IMPORTANT! categoryTree will be in root - > child order (animals -> domestic animals - > cats)
-  // For some weird reason I need to add key on <Fragment>
-  if (status === 'loading') return <Spinner></Spinner>;
-  else if (status === 'succeeded')
+  if (pathStatus === 'loading') return <Spinner></Spinner>;
+  else if (pathStatus === 'succeeded' && category._id in pathToRoot === true) {
+    const categoryTree = pathToRoot[category._id].path;
     return (
       <Fragment>
         <p>
-          {pathToRoot.map((category: Category, index: number) => {
+          {categoryTree.map((category: Category, index: number) => {
             return (
               <Fragment key={category._id}>
                 <Link to={`/category/${category.slug}`}>{category.name}</Link>
-                {index !== pathToRoot.length - 1 ? ` --> ` : null}
+
+                {index !== categoryTree.length - 1 ? ` --> ` : null}
               </Fragment>
             );
           })}
         </p>
       </Fragment>
     );
-  else return <p>{error}</p>;
+  } else return <p>{error}</p>;
 };
 
 export default DisplayCategoryTree;

@@ -1,11 +1,16 @@
 import { Route, BrowserRouter, Switch } from 'react-router-dom';
 import { Provider } from 'react-redux'; // wrapping application in a provider that will subscribe and unsubscribe to store
 import { store } from './app/store';
+import { PersistGate } from 'redux-persist/integration/react';
+import { persistStore } from 'redux-persist';
 // Components and interfaces
-import DisplayProductFull from './components/products/DisplayProductFull';
+import DisplayProductFull from './features/products/DisplayProductFull';
 import Navbar from './features/navbar/Navbar';
-import DisplaySearchProducts from './features/searchProducts/DisplaySearchProducts';
-import DisplayUser from './components/users/DisplayUser';
+import DisplaySearchProducts from './features/products/DisplaySearchProducts';
+import DisplayUser from './features/users/DisplayUser';
+
+// redux-persist persistor
+const persistor = persistStore(store);
 
 const App = (): JSX.Element => {
   // <Provider store={store}> is how components have access to the store. Anything wrapped with it will have access to store.
@@ -13,6 +18,7 @@ const App = (): JSX.Element => {
 
   return (
     <Provider store={store}>
+      {/* <PersistGate loading={null} persistor={persistor}> */}
       <BrowserRouter>
         <div className="App">
           <Navbar />
@@ -33,6 +39,7 @@ const App = (): JSX.Element => {
           </Switch>
         </div>
       </BrowserRouter>
+      {/* </PersistGate> */}
     </Provider>
   );
 };

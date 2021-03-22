@@ -10,7 +10,6 @@ const errorHandler = (
   next: NextFunction
 ): void => {
   let error = { ...err };
-  // console.log(err.next);
   error.message = err.message;
   // Uses the message passed to next() in the controller, for example `Product not found with _id: ${req.params.id}`
 
