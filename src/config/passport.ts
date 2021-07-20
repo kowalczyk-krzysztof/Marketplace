@@ -90,11 +90,8 @@ passport.use(
         if (req.body.role === 'ADMIN')
           throw new ErrorResponse('You can not register as an ADMIN', 401);
         // Getting email verification token
-        const [
-          token,
-          hashedToken,
-          tokenExpiration,
-        ] = User.getVerifyEmailToken();
+        const [token, hashedToken, tokenExpiration] =
+          User.getVerifyEmailToken();
         // Creating new user
         const newUser: User = await User.create({
           name: req.body.name,
@@ -112,7 +109,7 @@ passport.use(
         const message: string = `You are receiving this email because you (or someone else) has created an account in Marketplace. Please verify your email at \n\n${siteUrl}\n\nLink expires in 24 hours`;
         await sendEmail({
           email,
-          subject: 'Welcome to Marketplace',
+          subject: 'Welcome to SHOP-API',
           message,
         });
 
