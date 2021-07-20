@@ -1,6 +1,6 @@
 # Shop-API
 
-My first REST API - learning project
+My first REST API - learning project. Authentication is done using JWT tokens.
 
 NOTE: Registering as ADMIN is not possible. ADMIN role has to be manually given from inside database.
 
