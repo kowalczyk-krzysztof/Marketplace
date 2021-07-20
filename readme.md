@@ -1,10 +1,6 @@
-# Marketplace
+# Shop-API
 
-This is my first ever MERN stack project. I had no prior coding experience at all when I started this.
-
-I wanted to try out many different features to learn how to implement them. However, due to how time consuming finishing this project would be (the idea was to build something similar to eBay) I decided to move on to smaller projects.
-
-Most of the code is on the backend. Below are API endpoints.
+My first REST API - learning project
 
 NOTE: Registering as ADMIN is not possible. ADMIN role has to be manually given from inside database.
 
@@ -380,7 +376,7 @@ URL: {{URI}}/api/v1/products/manage/create
 | Key          | Value            | Description |
 | ------------ | ---------------- | ----------- |
 | Content-Type | application/json | JSON        |
-|  |
+|              |
 
 **_Body:_**
 
@@ -796,6 +792,6 @@ URL: {{VerifyEmail}}7107bc166a7637e78c958405d32d4c25e6e83f06
 
 ---
 
-[Back to top](#marketplace-api)
+[Back to top](#Shop-API)
 
 > Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2021-03-17 02:24:05 by [docgen](https://github.com/thedevsaddam/docgen)

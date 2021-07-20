@@ -1,7 +1,6 @@
 node_modules
 config.env
 .env.local
-backend/dist
-backend/views/uploads/products
-backend/views/uploads/users
-frontend/build
+dist
+views/uploads/products
+views/uploads/users
