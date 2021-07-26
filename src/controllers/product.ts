@@ -81,7 +81,7 @@ export const fuzzySearch = async (
     //   },
     // ]);
 
-    if (result.length === 0) throw new ErrorResponse('No products found', 404);
+    if (!result.length) throw new ErrorResponse('No products found', 404);
 
     res.status(200).json(result);
   } catch (err) {
@@ -97,7 +97,7 @@ export const getProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const productId: ObjectID = req.params.id as unknown as ObjectID;
     const product: Product = await Product.productExists(productId);
     await product.populate('category').execPopulate();
 
@@ -205,7 +205,7 @@ export const updateProduct = async (
     const user: User = req.user as User;
     user.roleCheck('MERCHANT', 'ADMIN');
 
-    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const productId: ObjectID = req.params.id as unknown as ObjectID;
     const product: Product = await Product.productExists(productId);
 
     // Check if user is the products owner or admin
@@ -256,7 +256,7 @@ export const deleteProduct = async (
     const user: User = req.user as User;
     user.roleCheck('MERCHANT', 'ADMIN');
 
-    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const productId: ObjectID = req.params.id as unknown as ObjectID;
     const product: Product = await Product.productExists(productId);
     // Check if user is the products owner or admin
     if (product.addedById === user._id || user.role === 'ADMIN') {
@@ -284,7 +284,7 @@ export const getMerchantFromProductId = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const productId: ObjectID = req.params.id as unknown as ObjectID;
 
     const merchant: User | null = await User.findOne({
       addedProducts: productId,
@@ -312,7 +312,7 @@ export const getProductsByMerchant = async (
     });
 
     // Check if merchant has any products
-    if (products.length === 0)
+    if (!products.length)
       throw new ErrorResponse(
         `No products from user with _id: ${req.params.id}`,
         404
@@ -335,7 +335,7 @@ export const productFileUpload = async (
   try {
     const user: User = req.user as User;
     user.roleCheck('MERCHANT', 'ADMIN');
-    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const productId: ObjectID = req.params.id as unknown as ObjectID;
     const product: Product = await Product.productExists(productId);
 
     // Check if user is product owner
@@ -355,8 +355,8 @@ export const productFileUpload = async (
         throw new ErrorResponse(`Please upload an image file`, 400);
 
       // Check file size
-      const maxFileSizeInBytes: number = (process.env
-        .MAX_FILE_UPLOAD_BYTES as unknown) as number;
+      const maxFileSizeInBytes: number = process.env
+        .MAX_FILE_UPLOAD_BYTES as unknown as number;
       const maxFileSizeInMB: number = maxFileSizeInBytes / 1048576; // 1 mb = 1048576 bytes
 
       if (file.size > maxFileSizeInBytes)
@@ -418,7 +418,7 @@ export const updateProductCategory = async (
     const user: User = req.user as User;
     user.roleCheck('MERCHANT', 'ADMIN');
 
-    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const productId: ObjectID = req.params.id as unknown as ObjectID;
     const product: Product = await Product.productExists(productId);
 
     // Check if user is the products owner or admin
@@ -458,7 +458,7 @@ export const updateProductCategory = async (
 
       // Adding category to product
       const lowestLevelCategory = categoryIds[categoryIds.length - 1]; // this will be the id of category we want to add to product
-      product.category = (lowestLevelCategory as unknown) as ObjectID;
+      product.category = lowestLevelCategory as unknown as ObjectID;
 
       await product.save();
 

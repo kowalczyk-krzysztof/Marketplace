@@ -129,7 +129,7 @@ CategorySchema.statics.findPathToRoot = async function (
   // Result of this query is an array of documents. Since we limit the search in first stage to a slug (unique) it will only return one document. So we access the document using index 0. Then we sort path array inside that document to be in descending order and then return the document
 
   // Check if query found anything
-  if (findPathToRoot.length === 0)
+  if (!findPathToRoot.length)
     throw new ErrorResponse(`Category with name: ${slug} does not exist`, 404);
 
   const path: QueryResult[] = findPathToRoot[0].path;

@@ -62,7 +62,7 @@ export const updateUser = async (
     const loggedInUser: User = req.user as User;
     loggedInUser.roleCheck('ADMIN');
     // Checks if user you want to update exists
-    const userId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const userId: ObjectID = req.params.id as unknown as ObjectID;
     const user: User = await User.userExists(userId);
 
     // Check if admin is trying to edit its own profile
@@ -101,7 +101,7 @@ export const deleteUser = async (
     loggedInUser.roleCheck('ADMIN');
     // Checks if user you want to delete exists
 
-    const userId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const userId: ObjectID = req.params.id as unknown as ObjectID;
     const user: User = await User.userExists(userId);
 
     // Check if user is trying to delete itself
@@ -135,12 +135,12 @@ export const getUserCart = async (
     const loggedInUser: User = req.user as User;
     loggedInUser.roleCheck('ADMIN');
     // Checks if cart exists, if not it will create a new one
-    const cartId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const cartId: ObjectID = req.params.id as unknown as ObjectID;
     const cart: Cart = await Cart.cartExists(cartId);
     let cartStatus: Cart | string;
     let productCount: number = cart.products.length;
 
-    if (productCount === 0) cartStatus = 'Cart is empty';
+    if (!productCount) cartStatus = 'Cart is empty';
     else cartStatus = await cart.populate('products').execPopulate();
 
     res.status(200).json(cartStatus);
@@ -195,7 +195,7 @@ export const deleteCategory = async (
     const loggedInUser: User = req.user as User;
     loggedInUser.roleCheck('ADMIN');
 
-    const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const categoryId: ObjectID = req.params.id as unknown as ObjectID;
     const category: Category = await Category.categoryExists(categoryId);
 
     // Recursive search with $graphLookup to find all children and their children in category tree
@@ -229,7 +229,7 @@ export const deleteCategory = async (
       const deletedCategorySiblings = await Category.find({
         parent: parent._id,
       });
-      if (deletedCategorySiblings.length === 0) {
+      if (!deletedCategorySiblings.length) {
         parent.isParent = false;
         await parent.save();
       }

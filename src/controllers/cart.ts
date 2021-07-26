@@ -23,7 +23,7 @@ export const getMyCart = async (
     let cartStatus: Cart | string;
     let productCount: number = cart.products.length;
 
-    if (productCount === 0) cartStatus = 'Your cart is empty';
+    if (!productCount) cartStatus = 'Your cart is empty';
     else cartStatus = await cart.populate('products').execPopulate();
 
     res.status(200).json(cartStatus);
@@ -46,7 +46,7 @@ export const addProductToCart = async (
     const cart: Cart = await Cart.cartExists(user._id);
 
     // Check if product exists
-    const productId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const productId: ObjectID = req.params.id as unknown as ObjectID;
     await Product.productExists(productId);
     // Adds new product to cart, since it's addToSet, it will only add non duplicates
     cart.products.addToSet(req.params.id);
@@ -109,7 +109,7 @@ export const addManyProductsToCart = async (
 
     // Message to be sent in res
     let message: string;
-    if (addedProducts.length === 0)
+    if (!addedProducts.length)
       message = `No products were added. ${notAdddedProducts} are already in your cart.`;
     else if (notAdddedProducts.length > 0)
       message = `Added products: ${addedProducts}. ${notAdddedProducts} are already in your cart.`;
@@ -134,7 +134,7 @@ export const deleteProductFromCart = async (
     const cart = await Cart.cartExists(user._id);
 
     // Check if user is trying to delete a product that is not in his cart
-    const product: ObjectID = (req.params.id as unknown) as ObjectID;
+    const product: ObjectID = req.params.id as unknown as ObjectID;
     if (!cart.products.includes(product))
       throw new ErrorResponse('Something went wrong', 400);
 
@@ -177,7 +177,7 @@ export const deleteManyProductFromCart = async (
     }
 
     // Check if products exist in user's cart
-    if (deletedProducts.length === 0)
+    if (!deletedProducts.length)
       throw new ErrorResponse('Something went wrong', 400);
 
     await cart.save();
@@ -200,7 +200,7 @@ export const emptyCart = async (
     // Check if cart exists for req.user
     const user: User = req.user as User;
     const cart: Cart = await Cart.cartExists(user._id);
-    if (cart.products.length === 0)
+    if (!cart.products.length)
       throw new ErrorResponse(`Your cart is already empty`, 400);
     // Empties products array
     cart.products.splice(0, cart.products.length);

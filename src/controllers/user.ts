@@ -37,8 +37,8 @@ export const login = async (
 
     const token: string = user.getSignedJwtToken(); // jsonwebtoken
 
-    const expireTime: number = (process.env
-      .JWT_COOKIE_EXPIRE as unknown) as number;
+    const expireTime: number = process.env
+      .JWT_COOKIE_EXPIRE as unknown as number;
 
     // Cookie options
     const options = {
@@ -245,8 +245,8 @@ export const userPhotoUpload = async (
       throw new ErrorResponse(`Please upload an image file`, 400);
 
     // Check file size
-    const maxFileSizeInBytes: number = (process.env
-      .MAX_FILE_UPLOAD_BYTES as unknown) as number;
+    const maxFileSizeInBytes: number = process.env
+      .MAX_FILE_UPLOAD_BYTES as unknown as number;
     const maxFileSizeInMB: number = maxFileSizeInBytes / 1048576; // 1 mb = 1048576 bytes
 
     if (file.size > maxFileSizeInBytes)
@@ -291,7 +291,7 @@ export const myCreatedProducts = async (
     const myProducts: ObjectID[] = user.addedProducts;
 
     // Check if logged in user has any created products
-    if (myProducts.length === 0)
+    if (!myProducts.length)
       throw new ErrorResponse(`You have not added any products`, 404);
 
     res.status(200).json(user.addedProducts);
@@ -395,7 +395,7 @@ export const getUser = async (
 ): Promise<void> => {
   try {
     // Finds a single user
-    const userID: ObjectID = (req.params.id as unknown) as ObjectID;
+    const userID: ObjectID = req.params.id as unknown as ObjectID;
     const findUser: User = await User.userExists(userID);
     await findUser.populate('addedProducts').execPopulate();
 

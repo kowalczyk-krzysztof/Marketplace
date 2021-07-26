@@ -49,7 +49,7 @@ export const getCategory = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const categoryId: ObjectID = (req.params.id as unknown) as ObjectID;
+    const categoryId: ObjectID = req.params.id as unknown as ObjectID;
     const category: Category = await Category.categoryExists(categoryId);
 
     res.status(200).json(category);
@@ -70,7 +70,7 @@ export const getPathToRoot = async (
     // ATTENTION! Searching by SLUG
     const categorySlug: string = req.query.category as string;
 
-    if (categorySlug === '')
+    if (!categorySlug)
       throw new ErrorResponse('Please enter category name', 400);
 
     const sortedCategories = await Category.findPathToRoot(categorySlug);
@@ -92,7 +92,7 @@ export const getDirectChildren = async (
   try {
     // ATTENTION! Searching by SLUG
     const categorySlug: string = req.query.category as string;
-    if (categorySlug === '')
+    if (!categorySlug)
       throw new ErrorResponse('Please enter category name', 400);
 
     const document = await Category.aggregate([
