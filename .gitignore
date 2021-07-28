@@ -1,6 +1,5 @@
 node_modules
 config.env
-.env.local
 dist
 views/uploads/products
 views/uploads/users
