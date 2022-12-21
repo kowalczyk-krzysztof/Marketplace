@@ -1,4 +1,4 @@
-# Shop-API
+# Shop API
 
 My first REST API - learning project. Authentication is done using JWT tokens.
 
